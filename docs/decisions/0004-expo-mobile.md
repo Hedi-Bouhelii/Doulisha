@@ -1,6 +1,6 @@
 # 0004. Expo, Expo Router and NativeWind for mobile
 
-- Status: Accepted
+- Status: Superseded by [0006](0006-web-only-repository.md) (2026-09-24)
 - Date: 2026-09-23
 
 ## Context

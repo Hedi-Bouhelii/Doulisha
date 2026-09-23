@@ -2,7 +2,7 @@
   "name": "@doulisha/ui-tokens",
   "version": "0.0.0",
   "private": true,
-  "description": "Design tokens shared by Tailwind (web) and NativeWind (mobile)",
+  "description": "Design tokens for Tailwind, kept framework-free for reuse by the future mobile app",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

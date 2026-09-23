@@ -1,6 +1,8 @@
 # Architecture
 
-Doulisha is one TypeScript monorepo. It contains a Next.js web app, an Expo mobile app, and shared packages for the database, the API, auth, validation, translations, design tokens, templates, payments and notifications. Decisions and their reasons are recorded in [`decisions/`](decisions/README.md).
+This repository is the Doulisha **web application**: a TypeScript monorepo with one Next.js app (which also serves the API) and internal packages for the database, the API, auth, validation, translations, design tokens, templates, payments and notifications. Decisions and their reasons are recorded in [`decisions/`](decisions/README.md).
+
+The mobile app is a **separate project**, to be created later in its own repository (ADR 0006). It will call this app's API over HTTPS.
 
 > Status: Phase 0. The apps and the tooling exist. Most packages are still empty and are filled in from Phase 1 onwards (see [`BUILD_PROMPT.md`](BUILD_PROMPT.md) section 8).
 
@@ -10,8 +12,8 @@ Doulisha is one TypeScript monorepo. It contains a Next.js web app, an Expo mobi
 flowchart LR
   subgraph Users
     V[Visitor / guest<br/>browser, WhatsApp link]
-    P[Participant / host<br/>Android app]
-    O[Organizer<br/>desktop + app]
+    P[Participant / host<br/>mobile browser]
+    O[Organizer<br/>desktop]
     A[Admin<br/>/admin]
   end
 
@@ -19,14 +21,13 @@ flowchart LR
     WEB[apps/web<br/>Next.js: pages, SSR/SEO,<br/>tRPC server, webhooks, OG images]
   end
 
-  MOB[apps/mobile<br/>Expo app]
+  MOB[Mobile app<br/>separate repository, later]
 
   V --> WEB
+  P --> WEB
   O --> WEB
   A --> WEB
-  P --> MOB
-  O --> MOB
-  MOB -- tRPC over HTTPS --> WEB
+  MOB -. API over HTTPS .-> WEB
 
   WEB --> NEON[(Neon PostgreSQL<br/>PostGIS, pg_trgm)]
   WEB --> R2[(Cloudflare R2<br/>public + private buckets)]
@@ -36,7 +37,6 @@ flowchart LR
   PAY -- signed webhooks --> WEB
   WEB --> NOTIF[Expo push, Resend email,<br/>SMS provider]
   WEB --> OBS[Sentry, PostHog]
-  MOB --> OBS
 ```
 
 ## 2. Monorepo layout and dependencies
@@ -47,13 +47,9 @@ flowchart TD
   web --> auth[packages/auth]
   web --> i18n[packages/i18n]
   web --> tokens[packages/ui-tokens]
-  mobile[apps/mobile] --> i18n
-  mobile --> tokens
-  mobile --> validators[packages/validators]
-  mobile -. tRPC types only .-> api
 
   api --> db[packages/db]
-  api --> validators
+  api --> validators[packages/validators]
   api --> templates[packages/templates]
   api --> payments[packages/payments]
   api --> notifications[packages/notifications]
@@ -61,31 +57,32 @@ flowchart TD
   auth --> db
   templates --> validators
 
-  config[packages/config<br/>tsconfig + ESLint presets] -. dev .-> web & mobile & api & db
+  config[packages/config<br/>tsconfig + ESLint presets] -. dev .-> web & api & db
 ```
 
 | Path                     | Responsibility                                                                                   |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
 | `apps/web`               | Public site, event pages (SSR), guest RSVP, organizer dashboard, `/admin`, tRPC server, webhooks |
-| `apps/mobile`            | Expo app for participants, hosts and organizers, including QR check-in                           |
 | `packages/db`            | Drizzle schema, SQL migrations, seed, query helpers                                              |
 | `packages/api`           | tRPC routers (thin), services (business rules), permissions                                      |
-| `packages/auth`          | Better Auth configuration shared by web and mobile                                               |
+| `packages/auth`          | Better Auth server configuration (the future mobile app signs in through this API)               |
 | `packages/validators`    | Zod schemas used on client and server                                                            |
 | `packages/i18n`          | `ar` / `fr` / `en` messages, locale helpers, TND and date formatters                             |
-| `packages/ui-tokens`     | Colours, spacing, radii and typography for Tailwind and NativeWind                               |
+| `packages/ui-tokens`     | Colours, spacing, radii and typography for Tailwind (framework-free, reusable by the mobile app) |
 | `packages/templates`     | Category templates (model, wizard fields, brief, policy, modules)                                |
 | `packages/payments`      | `PaymentProvider` interface: `mock`, `manual`, `konnect`, `flouci`                               |
 | `packages/notifications` | Push, email and SMS adapters                                                                     |
-| `packages/config`        | Shared `tsconfig` bases and ESLint presets (`base`, `next`, `expo`)                              |
+| `packages/config`        | Shared `tsconfig` bases and ESLint presets (`base`, `next`)                                      |
 
-Internal packages are published as TypeScript source (`exports: ./src/index.ts`). Each app compiles them itself (see ADR 0001).
+Internal packages are published as TypeScript source (`exports: ./src/index.ts`), and Next.js compiles them (see ADR 0001).
+
+Each package is a module with a clear boundary: payments, notifications, templates and so on. Keeping that boundary means a module can later be extracted into its own deployed service without rewriting its logic (ADR 0006).
 
 ## 3. Request layering
 
 ```mermaid
 sequenceDiagram
-  participant UI as UI (web or mobile)
+  participant UI as Client (web, later mobile)
   participant R as tRPC router
   participant S as Service
   participant D as Drizzle / Neon
@@ -111,10 +108,15 @@ There is one `events` table for every kind of event. Each event references a **t
 
 ## 5. Environments
 
-| Environment  | Web                    | Database                       |
-| ------------ | ---------------------- | ------------------------------ |
-| Local        | `pnpm dev` (port 3000) | Neon dev branch (from Phase 1) |
-| Pull request | Vercel preview         | Neon branch per PR, seeded     |
-| Production   | Vercel                 | Neon `main` branch             |
+| Environment  | Web                    | Database                               |
+| ------------ | ---------------------- | -------------------------------------- |
+| Local        | `pnpm dev` (port 3000) | Neon development branch (from Phase 1) |
+| Pull request | Vercel preview         | Neon branch per PR, seeded             |
+| Production   | Vercel                 | Neon `production` branch               |
 
-The mobile app points to the local web server in development, and to the preview or production API through EAS build profiles (Phase 3).
+### Neon project
+
+- **Project:** `Doulisha` (`delicate-brook-47760427`), Postgres 18, region aws-us-east-2. The region is still under review (OPEN_QUESTIONS Q9).
+- **Database:** `Doulisha`. The default branch is `production`.
+- **Local link:** `neon link` stores the project and branch in `.neon` (gitignored). It also writes `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) to the root `.env.local` (gitignored).
+- **Extensions:** `postgis`, `pg_trgm` and `unaccent` are available on the branch and are enabled by the first migration in Phase 1.

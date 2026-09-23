@@ -5,6 +5,8 @@ Read first:
 - `docs/BUILD_PROMPT.md`: role, stack, phases and working rules. It wins on **technology**.
 - `docs/cahier-des-charges-v2.pdf`: the specification. It wins on **features, priorities and business rules**.
 
+**Scope:** this repository is the **web application only**. The mobile app will be a separate project (ADR 0006). Skip BUILD_PROMPT Phase 3 and the mobile parts of other phases, and keep `packages/i18n` and `packages/ui-tokens` framework-free so the mobile app can reuse them.
+
 ## Workflow
 
 - Work phase by phase (BUILD_PROMPT section 8).
@@ -23,7 +25,7 @@ Read first:
 
 ```sh
 pnpm install          # install everything
-pnpm dev              # web (localhost:3000) + Expo dev server
+pnpm dev              # web app on localhost:3000
 pnpm check            # format check + lint + typecheck + test (run before finishing any step)
 pnpm build            # production build of the web app
 pnpm --filter @doulisha/web <script>     # run a script in one package
@@ -44,6 +46,9 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
   - Use the HTTP driver for simple queries.
   - Use the WebSocket `Pool` for transactions (bookings, payments, stock).
   - Never run `drizzle-kit push` against production.
+  - `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) are in the root `.env.local`, written by `neon link`. The database is `Doulisha`, not `neondb`.
+  - The `neon` CLI is installed and logged in. Neon agent skills are in `.claude/skills/`: use them for Neon questions.
+  - Auth is **self-managed Better Auth**, not Neon Managed Auth (OPEN_QUESTIONS Q10).
 - **RTL:** use logical properties only (`ms-`, `pe-`, `start-`, `end-`, never `ml-`, `pr-`, `left-`). Mirror directional icons. Test every screen in Arabic.
 - **Arabic copy:** mark any Arabic or Tunisian wording you are unsure of with `// TODO(i18n-review)`.
 - **Development mocks:** SMS, payments and email always use mocks in development. Never hard-code credentials.
@@ -55,5 +60,5 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
 ## Toolchain notes
 
 - The repo uses TypeScript 6.0, not 7, and ESLint 9, not 10, until typescript-eslint and eslint-config-next support the newer versions. See ADR 0005.
-- pnpm uses `nodeLinker: hoisted` because of React Native (ADR 0001). Declare every dependency you import, because hoisting hides missing ones.
+- pnpm uses its default isolated `node_modules` layout. Every package must declare the dependencies it imports.
 - pnpm 12 blocks install scripts and very new releases by default. Allow or refuse each package explicitly in `pnpm-workspace.yaml` (`allowBuilds`); do not turn the protection off.

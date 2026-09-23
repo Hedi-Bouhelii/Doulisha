@@ -27,3 +27,9 @@ Thumbs.db
 # Playwright
 test-results/
 playwright-report/
+
+# Neon CLI context (project/branch pinned by `neon link`)
+.neon
+
+# Claude Code: shared skills are committed, personal settings are not
+.claude/settings.local.json

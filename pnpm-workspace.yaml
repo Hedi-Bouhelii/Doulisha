@@ -2,10 +2,6 @@ packages:
   - apps/*
   - packages/*
 
-# React Native libraries do not all support isolated node_modules yet.
-# See docs/decisions/0001-monorepo-pnpm-turborepo.md.
-nodeLinker: hoisted
-
 # Shared versions: reference them with "catalog:" in package.json files.
 catalog:
   '@types/node': ^24.13.6
@@ -20,8 +16,3 @@ catalog:
 # unrs-resolver ships prebuilt binaries, so its script is not needed.
 allowBuilds:
   unrs-resolver: false
-
-# Keep one React 19.2 type version across web and mobile
-# (expo-router's Radix dependencies would otherwise pull @types/react-dom 19.3).
-overrides:
-  '@types/react-dom': ~19.2.2

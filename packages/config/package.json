@@ -7,8 +7,7 @@
   "exports": {
     "./tsconfig/*.json": "./tsconfig/*.json",
     "./eslint/base": "./eslint/base.js",
-    "./eslint/next": "./eslint/next.js",
-    "./eslint/expo": "./eslint/expo.js"
+    "./eslint/next": "./eslint/next.js"
   },
   "scripts": {
     "lint": "eslint ."
@@ -16,7 +15,6 @@
   "dependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
     "@eslint/js": "^9.39.5",
-    "eslint-config-expo": "~57.0.2",
     "eslint-config-next": "16.3.6",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",

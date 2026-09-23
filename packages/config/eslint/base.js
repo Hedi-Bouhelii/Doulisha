@@ -24,8 +24,8 @@ export const doulishaRules = {
 };
 
 /**
- * House rules for TypeScript files. Scoped to TS because some presets
- * (eslint-config-expo) register the typescript-eslint plugin for TS files only.
+ * House rules for TypeScript files. Scoped to TS files so they also work with
+ * presets that register the typescript-eslint plugin for TS files only.
  * `any` is forbidden unless the disable comment explains why.
  * @type {import('eslint').Linter.Config}
  */

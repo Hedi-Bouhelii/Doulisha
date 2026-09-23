@@ -4,6 +4,20 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: web-only repository and Neon link (2026-09-24)
+
+- **Mobile removed:** this repository is now the web application only (ADR 0006).
+  - Removed `apps/mobile` and the Expo ESLint preset.
+  - The mobile app will be a separate project.
+- **pnpm layout:** back to the default isolated `node_modules` layout (`nodeLinker: hoisted` is no longer needed).
+- **Neon linked:** project `Doulisha` (`delicate-brook-47760427`), branch `production`, database `Doulisha`.
+  - Connection strings are in the root `.env.local`, which is gitignored.
+  - Neon agent skills are committed in `.claude/skills/`.
+- **Documentation:**
+  - Updated `README.md`, `CLAUDE.md` and `docs/ARCHITECTURE.md`.
+  - Recorded the decisions on Q1, Q2, Q3 and Q7 in `docs/OPEN_QUESTIONS.md`.
+  - Added Q9 (Neon region) and Q10 (Managed or self-managed auth).
+
 ### Added: Phase 0, audit and foundations (2026-09-23)
 
 - **Monorepo:** pnpm 12 workspaces with a version catalog, and Turborepo tasks for `dev`, `build`, `lint`, `typecheck` and `test`.

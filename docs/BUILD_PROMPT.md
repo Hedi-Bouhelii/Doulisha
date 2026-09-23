@@ -1,5 +1,8 @@
 # Doulisha — Master build prompt for Claude Code
 
+> **Amendments (these take precedence over the text below):**
+> - **2026-09-24:** This repository is the **web application only**. The mobile app will be built later as a separate project in its own repository (see `docs/decisions/0006-web-only-repository.md`). Phase 3 and the mobile parts of Phase 1 are out of scope here. Neon is linked (see `docs/ARCHITECTURE.md`, section "Neon project").
+
 > **How to use this prompt**
 > 1. Put the specification in the repository at `docs/cahier-des-charges-v2.pdf` (the file `Cahier_des_charges_Doulisha_v2.pdf`).
 > 2. Open the repository (the existing Next.js MVP, or an empty folder) in VS Code with Claude Code.

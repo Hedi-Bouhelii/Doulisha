@@ -9,7 +9,7 @@ The existing Next.js MVP source code was **not available** in this repository. T
 - specification section 4, "Audit of the current MVP", checked by the author on 22 September 2026;
 - the build prompt.
 
-It should be re-checked against the real code if that code is shared (see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md), Q1).
+**Update (2026-09-24):** the founder confirmed there is no old source code (OPEN_QUESTIONS Q1). The "Existing MVP" column below therefore describes the old deployed site, and everything is rebuilt from scratch.
 
 **Decision:** `apps/web` was created from a fresh Next.js 16 project instead of migrating the old app. Once the old code is available, anything worth keeping will be moved in feature by feature, under the new architecture.
 
@@ -25,10 +25,10 @@ It should be re-checked against the real code if that code is shared (see [OPEN_
 | Organizer dashboard   | Mock data (fill rates, "Create trip")                                | Delete and rebuild | Real dashboard with auth, attendee list, payment status and exports; "Create event" with category choice (Phase 2, ORG-01, PRT) |
 | Providers             | "Coming soon" page with notify-me                                    | Delete             | Provider directory (PRV-01/02); timing is question Q7                                                                           |
 | Community / social    | Home-page section only                                               | Delete and rebuild | Profiles, friends, follows, feed, event wall (Phase 4, SOC)                                                                     |
-| Languages             | EN / FR switch, no Arabic                                            | Migrate            | `packages/i18n` with ar (RTL), fr and en on web and mobile (Phase 1)                                                            |
+| Languages             | EN / FR switch, no Arabic                                            | Migrate            | `packages/i18n` with ar (RTL), fr and en on the web (Phase 1)                                                                   |
 | Trust and legal       | Privacy, Terms and social links point to `#`                         | Delete and rebuild | Real Terms and Privacy pages (Phase 2 quick wins), verification and reviews (Phase 5)                                           |
 | Name                  | Site says "Dolisha", logo says "Doulisha"                            | Fixed              | "Doulisha" everywhere in code (package names, app name, `doulisha://` scheme); domain and stores to confirm (Q2)                |
-| Mobile                | None                                                                 | New                | `apps/mobile` (Expo, Android first)                                                                                             |
+| Mobile                | None                                                                 | New                | A separate repository, created later (ADR 0006)                                                                                 |
 
 ## Quick wins from the specification
 

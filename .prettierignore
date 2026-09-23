@@ -2,9 +2,9 @@ pnpm-lock.yaml
 docs/*.pdf
 docs/BUILD_PROMPT.md
 **/.next/
-**/.expo/
 **/.turbo/
 **/coverage/
 **/dist/
 **/next-env.d.ts
-**/expo-env.d.ts
+.claude/
+skills-lock.json

@@ -1,6 +1,6 @@
 # 0001. Monorepo with pnpm workspaces and Turborepo
 
-- Status: Accepted
+- Status: Accepted. The `nodeLinker: hoisted` part is reverted by [0006](0006-web-only-repository.md) (2026-09-24)
 - Date: 2026-09-23
 
 ## Context
