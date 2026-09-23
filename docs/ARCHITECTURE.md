@@ -116,7 +116,8 @@ There is one `events` table for every kind of event. Each event references a **t
 
 ### Neon project
 
-- **Project:** `Doulisha` (`delicate-brook-47760427`), Postgres 18, region aws-us-east-2. The region is still under review (OPEN_QUESTIONS Q9).
+- **Project:** `Doulisha` (`delicate-brook-47760427`), Postgres 18, region aws-us-east-2 (confirmed, OPEN_QUESTIONS Q9). Vercel functions run in `cle1` (Cleveland) so they sit next to the database.
 - **Database:** `Doulisha`. The default branch is `production`.
 - **Local link:** `neon link` stores the project and branch in `.neon` (gitignored). It also writes `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) to the root `.env.local` (gitignored).
+- **Auth:** self-managed Better Auth, with its tables in our schema. Neon Managed Auth (`neon_auth`) is enabled on the branch but not used (Q10).
 - **Extensions:** `postgis`, `pg_trgm` and `unaccent` are available on the branch and are enabled by the first migration in Phase 1.

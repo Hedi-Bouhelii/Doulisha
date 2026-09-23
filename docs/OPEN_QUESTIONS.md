@@ -75,7 +75,9 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
   - Law 2004-63 (spec section 8) regulates transfers of personal data abroad. Hosting in the EU (under GDPR) is likely easier to justify to the INPDP than the US. This needs the lawyer's confirmation.
   - The database is still empty, so moving now costs nothing. After launch, moving requires a data migration.
 - **Assumption:** Ask before Phase 1 writes any data.
-- **Decision:**
+- **Decision (2026-09-24):** Keep **aws-us-east-2**.
+  - Vercel functions must run in `cle1` (Cleveland) so they sit next to the database.
+  - The data-transfer question under law 2004-63 goes to the lawyer (spec section 8).
 
 ### Q10. Auth: self-managed Better Auth or Neon Managed Auth?
 
@@ -87,4 +89,5 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
     - offers Google, GitHub and Vercel social login out of the box.
   - Spec ACC-01 requires sign-up by phone OTP, plus Facebook and Apple login.
 - **Assumption:** Self-managed Better Auth on Neon Postgres, as in ADR 0003. This is also what the Neon skill recommends when a required feature is outside Managed Auth. Managed Auth stays unused.
-- **Decision:**
+- **Decision (2026-09-24):** Use **self-managed Better Auth** (ADR 0003). Neon Managed Auth is not used.
+  - Also skipped: steps 5–7 of Neon's quickstart (`neon.ts`, the sample `hello.ts` function, `neon deploy`), because the API runs in Next.js on Vercel.

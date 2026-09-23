@@ -16,7 +16,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 - **Documentation:**
   - Updated `README.md`, `CLAUDE.md` and `docs/ARCHITECTURE.md`.
   - Recorded the decisions on Q1, Q2, Q3 and Q7 in `docs/OPEN_QUESTIONS.md`.
-  - Added Q9 (Neon region) and Q10 (Managed or self-managed auth).
+  - Decided Q9 (keep aws-us-east-2, with Vercel functions in `cle1`) and Q10 (self-managed Better Auth).
 
 ### Added: Phase 0, audit and foundations (2026-09-23)
 
