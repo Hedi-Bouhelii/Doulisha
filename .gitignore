@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build and caches
+.turbo/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# env files (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+
+# Playwright
+test-results/
+playwright-report/

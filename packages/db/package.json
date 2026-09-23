@@ -1,0 +1,22 @@
+{
+  "name": "@doulisha/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Drizzle schema, migrations, seed and query helpers for Neon PostgreSQL",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@doulisha/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

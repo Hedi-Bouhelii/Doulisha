@@ -1,0 +1,22 @@
+{
+  "name": "@doulisha/ui-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Design tokens shared by Tailwind (web) and NativeWind (mobile)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@doulisha/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

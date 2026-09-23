@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/*
+ * Temporary brand colours from the specification (section 8).
+ * Phase 1 replaces this block with the shared tokens from @doulisha/ui-tokens.
+ */
+:root {
+  --background: #f7f1e5;
+  --foreground: #1f2a22;
+  --brand: #2f5d3a;
+  --accent: #c4623a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-accent: var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #141a16;
+    --foreground: #f7f1e5;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, sans-serif;
+}

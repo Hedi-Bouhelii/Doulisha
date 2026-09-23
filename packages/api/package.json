@@ -1,0 +1,22 @@
+{
+  "name": "@doulisha/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "tRPC routers, services (business logic) and permissions",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@doulisha/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

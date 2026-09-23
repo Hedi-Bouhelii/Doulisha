@@ -1,0 +1,24 @@
+{
+  "name": "doulisha",
+  "private": true,
+  "description": "Doulisha — the social platform for events and activities in Tunisia",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check": "pnpm format:check && turbo run lint typecheck test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}
