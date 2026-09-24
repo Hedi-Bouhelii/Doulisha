@@ -4,6 +4,7 @@ packages:
 
 # Shared versions: reference them with "catalog:" in package.json files.
 catalog:
+  better-auth: ^1.7.5
   '@neondatabase/serverless': ^1.1.0
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.3

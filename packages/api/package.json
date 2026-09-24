@@ -18,5 +18,15 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@doulisha/auth": "workspace:*",
+    "@doulisha/db": "workspace:*",
+    "@doulisha/i18n": "workspace:*",
+    "@doulisha/validators": "workspace:*",
+    "@trpc/server": "^11.19.0",
+    "drizzle-orm": "catalog:",
+    "superjson": "^2.2.6",
+    "zod": "catalog:"
   }
 }

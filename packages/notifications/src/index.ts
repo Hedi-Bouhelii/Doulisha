@@ -1,5 +1,6 @@
 /**
- * @doulisha/notifications: Push, email and SMS adapters.
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/notifications: push, email and SMS adapters.
+ * Development always uses the mock senders (CLAUDE.md); real providers come in Phase 6.
  */
-export {};
+export * from './mock';
+export type * from './types';
