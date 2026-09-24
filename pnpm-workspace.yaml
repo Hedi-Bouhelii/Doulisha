@@ -4,6 +4,10 @@ packages:
 
 # Shared versions: reference them with "catalog:" in package.json files.
 catalog:
+  '@neondatabase/serverless': ^1.1.0
+  drizzle-kit: ^0.31.11
+  drizzle-orm: ^0.45.3
+  tsx: ^4.23.15
   '@types/node': ^24.13.6
   eslint: ^9.39.5
   prettier: ^3.9.0
@@ -14,5 +18,7 @@ catalog:
 
 # Packages allowed (true) or refused (false) to run install scripts.
 # unrs-resolver ships prebuilt binaries, so its script is not needed.
+# esbuild (tsx, drizzle-kit) verifies its platform binary on install.
 allowBuilds:
+  esbuild: true
   unrs-resolver: false

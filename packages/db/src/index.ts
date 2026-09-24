@@ -1,5 +1,7 @@
 /**
- * @doulisha/db: Drizzle schema, migrations, seed and query helpers for Neon PostgreSQL.
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/db: Drizzle schema, migrations, seed and database clients for Neon.
+ * See docs/DATABASE.md.
  */
-export {};
+export * from './client';
+export { loadRootEnv, requireEnv } from './load-env';
+export * as schema from './schema';
