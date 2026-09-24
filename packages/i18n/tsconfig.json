@@ -1,4 +1,4 @@
 {
   "extends": "@doulisha/config/tsconfig/library.json",
-  "include": ["src", "*.ts"]
+  "include": ["src", "messages", "*.ts"]
 }
