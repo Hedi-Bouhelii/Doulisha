@@ -1,7 +1,6 @@
 /**
  * @doulisha/db: Drizzle schema, migrations, seed and database clients for Neon.
- * See docs/DATABASE.md.
+ * See docs/DATABASE.md. Scripts load the root .env.local via '@doulisha/db/load-env'.
  */
 export * from './client';
-export { loadRootEnv, requireEnv } from './load-env';
 export * as schema from './schema';

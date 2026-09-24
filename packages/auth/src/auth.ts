@@ -26,6 +26,8 @@ export interface CreateAuthOptions {
   email: EmailSender;
   /** Each social provider is enabled only when its credentials are set. */
   social?: { google?: OAuthCredentials; facebook?: OAuthCredentials; apple?: OAuthCredentials };
+  /** Rate limits on auth endpoints; on in production, off for local runs and E2E tests. */
+  rateLimit?: boolean;
 }
 
 /**
@@ -33,7 +35,15 @@ export interface CreateAuthOptions {
  * ACC-01: phone OTP, email magic link, Google, Facebook, Apple, and guest
  * sessions for RSVP without an account.
  */
-export function createAuth({ db, secret, baseURL, sms, email, social = {} }: CreateAuthOptions) {
+export function createAuth({
+  db,
+  secret,
+  baseURL,
+  sms,
+  email,
+  social = {},
+  rateLimit = true,
+}: CreateAuthOptions) {
   return betterAuth({
     appName: 'Doulisha',
     secret,
@@ -70,7 +80,7 @@ export function createAuth({ db, secret, baseURL, sms, email, social = {} }: Cre
     // Rate limiting on auth (BUILD_PROMPT section 7). In-memory for now; a
     // shared store is needed once several server instances run (Phase 6).
     rateLimit: {
-      enabled: true,
+      enabled: rateLimit,
       window: 60,
       max: 100,
       customRules: {

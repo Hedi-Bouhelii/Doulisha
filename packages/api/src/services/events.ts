@@ -1,7 +1,7 @@
 import type { Db } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
-import { and, asc, eq, gt, inArray, isNull, type SQL } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 
 /** Data an event card needs (DSC-03 cards, template "Trending events"). */
 export interface EventCardDto {
@@ -44,6 +44,35 @@ export function publicListingConditions(now: Date): SQL[] {
 export interface ListUpcomingInput {
   limit: number;
   categorySlug?: string | undefined;
+  /** Free text matched against title and city, ignoring case and accents. */
+  query?: string | undefined;
+  /** Exact city, ignoring case and accents. */
+  city?: string | undefined;
+}
+
+/** Cities that have upcoming public events, for the search city picker. */
+export async function listEventCities(db: Db, now = new Date()): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ city: schema.events.city })
+    .from(schema.events)
+    .where(and(...publicListingConditions(now)))
+    .orderBy(asc(schema.events.city));
+  return rows.flatMap((r) => (r.city ? [r.city] : []));
+}
+
+/** Escapes LIKE wildcards so user input is matched literally. */
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** Accent- and case-insensitive match on title or city (uses the trigram index). */
+export function textSearchCondition(query: string): SQL {
+  const pattern = `%${escapeLike(query.trim())}%`;
+  const needle = sql`immutable_unaccent(lower(${pattern}))`;
+  return or(
+    sql`immutable_unaccent(lower(${schema.events.title})) like ${needle}`,
+    sql`immutable_unaccent(lower(coalesce(${schema.events.city}, ''))) like ${needle}`,
+  )!;
 }
 
 /** Upcoming public events, soonest first. */
@@ -56,6 +85,12 @@ export async function listUpcomingPublicEvents(
   const e = schema.events;
   const conditions = publicListingConditions(now);
   if (input.categorySlug) conditions.push(eq(schema.categories.slug, input.categorySlug));
+  if (input.query?.trim()) conditions.push(textSearchCondition(input.query));
+  if (input.city) {
+    conditions.push(
+      sql`immutable_unaccent(lower(${e.city})) = immutable_unaccent(lower(${input.city}))`,
+    );
+  }
 
   const rows = await db
     .select({

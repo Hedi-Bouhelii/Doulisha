@@ -194,6 +194,9 @@ async function seed(tx: Tx) {
       locale: p.key === 'nour' || p.key === 'aziz' ? ('ar' as const) : ('fr' as const),
       interests: ['outdoor', 'entertainment', 'learning'],
       sportLevels: p.key === 'mehdi' ? { padel: 4 } : ({} as Record<string, number>),
+      // Omar and Yasmine chose to show their attendance publicly (ACC-06).
+      attendanceVisibility:
+        p.key === 'omar' || p.key === 'yasmine' ? ('public' as const) : ('friends' as const),
     })),
     { userId: guest!.id },
   ];

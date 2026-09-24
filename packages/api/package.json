@@ -23,6 +23,7 @@
     "@doulisha/auth": "workspace:*",
     "@doulisha/db": "workspace:*",
     "@doulisha/i18n": "workspace:*",
+    "@doulisha/templates": "workspace:*",
     "@doulisha/validators": "workspace:*",
     "@trpc/server": "^11.19.0",
     "drizzle-orm": "catalog:",
