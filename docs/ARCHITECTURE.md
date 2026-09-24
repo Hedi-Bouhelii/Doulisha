@@ -4,7 +4,9 @@ This repository is the Doulisha **web application**: a TypeScript monorepo with 
 
 The mobile app is a **separate project**, to be created later in its own repository (ADR 0006). It will call this app's API over HTTPS.
 
-> Status: Phase 0. The apps and the tooling exist. Most packages are still empty and are filled in from Phase 1 onwards (see [`BUILD_PROMPT.md`](BUILD_PROMPT.md) section 8).
+> Status: Phase 1. Database, auth, i18n, design system, tRPC skeleton and the web shell exist. `payments` and `notifications` real providers, and the booking engine, arrive in later phases (see [`BUILD_PROMPT.md`](BUILD_PROMPT.md) section 8).
+>
+> Details: [DATABASE.md](DATABASE.md), [API.md](API.md), [UX_GUIDELINES.md](UX_GUIDELINES.md), [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 1. System context
 
@@ -108,16 +110,17 @@ There is one `events` table for every kind of event. Each event references a **t
 
 ## 5. Environments
 
-| Environment  | Web                    | Database                               |
-| ------------ | ---------------------- | -------------------------------------- |
-| Local        | `pnpm dev` (port 3000) | Neon development branch (from Phase 1) |
-| Pull request | Vercel preview         | Neon branch per PR, seeded             |
-| Production   | Vercel                 | Neon `production` branch               |
+| Environment  | Web                    | Database                   |
+| ------------ | ---------------------- | -------------------------- |
+| Local        | `pnpm dev` (port 3000) | Neon `dev` branch          |
+| Pull request | Vercel preview         | Neon branch per PR, seeded |
+| Production   | Vercel                 | Neon `production` branch   |
 
 ### Neon project
 
 - **Project:** `Doulisha` (`delicate-brook-47760427`), Postgres 18, region aws-us-east-2 (confirmed, OPEN_QUESTIONS Q9). Vercel functions run in `cle1` (Cleveland) so they sit next to the database.
 - **Database:** `Doulisha`. The default branch is `production`.
 - **Local link:** `neon link` stores the project and branch in `.neon` (gitignored). It also writes `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) to the root `.env.local` (gitignored).
+- **Web app structure:** `apps/web/src/app/[locale]` is the root layout (ADR 0008); `(site)` pages share the header and footer; `admin` checks the role on the server; `proxy.ts` handles locale redirects.
 - **Auth:** self-managed Better Auth, with its tables in our schema. Neon Managed Auth (`neon_auth`) is enabled on the branch but not used (Q10).
 - **Extensions:** `postgis`, `pg_trgm` and `unaccent` are available on the branch and are enabled by the first migration in Phase 1.

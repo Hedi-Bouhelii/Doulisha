@@ -34,9 +34,9 @@ The existing Next.js MVP source code was **not available** in this repository. T
 
 These must be live before any new feature ships (spec section 4). They are scheduled in Phase 2, step 2.
 
-- [ ] No 404s: every event card links to a working SSR page
-- [ ] Past events hidden from home and search
+- [x] No 404s: every event card links to a working SSR page (Phase 1; JSON-LD and share images in Phase 2)
+- [x] Past events hidden from home and search (Phase 1, `publicListingConditions`)
 - [ ] Real Terms and Privacy pages (placeholders for lawyer review)
 - [x] One spelling, "Doulisha", in the codebase
 - [ ] Social links connected (URLs needed, Q2)
-- [ ] Home-page wording changed from "trips" to "events and activities" (the Phase 0 placeholder already uses the new wording)
+- [x] Home-page wording changed from "trips" to "events and activities" (Phase 1 home page)

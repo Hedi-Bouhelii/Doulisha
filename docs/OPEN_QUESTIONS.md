@@ -91,3 +91,24 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Assumption:** Self-managed Better Auth on Neon Postgres, as in ADR 0003. This is also what the Neon skill recommends when a required feature is outside Managed Auth. Managed Auth stays unused.
 - **Decision (2026-09-24):** Use **self-managed Better Auth** (ADR 0003). Neon Managed Auth is not used.
   - Also skipped: steps 5–7 of Neon's quickstart (`neon.ts`, the sample `hello.ts` function, `neon deploy`), because the API runs in Next.js on Vercel.
+
+### Q11. Arabic copy review
+
+- **Asked:** 2026-09-24 (Phase 1)
+- **Context:** All Arabic interface text (`packages/i18n/messages/ar.json`), category and template names, and the Arabic seed event were written without a native speaker.
+- **Assumption:** Clear Modern Standard Arabic that reads naturally in Tunisia, marked `TODO(i18n-review)`. Needs a native review before launch.
+- **Decision:**
+
+### Q12. Demo photos and brand assets
+
+- **Asked:** 2026-09-24 (Phase 1)
+- **Context:** The template relies on photos. Seed events and the home hero use Unsplash photos (free licence, credited in `apps/web/public/images/CREDITS.md`). The logo is a placeholder mark (sun over hills) with the Arabic wordmark.
+- **Assumption:** Keep them for demos; replace with real organizer photos (uploads in Phase 2) and the final logo files (Q5) before launch.
+- **Decision:**
+
+### Q13. Local development latency to Neon us-east-2
+
+- **Asked:** 2026-09-24 (Phase 1)
+- **Context:** From this development machine, each database round trip takes roughly 150–500 ms, and a few requests stalled until timeout ("fetch failed") before succeeding on retry. Sign-in steps make several sequential queries (1–3 s locally, once 15 s). In production, Vercel functions run in `cle1` next to the database, so this mostly affects local work and E2E runs.
+- **Assumption:** No code change now. Phase 6 adds database timeouts and retries and re-measures from Tunisia.
+- **Decision:**

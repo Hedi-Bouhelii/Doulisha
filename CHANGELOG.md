@@ -4,6 +4,22 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Phase 1, data, auth, i18n and design system (2026-09-24)
+
+- **Database (`packages/db`):**
+  - Drizzle schema for the 41 MVP tables (identity and social, event engine, commerce), UUID v7 ids from Postgres 18, geography points, trigram search index.
+  - Migrations: extensions (`postgis`, `pg_trgm`, `unaccent`, `immutable_unaccent`) and the initial schema, applied to the new Neon `dev` branch.
+  - Tunisian seed data: organizers, members, 13 events (including a past event, a draft and a private birthday), orders in every payment state.
+- **Templates:** category and template catalogue (spec 6.2) with Zod validation of `events.details`.
+- **Auth (`packages/auth`):** Better Auth with phone OTP sign-up, email magic link, optional Google, Facebook and Apple, guest sessions, roles, profile creation; mock SMS and email with a dev outbox.
+- **API (`packages/api`):** tRPC context, public/protected/role procedures, one error format, permission helpers, and procedures for health, me, categories, cities, upcoming events, event page and the admin data explorer.
+- **i18n:** Arabic, French and English messages, `/ar`, `/fr`, `/en` routing with RTL for Arabic, TND and Africa/Tunis formatters.
+- **Design system:** tokens from the founder's UI template (palette, Playfair Display + Inter, Amiri + IBM Plex Sans Arabic), light and dark themes, WCAG AA tests, shadcn/ui made RTL-safe, and the base components.
+- **Web app:** home, explore, event page, sign-in, admin data explorer, dev outbox and component gallery, following the template.
+- **Tests:** unit tests for formatters, validators, templates, tokens, permissions and listing rules; Playwright E2E for the Phase 1 acceptance on desktop and mobile.
+- **CI:** migration check, build without secrets, E2E on a Neon branch per pull request (enabled once secrets exist).
+- **Docs:** DATABASE, API, UX_GUIDELINES, DEPLOYMENT, ADRs 0007–0010, open questions Q11–Q13.
+
 ### Changed: web-only repository and Neon link (2026-09-24)
 
 - **Mobile removed:** this repository is now the web application only (ADR 0006).
