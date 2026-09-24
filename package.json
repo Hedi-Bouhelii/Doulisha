@@ -1,7 +1,7 @@
 {
   "name": "doulisha",
   "private": true,
-  "description": "Doulisha — the social platform for events and activities in Tunisia",
+  "description": "Doulisha \u00e2\u20ac\u201d the social platform for events and activities in Tunisia",
   "packageManager": "pnpm@12.6.0",
   "engines": {
     "node": ">=22.13"
@@ -14,7 +14,12 @@
     "test": "turbo run test",
     "check": "pnpm format:check && turbo run lint typecheck test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:use-doulisha": "node scripts/use-doulisha-db.mjs",
+    "db:generate": "pnpm --filter @doulisha/db db:generate",
+    "db:migrate": "pnpm --filter @doulisha/db db:migrate",
+    "db:seed": "pnpm --filter @doulisha/db db:seed",
+    "e2e": "pnpm --filter @doulisha/web e2e"
   },
   "devDependencies": {
     "prettier": "catalog:",
