@@ -1,7 +1,7 @@
 import type { EventDetailDto } from '@doulisha/api';
-import { formatDate, formatTime, type Locale } from '@doulisha/i18n';
+import { formatDate, formatEventDateTime, formatTime, type Locale, locales } from '@doulisha/i18n';
 import { TRPCError } from '@trpc/server';
-import { ArrowLeft, CalendarDays, MapPin, Ticket, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, EyeOff, MapPin, Settings2, Ticket, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -14,10 +14,12 @@ import { FriendsGoing } from '@/components/doulisha/friends-going';
 import { OrganizerCard } from '@/components/doulisha/organizer-card';
 import { PlacesLeft } from '@/components/doulisha/places-left';
 import { PriceTag } from '@/components/doulisha/price-tag';
+import { ShareBar } from '@/components/doulisha/share-bar';
 import { StickyCTA } from '@/components/doulisha/sticky-cta';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from '@/i18n/navigation';
+import { absoluteUrl, jsonLdScript, siteUrl } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/server';
 import { resolveLocale } from '@/i18n/locale';
@@ -31,30 +33,96 @@ const loadEvent = cache(async (slug: string): Promise<EventDetailDto> => {
   }
 });
 
+const shareImage = (slug: string, locale: Locale) =>
+  `/api/og/event?slug=${encodeURIComponent(slug)}&locale=${locale}`;
+
 export async function generateMetadata({
   params,
 }: PageProps<'/[locale]/events/[slug]'>): Promise<Metadata> {
+  const locale = await resolveLocale(params);
   const { slug } = await params;
   const event = await loadEvent(slug);
+  const description = event.description?.slice(0, 160);
   return {
     title: event.title,
-    description: event.description?.slice(0, 160),
-    openGraph: event.coverUrl ? { images: [event.coverUrl] } : undefined,
+    description,
+    alternates: {
+      canonical: `/${locale}/events/${slug}`,
+      languages: Object.fromEntries(locales.map((l) => [l, `/${l}/events/${slug}`])),
+    },
+    openGraph: {
+      type: 'website',
+      title: event.title,
+      description,
+      locale,
+      images: [{ url: `${shareImage(slug, locale)}&format=og`, width: 1200, height: 630 }],
+    },
+    twitter: { card: 'summary_large_image' },
+    // Unlisted events are reachable by link only (EVT-06): keep them out of search.
+    robots: event.visibility === 'unlisted' ? { index: false, follow: false } : undefined,
   };
 }
 
-/** Event page (DSC-03). Full SEO (JSON-LD, share images) and booking arrive in Phase 2. */
+/** schema.org Event, for search results (DSC-03). Public events only. */
+function eventJsonLd(event: EventDetailDto, locale: Locale) {
+  const url = absoluteUrl(`/${locale}/events/${event.slug}`);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    description: event.description ?? undefined,
+    url,
+    inLanguage: event.language,
+    startDate: event.startsAt.toISOString(),
+    endDate: event.endsAt?.toISOString(),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    image: event.coverUrl ? [new URL(event.coverUrl, siteUrl).toString()] : undefined,
+    location: {
+      '@type': 'Place',
+      name: event.venueName ?? event.city ?? undefined,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: event.address ?? undefined,
+        addressLocality: event.city ?? undefined,
+        addressCountry: 'TN',
+      },
+    },
+    organizer: event.organizer
+      ? { '@type': 'Organization', name: event.organizer.name }
+      : undefined,
+    offers: event.ticketTypes.map((ticket) => ({
+      '@type': 'Offer',
+      name: ticket.name,
+      price: (ticket.priceMillimes / 1000).toFixed(3),
+      priceCurrency: 'TND',
+      availability: ticket.soldOut ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      url,
+    })),
+  };
+}
+
+/** Event page (DSC-03): details, booking entry point (TKT-01) and sharing (SHR-01/02). */
 export default async function EventPage({ params }: PageProps<'/[locale]/events/[slug]'>) {
-  await resolveLocale(params);
+  const locale = await resolveLocale(params);
   const { slug } = await params;
   const event = await loadEvent(slug);
   const t = await getTranslations('Event');
   const tLang = await getTranslations('Languages');
+  const tShare = await getTranslations('Share');
   const accent = accentOf(event.category.accent);
   const isFree = event.registrationType === 'free_rsvp';
+  const soldOut = event.placesLeft === 0;
 
   return (
     <article className="pb-28 lg:pb-12">
+      {event.visibility === 'public' ? (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger -- JSON-LD must be raw; jsonLdScript escapes "<"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(eventJsonLd(event, locale)) }}
+        />
+      ) : null}
       {/* Hero with the title over the photo (template). */}
       <header className="relative isolate flex min-h-[22rem] items-end overflow-hidden bg-foreground sm:min-h-[26rem]">
         {event.coverUrl ? (
@@ -79,6 +147,14 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               <ArrowLeft className="size-5 rtl:rotate-180" />
             </Link>
           </Button>
+          {event.canManage ? (
+            <Button asChild variant="secondary" className="min-h-11 rounded-full bg-card/90">
+              <Link href={`/organizer/events/${event.id}`} data-testid="manage-event">
+                <Settings2 className="size-4" aria-hidden="true" />
+                {t('manage')}
+              </Link>
+            </Button>
+          ) : null}
         </div>
         <div className="mx-auto w-full max-w-5xl px-4 pb-6 text-white sm:px-6">
           <span
@@ -126,6 +202,12 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               )}
             </Fact>
           </dl>
+          {event.visibility === 'unlisted' ? (
+            <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <EyeOff className="size-4" aria-hidden="true" />
+              {t('unlisted')}
+            </p>
+          ) : null}
 
           <Tabs defaultValue="about" className="mt-6">
             <TabsList className="h-11 w-full justify-start overflow-x-auto sm:w-auto">
@@ -208,6 +290,17 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               <EmptyState title={t('reviews')} hint={t('noReviews')} />
             </TabsContent>
           </Tabs>
+
+          <div className="mt-8 border-t border-border pt-6">
+            <ShareBar
+              url={absoluteUrl(`/${locale}/events/${event.slug}`)}
+              message={tShare('message', {
+                title: event.title,
+                date: formatEventDateTime(event.startsAt, locale),
+              })}
+              imageBase={shareImage(event.slug, locale)}
+            />
+          </div>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -219,22 +312,24 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               </>
             }
             action={
-              <div className="flex flex-col items-end gap-1 lg:items-stretch">
-                <Button
-                  size="lg"
-                  disabled
-                  aria-describedby="booking-soon"
-                  className="min-h-11 rounded-full px-6"
-                >
-                  {isFree ? t('rsvp') : t('getTicket')}
+              !event.bookingOpen || (soldOut && !event.waitlistEnabled) ? (
+                <Button size="lg" disabled className="min-h-11 rounded-full px-6">
+                  {event.bookingOpen ? t('full') : t('bookingClosed')}
                 </Button>
-                <span
-                  id="booking-soon"
-                  className="max-w-40 text-end text-[0.7rem] text-muted-foreground lg:max-w-none lg:text-center"
-                >
-                  {t('bookingSoon')}
-                </span>
-              </div>
+              ) : (
+                <div className="flex flex-col items-end gap-1 lg:items-stretch">
+                  <Button asChild size="lg" className="min-h-11 rounded-full px-6">
+                    <Link href={`/events/${event.slug}/book`} data-testid="book-cta">
+                      {soldOut ? t('joinWaitlist') : isFree ? t('rsvp') : t('getTicket')}
+                    </Link>
+                  </Button>
+                  {soldOut ? (
+                    <span className="max-w-40 text-end text-[0.7rem] text-muted-foreground lg:max-w-none lg:text-center">
+                      {t('fullWaitlist')}
+                    </span>
+                  ) : null}
+                </div>
+              )
             }
           />
         </aside>
