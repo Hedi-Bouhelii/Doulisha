@@ -1,19 +1,27 @@
+import Image from 'next/image';
+
 import { cn } from '@/lib/utils';
 
-/** The Doulisha mark: a terracotta sun rising behind green hills. */
+import logoImage from '../../../public/images/brand/logo.png';
+import symbolImage from '../../../public/images/brand/symbol.png';
+
+/** The Doulisha symbol: terracotta sun behind green mountains (brand file, 2026-09-25). */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden="true" className={cn('size-10 shrink-0', className)}>
-      <circle cx="24" cy="21" r="15" fill="#C2622D" />
-      <path d="M3 41 17 23l7 9 6-7 15 16Z" fill="#2D5A27" />
-      <path d="m17 23 3.5 4.5-3.5 2-3-1.5Z" fill="#F5F0E8" opacity=".9" />
-    </svg>
+    <Image
+      src={symbolImage}
+      alt=""
+      priority
+      sizes="64px"
+      className={cn('h-9 w-auto shrink-0', className)}
+    />
   );
 }
 
 /**
- * Mark plus the Arabic wordmark "دوليشة" and the Latin name, as in the template.
- * `tone="light"` is for dark backgrounds (footer).
+ * Full logo: symbol, the Arabic wordmark "دوليشة" and "DOULISHA".
+ * `tone="light"` is for dark backgrounds (footer): the logo file's dark text
+ * would not be readable there, so the wordmark is set in cream text instead.
  */
 export function Logo({
   tone = 'default',
@@ -22,25 +30,28 @@ export function Logo({
   tone?: 'default' | 'light';
   className?: string;
 }) {
+  if (tone === 'default') {
+    return (
+      <Image
+        src={logoImage}
+        alt="Doulisha"
+        priority
+        sizes="160px"
+        className={cn('h-11 w-auto', className)}
+      />
+    );
+  }
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
-      <LogoMark />
+      {/* Cream badge: the green mountains would vanish on the green footer. */}
+      <span className="rounded-xl bg-background px-2 py-1.5">
+        <LogoMark className="h-7" />
+      </span>
       <span className="flex flex-col leading-none">
-        <span
-          lang="ar"
-          className={cn(
-            'font-display text-2xl font-bold',
-            tone === 'light' ? 'text-background' : 'text-highlight',
-          )}
-        >
+        <span lang="ar" className="font-display text-2xl font-bold text-background">
           دوليشة
         </span>
-        <span
-          className={cn(
-            'text-[0.6rem] font-semibold tracking-[0.3em]',
-            tone === 'light' ? 'text-background/80' : 'text-muted-foreground',
-          )}
-        >
+        <span className="text-[0.6rem] font-semibold tracking-[0.3em] text-background/80">
           DOULISHA
         </span>
       </span>

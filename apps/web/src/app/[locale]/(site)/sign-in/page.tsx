@@ -37,7 +37,7 @@ export default async function SignInPage({ params, searchParams }: PageProps<'/[
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <LogoMark className="mx-auto size-14" />
+        <LogoMark className="mx-auto h-16" />
         <h1 className="mt-4 text-center text-3xl font-bold">{t('title')}</h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">{t('subtitle')}</p>
         <SignInForm

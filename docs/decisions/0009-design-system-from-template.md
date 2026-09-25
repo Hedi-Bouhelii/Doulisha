@@ -18,5 +18,5 @@ On 2026-09-24 the founder provided a UI template (home, explore, event page, mob
 ## Consequences
 
 - The spec palette values are superseded by the template's.
-- A brand logo file is still missing (OPEN_QUESTIONS Q5); the app uses a placeholder mark (sun over hills) and the Arabic wordmark "دوليشة".
+- The founder's logo files arrived on 2026-09-25 and are used as provided (OPEN_QUESTIONS Q5).
 - Contrast is enforced by tests, so palette changes cannot silently break accessibility.

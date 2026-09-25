@@ -19,6 +19,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 - **Tests:** unit tests for formatters, validators, templates, tokens, permissions and listing rules; Playwright E2E for the Phase 1 acceptance on desktop and mobile.
 - **CI:** migration check, build without secrets, E2E on a Neon branch per pull request (enabled once secrets exist).
 - **Docs:** DATABASE, API, UX_GUIDELINES, DEPLOYMENT, ADRs 0007–0010, open questions Q11–Q13.
+- **Brand:** the founder's logo and symbol replace the placeholder mark in the header, footer and sign-in page, and generate the favicon, browser icon and Apple touch icon.
 
 ### Changed: web-only repository and Neon link (2026-09-24)
 

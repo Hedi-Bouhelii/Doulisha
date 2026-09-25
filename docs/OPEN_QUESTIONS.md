@@ -41,7 +41,7 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-23
 - **Context:** The mountain and sun logo reads as outdoor-only.
 - **Assumption:** Keep the palette from the spec (green `#2F5D3A`, terracotta `#C4623A`, cream `#F7F1E5`). Placeholder icons are used until a logo file is provided.
-- **Decision:**
+- **Decision (2026-09-25):** The mountain and sun logo stays the master brand for all events. The founder provided the logo and symbol files (`apps/web/public/images/logo.png`, `symbol.png`); the palette follows the UI template (ADR 0009).
 
 ### Q6. Collecting money: marketplace or connect-only? (spec section 12, question 3)
 
@@ -102,8 +102,8 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 ### Q12. Demo photos and brand assets
 
 - **Asked:** 2026-09-24 (Phase 1)
-- **Context:** The template relies on photos. Seed events and the home hero use Unsplash photos (free licence, credited in `apps/web/public/images/CREDITS.md`). The logo is a placeholder mark (sun over hills) with the Arabic wordmark.
-- **Assumption:** Keep them for demos; replace with real organizer photos (uploads in Phase 2) and the final logo files (Q5) before launch.
+- **Context:** The template relies on photos. Seed events and the home hero use Unsplash photos (free licence, credited in `apps/web/public/images/CREDITS.md`). The logo is the founder's file since 2026-09-25 (Q5).
+- **Assumption:** Keep them for demos; replace with real organizer photos (uploads in Phase 2) before launch.
 - **Decision:**
 
 ### Q13. Local development latency to Neon us-east-2
