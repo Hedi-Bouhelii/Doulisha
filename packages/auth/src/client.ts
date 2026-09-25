@@ -1,4 +1,4 @@
-import { anonymousClient, magicLinkClient, phoneNumberClient } from 'better-auth/client/plugins';
+import { anonymousClient, emailOTPClient, phoneNumberClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
 /**
@@ -6,5 +6,5 @@ import { createAuthClient } from 'better-auth/react';
  * Import from '@doulisha/auth/client' in client components only.
  */
 export const authClient = createAuthClient({
-  plugins: [phoneNumberClient(), magicLinkClient(), anonymousClient()],
+  plugins: [phoneNumberClient(), emailOTPClient(), anonymousClient()],
 });

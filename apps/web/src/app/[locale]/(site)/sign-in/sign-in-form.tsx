@@ -1,32 +1,33 @@
 'use client';
 
 import { authClient } from '@doulisha/auth/client';
-import { phoneInputSchema } from '@doulisha/validators';
-import { Mail, Phone } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, type FormEvent } from 'react';
-import { z } from 'zod';
 
+import {
+  authErrorKey,
+  CodeField,
+  DevOutboxNote,
+  FormError,
+  IdentifierField,
+  MethodSwitch,
+  parseIdentifier,
+  PasswordField,
+  type Method,
+} from '@/components/auth/auth-parts';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link, useRouter } from '@/i18n/navigation';
+import { useTRPC } from '@/trpc/client';
 
 export type SocialProvider = 'google' | 'facebook' | 'apple';
 
-type Step = 'phone' | 'code' | 'name';
+type Mode = 'password' | 'code' | 'verify';
 
-/** Maps Better Auth failures to our translated messages. */
-function errorKey(error: { status?: number; code?: string } | null | undefined) {
-  if (!error) return 'generic' as const;
-  if (error.status === 429) return 'tooManyRequests' as const;
-  if (error.code?.includes('OTP') || error.code?.includes('CODE')) return 'invalidCode' as const;
-  if (error.code?.includes('PHONE')) return 'invalidPhone' as const;
-  return 'generic' as const;
-}
-
+/**
+ * ACC-01 sign-in (ADR 0016): phone or email with a password; "use a code
+ * instead" signs in without the password (and sets one up afterwards).
+ */
 export function SignInForm({
   next,
   socialProviders,
@@ -40,78 +41,78 @@ export function SignInForm({
   const tErrors = useTranslations('Errors');
   const locale = useLocale();
   const router = useRouter();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const [step, setStep] = useState<Step>('phone');
-  const [phoneInput, setPhoneInput] = useState('');
-  const [phone, setPhone] = useState('');
+  const [method, setMethod] = useState<Method>('phone');
+  const [mode, setMode] = useState<Mode>('password');
+  const [identifier, setIdentifier] = useState('');
+  const [sentTo, setSentTo] = useState('');
+  const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [linkSentTo, setLinkSentTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const callbackURL = `/${locale}${next === '/' ? '' : next}`;
 
-  function finish() {
-    router.push(next);
+  /** After a code, accounts without a name or password finish setup first. */
+  async function done(checkSetup: boolean) {
+    let needsSetup = false;
+    if (checkSetup) {
+      const status = await queryClient
+        .fetchQuery({ ...trpc.account.status.queryOptions(), staleTime: 0 })
+        .catch(() => null);
+      needsSetup = status?.needsSetup ?? false;
+    }
+    router.push(needsSetup ? `/account/setup?next=${encodeURIComponent(next)}` : next);
     router.refresh();
+  }
+
+  async function signInWithPassword(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const value = parseIdentifier(method, identifier);
+    if (!value) return setError(tErrors(method === 'phone' ? 'invalidPhone' : 'invalidEmail'));
+    if (!password) return setError(tErrors('invalidCredentials'));
+    setBusy(true);
+    const { error: failure } =
+      method === 'phone'
+        ? await authClient.signIn.phoneNumber({ phoneNumber: value, password })
+        : await authClient.signIn.email({ email: value, password });
+    setBusy(false);
+    if (failure) return setError(tErrors(authErrorKey(failure)));
+    await done(false);
   }
 
   async function sendCode(event?: FormEvent) {
     event?.preventDefault();
     setError(null);
-    const parsed = phoneInputSchema.safeParse(phoneInput);
-    if (!parsed.success) return setError(tErrors('invalidPhone'));
+    const value = parseIdentifier(method, identifier);
+    if (!value) return setError(tErrors(method === 'phone' ? 'invalidPhone' : 'invalidEmail'));
     setBusy(true);
-    const { error: failure } = await authClient.phoneNumber.sendOtp({ phoneNumber: parsed.data });
+    const { error: failure } =
+      method === 'phone'
+        ? await authClient.phoneNumber.sendOtp({ phoneNumber: value })
+        : await authClient.emailOtp.sendVerificationOtp({ email: value, type: 'sign-in' });
     setBusy(false);
-    if (failure) return setError(tErrors(errorKey(failure)));
-    setPhone(parsed.data);
+    if (failure) return setError(tErrors(authErrorKey(failure)));
+    setSentTo(value);
     setCode('');
-    setStep('code');
+    setMode('verify');
   }
 
   async function verify(event: FormEvent) {
     event.preventDefault();
     setError(null);
     setBusy(true);
-    const { data, error: failure } = await authClient.phoneNumber.verify({
-      phoneNumber: phone,
-      code,
-    });
+    const { error: failure } =
+      method === 'phone'
+        ? await authClient.phoneNumber.verify({ phoneNumber: sentTo, code })
+        : await authClient.signIn.emailOtp({ email: sentTo, otp: code });
     setBusy(false);
-    if (failure || !data) return setError(tErrors(errorKey(failure)));
-    // New phone accounts are created with the number as a temporary name.
-    if (data.user.name === phone) return setStep('name');
-    finish();
-  }
-
-  async function saveName(event: FormEvent) {
-    event.preventDefault();
-    const trimmed = name.trim();
-    if (trimmed.length < 2) return;
-    setBusy(true);
-    await authClient.updateUser({ name: trimmed });
-    setBusy(false);
-    finish();
-  }
-
-  async function sendLink(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    const parsed = z.email().safeParse(email.trim());
-    if (!parsed.success) return setError(tErrors('invalidEmail'));
-    setBusy(true);
-    const { error: failure } = await authClient.signIn.magicLink({
-      email: parsed.data,
-      // New accounts start with the part before "@" as their name; editable later.
-      name: parsed.data.split('@')[0],
-      callbackURL,
-    });
-    setBusy(false);
-    if (failure) return setError(tErrors(errorKey(failure)));
-    setLinkSentTo(parsed.data);
+    if (failure) return setError(tErrors(authErrorKey(failure)));
+    // New or older accounts may still need a name or a password.
+    await done(true);
   }
 
   async function social(provider: SocialProvider) {
@@ -120,166 +121,118 @@ export function SignInForm({
   }
 
   return (
-    <div className="mt-6">
-      <Tabs defaultValue="phone">
-        <TabsList className="grid h-11 w-full grid-cols-2">
-          <TabsTrigger value="phone" className="gap-2">
-            <Phone className="size-4" aria-hidden="true" />
-            {t('phoneTab')}
-          </TabsTrigger>
-          <TabsTrigger value="email" className="gap-2">
-            <Mail className="size-4" aria-hidden="true" />
-            {t('emailTab')}
-          </TabsTrigger>
-        </TabsList>
+    <div className="space-y-5">
+      {mode !== 'verify' ? (
+        <MethodSwitch
+          value={method}
+          onChange={(m) => {
+            setMethod(m);
+            setIdentifier('');
+            setError(null);
+          }}
+        />
+      ) : null}
 
-        <TabsContent value="phone" className="mt-5">
-          {step === 'phone' ? (
-            <form onSubmit={(e) => void sendCode(e)} className="space-y-4" noValidate>
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t('phoneLabel')}</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  dir="ltr"
-                  placeholder="20 123 456"
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  className="h-11 text-start"
-                  aria-describedby="phone-hint"
-                  required
-                />
-                <p id="phone-hint" className="text-xs text-muted-foreground">
-                  {t('phoneHint')}
-                </p>
-              </div>
-              <Button type="submit" className="h-11 w-full" disabled={busy}>
-                {t('sendCode')}
-              </Button>
-            </form>
-          ) : null}
+      {mode === 'password' ? (
+        <form onSubmit={(e) => void signInWithPassword(e)} className="space-y-4" noValidate>
+          <IdentifierField method={method} value={identifier} onChange={setIdentifier} />
+          <PasswordField
+            label={t('passwordLabel')}
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+          />
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="min-h-11 content-center text-sm font-medium text-primary hover:underline"
+            >
+              {t('forgotPassword')}
+            </Link>
+          </div>
+          <FormError message={error} />
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-full"
+            disabled={busy}
+            data-testid="sign-in-submit"
+          >
+            {t('signIn')}
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('code');
+              setError(null);
+            }}
+            className="min-h-11 w-full text-sm font-medium text-primary hover:underline"
+            data-testid="use-code"
+          >
+            {t('useCodeInstead')}
+          </button>
+        </form>
+      ) : null}
 
-          {step === 'code' ? (
-            <form onSubmit={(e) => void verify(e)} className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {/* LRI…PDI keeps "+216…" in order inside Arabic text. */}
-                {t('codeSentTo', { phone: `\u2066${phone}\u2069` })}
-              </p>
-              <div className="space-y-2">
-                <Label htmlFor="otp">{t('codeLabel')}</Label>
-                <div dir="ltr" className="flex justify-center">
-                  <InputOTP
-                    id="otp"
-                    maxLength={6}
-                    value={code}
-                    onChange={setCode}
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    autoFocus
-                  >
-                    <InputOTPGroup>
-                      {Array.from({ length: 6 }, (_, i) => (
-                        <InputOTPSlot key={i} index={i} className="size-11 text-lg" />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-              </div>
-              <Button type="submit" className="h-11 w-full" disabled={busy || code.length < 6}>
-                {t('verify')}
-              </Button>
-              <div className="flex justify-between gap-2 text-sm">
-                <button
-                  type="button"
-                  className="min-h-11 text-primary hover:underline"
-                  onClick={() => setStep('phone')}
-                >
-                  {t('changeNumber')}
-                </button>
-                <button
-                  type="button"
-                  className="min-h-11 text-primary hover:underline"
-                  onClick={() => void sendCode()}
-                  disabled={busy}
-                >
-                  {t('resend')}
-                </button>
-              </div>
-            </form>
-          ) : null}
+      {mode === 'code' ? (
+        <form onSubmit={(e) => void sendCode(e)} className="space-y-4" noValidate>
+          <IdentifierField method={method} value={identifier} onChange={setIdentifier} />
+          <FormError message={error} />
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-full"
+            disabled={busy}
+            data-testid="send-code"
+          >
+            {t('sendCode')}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setMode('password')}
+            className="min-h-11 w-full text-sm font-medium text-primary hover:underline"
+          >
+            {t('usePasswordInstead')}
+          </button>
+        </form>
+      ) : null}
 
-          {step === 'name' ? (
-            <form onSubmit={(e) => void saveName(e)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">{t('nameLabel')}</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-11"
-                  aria-describedby="name-hint"
-                  autoFocus
-                  required
-                  minLength={2}
-                  maxLength={80}
-                />
-                <p id="name-hint" className="text-xs text-muted-foreground">
-                  {t('nameHint')}
-                </p>
-              </div>
-              <Button
-                type="submit"
-                className="h-11 w-full"
-                disabled={busy || name.trim().length < 2}
-              >
-                {t('saveName')}
-              </Button>
-            </form>
-          ) : null}
-        </TabsContent>
-
-        <TabsContent value="email" className="mt-5">
-          {linkSentTo ? (
-            <p role="status" className="rounded-lg bg-muted p-4 text-sm">
-              {t('linkSent', { email: linkSentTo })}
-            </p>
-          ) : (
-            <form onSubmit={(e) => void sendLink(e)} className="space-y-4" noValidate>
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('emailLabel')}</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  dir="ltr"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 text-start"
-                  required
-                />
-              </div>
-              <Button type="submit" className="h-11 w-full" disabled={busy}>
-                {t('sendLink')}
-              </Button>
-            </form>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {error ? (
-        <p role="alert" className="mt-4 rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
-          {error}
-        </p>
+      {mode === 'verify' ? (
+        <form onSubmit={(e) => void verify(e)} className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {/* LRI…PDI keeps "+216…" in order inside Arabic text. */}
+            {t('codeSentTo', { phone: `\u2066${sentTo}\u2069` })}
+          </p>
+          <CodeField value={code} onChange={setCode} />
+          <FormError message={error} />
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-full"
+            disabled={busy || code.length < 6}
+            data-testid="verify-code"
+          >
+            {t('verify')}
+          </Button>
+          <div className="flex justify-between gap-2 text-sm">
+            <button
+              type="button"
+              className="min-h-11 text-primary hover:underline"
+              onClick={() => setMode('code')}
+            >
+              {t('changeNumber')}
+            </button>
+            <button
+              type="button"
+              className="min-h-11 text-primary hover:underline"
+              onClick={() => void sendCode()}
+              disabled={busy}
+            >
+              {t('resend')}
+            </button>
+          </div>
+        </form>
       ) : null}
 
       {socialProviders.length > 0 ? (
-        <div className="mt-6 space-y-3">
+        <div className="space-y-3">
           <p className="text-center text-xs text-muted-foreground">{t('orContinueWith')}</p>
           {socialProviders.map((provider) => (
             <Button
@@ -295,14 +248,7 @@ export function SignInForm({
         </div>
       ) : null}
 
-      {showDevOutbox ? (
-        <p className="mt-6 rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-          {t('devOutbox')}{' '}
-          <Link href="/dev/outbox" className="font-medium text-primary underline" target="_blank">
-            {t('openOutbox')}
-          </Link>
-        </p>
-      ) : null}
+      <DevOutboxNote show={showDevOutbox} />
     </div>
   );
 }

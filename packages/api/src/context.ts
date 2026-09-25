@@ -29,7 +29,7 @@ export async function createContext({ db, auth, headers, deps }: CreateContextOp
         isAnonymous: session.user.isAnonymous === true,
       }
     : null;
-  return { db, session, actor, locale: readLocale(headers), deps, headers };
+  return { db, auth, session, actor, locale: readLocale(headers), deps, headers };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

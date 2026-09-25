@@ -42,9 +42,22 @@ export function UserMenu({
 
   if (!user) {
     return (
-      <Button asChild className="min-h-11 rounded-full px-4 text-sm sm:px-5">
-        <Link href="/sign-in">{t('signIn')}</Link>
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          asChild
+          variant="ghost"
+          className="hidden min-h-11 rounded-full px-4 text-sm sm:inline-flex"
+        >
+          <Link href="/sign-in" data-testid="header-sign-in">
+            {t('signIn')}
+          </Link>
+        </Button>
+        <Button asChild className="min-h-11 rounded-full px-4 text-sm sm:px-5">
+          <Link href="/sign-up" data-testid="header-sign-up">
+            {t('signUp')}
+          </Link>
+        </Button>
+      </div>
     );
   }
 

@@ -155,14 +155,47 @@ export const rsvpInputSchema = z.object({
   guestName: z.string().trim().min(2).max(80).nullish(),
 });
 
-/** ACC-03 organizer profile. */
+/** Web links only (never `javascript:`); forms send nothing for an empty field. */
+const optionalUrl = z
+  .url({ protocol: /^https?$/ })
+  .max(300)
+  .optional();
+
+/** ACC-03 social links: public profile addresses only (no account linking yet). */
+export const socialLinksSchema = z.object({
+  facebook: optionalUrl,
+  instagram: optionalUrl,
+  tiktok: optionalUrl,
+  website: optionalUrl,
+});
+
+/** Where buyers send D17 and bank transfers (PAY-02). */
+export const paymentInstructionsSchema = z.object({
+  d17Number: z.string().trim().max(30).optional(),
+  bankName: z.string().trim().max(80).optional(),
+  rib: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^[0-9 ]*$/, 'digits')
+    .optional(),
+  accountHolder: z.string().trim().max(120).optional(),
+});
+
+/** ACC-03 organizer profile. Images are upload keys, checked on the server. */
 export const organizerProfileInputSchema = z.object({
   name: z.string().trim().min(2).max(80),
   bio: z.string().trim().max(1000).nullish(),
   legalStatus: z.enum(['association', 'company', 'independent']),
   categories: z.array(z.string().max(40)).max(8).default([]),
   regions: z.array(z.string().trim().max(60)).max(10).default([]),
-  socialLinks: z.record(z.string(), z.url()).default({}),
+  socialLinks: socialLinksSchema.default({}),
+  contactPhone: phoneInputSchema.nullish(),
+  contactEmail: z.email().nullish(),
+  paymentInstructions: paymentInstructionsSchema.default({}),
+  /** New logo or cover upload keys; null removes the image, undefined keeps it. */
+  logoKey: z.string().max(300).nullish(),
+  coverKey: z.string().max(300).nullish(),
 });
 
 /** PRT-02 attendee added by the organizer (phone or WhatsApp booking). */
@@ -176,4 +209,16 @@ export const manualAttendeeSchema = z.object({
   paid: z.boolean().default(false),
   method: z.enum(['cash', 'bank_transfer', 'd17']).default('cash'),
   notes: z.string().trim().max(500).nullish(),
+});
+
+/** Password rules (ADR 0016), shared by the sign-up form and the API. */
+export const passwordSchema = z.string().min(8).max(128);
+
+/** Last step of sign-up: name, password and what the member mainly does. */
+export const completeSignUpSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  /** Required unless the account already has a password. */
+  password: passwordSchema.optional(),
+  accountType: z.enum(['participant', 'organizer']),
+  city: z.string().trim().max(60).nullish(),
 });

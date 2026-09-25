@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { LogoMark } from '@/components/brand/logo';
+import { AuthCard } from '@/components/auth/auth-parts';
 import { configuredSocialProviders, getServerEnv } from '@/env';
-import { redirect } from '@/i18n/navigation';
+import { Link, redirect } from '@/i18n/navigation';
 import { getSession } from '@/server/auth';
+
+import { safeNext } from '@/lib/safe-next';
 
 import { SignInForm, type SocialProvider } from './sign-in-form';
 import { resolveLocale } from '@/i18n/locale';
@@ -15,12 +17,6 @@ export async function generateMetadata({
   const locale = await resolveLocale(params);
   const t = await getTranslations({ locale, namespace: 'Nav' });
   return { title: t('signIn'), robots: { index: false } };
-}
-
-/** Only internal paths are accepted as a destination after sign-in. */
-function safeNext(value: string | string[] | undefined): string {
-  const next = Array.isArray(value) ? value[0] : value;
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
 export default async function SignInPage({ params, searchParams }: PageProps<'/[locale]/sign-in'>) {
@@ -35,17 +31,27 @@ export default async function SignInPage({ params, searchParams }: PageProps<'/[
   const providers = (Object.keys(social) as SocialProvider[]).filter((p) => social[p]);
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <LogoMark className="mx-auto h-16" />
-        <h1 className="mt-4 text-center text-3xl font-bold">{t('title')}</h1>
-        <p className="mt-2 text-center text-sm text-muted-foreground">{t('subtitle')}</p>
-        <SignInForm
-          next={next}
-          socialProviders={providers}
-          showDevOutbox={process.env.NODE_ENV !== 'production'}
-        />
-      </div>
-    </div>
+    <AuthCard
+      title={t('title')}
+      subtitle={t('subtitle')}
+      footer={
+        <>
+          {t('noAccount')}{' '}
+          <Link
+            href={next === '/' ? '/sign-up' : `/sign-up?next=${encodeURIComponent(next)}`}
+            className="font-semibold text-primary hover:underline"
+            data-testid="to-sign-up"
+          >
+            {t('createAccount')}
+          </Link>
+        </>
+      }
+    >
+      <SignInForm
+        next={next}
+        socialProviders={providers}
+        showDevOutbox={process.env.NODE_ENV !== 'production'}
+      />
+    </AuthCard>
   );
 }

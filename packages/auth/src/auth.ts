@@ -4,7 +4,7 @@ import type { EmailSender, SmsSender } from '@doulisha/notifications';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
-import { anonymous, magicLink, phoneNumber } from 'better-auth/plugins';
+import { anonymous, emailOTP, phoneNumber } from 'better-auth/plugins';
 import { and, eq, inArray } from 'drizzle-orm';
 
 /** Placeholder address for phone-only accounts; `.invalid` can never receive mail. */
@@ -30,10 +30,15 @@ export interface CreateAuthOptions {
   rateLimit?: boolean;
 }
 
+/** Password length rules, shared with the sign-up form. */
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 128;
+
 /**
- * Better Auth for Doulisha (ADR 0003, ADR 0010).
- * ACC-01: phone OTP, email magic link, Google, Facebook, Apple, and guest
- * sessions for RSVP without an account.
+ * Better Auth for Doulisha (ADR 0003, ADR 0010, ADR 0016).
+ * ACC-01: sign-up by phone or email code, then a password for next time;
+ * sign-in by password or by code; Google, Facebook, Apple; guest sessions
+ * for booking and RSVP without an account.
  */
 export function createAuth({
   db,
@@ -62,8 +67,14 @@ export function createAuth({
       // Postgres generates UUID v7 ids (ADR 0007).
       database: { generateId: false },
     },
-    // No passwords: phone OTP, magic link and social sign-in only.
-    emailAndPassword: { enabled: false },
+    // Passwords (ADR 0016). Accounts are created only after a verified phone
+    // or email code, so direct email+password sign-up stays off.
+    emailAndPassword: {
+      enabled: true,
+      disableSignUp: true,
+      minPasswordLength: PASSWORD_MIN_LENGTH,
+      maxPasswordLength: PASSWORD_MAX_LENGTH,
+    },
     socialProviders: {
       ...(social.google && { google: social.google }),
       ...(social.facebook && { facebook: social.facebook }),
@@ -86,7 +97,13 @@ export function createAuth({
       customRules: {
         '/phone-number/send-otp': { window: 60, max: 3 },
         '/phone-number/verify': { window: 60, max: 10 },
-        '/sign-in/magic-link': { window: 60, max: 3 },
+        '/phone-number/request-password-reset': { window: 60, max: 3 },
+        '/phone-number/reset-password': { window: 60, max: 10 },
+        '/email-otp/send-verification-otp': { window: 60, max: 3 },
+        '/sign-in/email-otp': { window: 60, max: 10 },
+        '/email-otp/reset-password': { window: 60, max: 10 },
+        '/sign-in/phone-number': { window: 60, max: 10 },
+        '/sign-in/email': { window: 60, max: 10 },
         '/sign-in/anonymous': { window: 60, max: 10 },
       },
     },
@@ -106,27 +123,42 @@ export function createAuth({
         sendOTP: async ({ phoneNumber: to, code }) => {
           await sms.send({ to, body: `Doulisha: ${code}` });
         },
+        sendPasswordResetOTP: async ({ phoneNumber: to, code }) => {
+          await sms.send({ to, body: `Doulisha: ${code}` });
+        },
         signUpOnVerification: {
           getTempEmail: (value) => `${value.replace('+', '')}@${phoneEmailDomain}`,
           getTempName: (value) => value,
         },
       }),
-      magicLink({
-        expiresIn: 15 * 60,
-        sendMagicLink: async ({ email: to, url }) => {
+      // Email codes, like phone codes: sign-up, sign-in without password, reset.
+      emailOTP({
+        otpLength: 6,
+        expiresIn: 10 * 60,
+        sendVerificationOTP: async ({ email: to, otp }) => {
           await email.send({
             to,
-            subject: 'Doulisha: your sign-in link / votre lien de connexion',
-            text: `Sign in to Doulisha / Connexion à Doulisha / تسجيل الدخول:\n${url}\n\nThis link expires in 15 minutes.`,
+            subject: `Doulisha: ${otp}`,
+            text: [`Doulisha: ${otp}`, 'Votre code / Your code / رمزك (10 minutes).'].join('\n\n'),
           });
         },
       }),
       anonymous({
         emailDomainName: guestEmailDomain,
-        // A guest who RSVPed and then creates an account keeps their RSVPs.
+        // A guest who booked or RSVPed and then creates an account keeps their
+        // bookings, tickets and RSVPs. Runs before the guest user is deleted,
+        // which orders (ON DELETE RESTRICT) would otherwise block.
         onLinkAccount: async ({ anonymousUser, newUser }) => {
           const guestId = anonymousUser.user.id;
           const memberId = newUser.user.id;
+          await db
+            .update(schema.orders)
+            .set({ buyerId: memberId })
+            .where(eq(schema.orders.buyerId, guestId));
+          await db
+            .update(schema.attendees)
+            .set({ userId: memberId })
+            .where(eq(schema.attendees.userId, guestId));
           const existing = await db
             .select({ eventId: schema.rsvps.eventId })
             .from(schema.rsvps)
