@@ -59,7 +59,7 @@ export default async function OrganizerDashboardPage({ params }: PageProps<'/[lo
         />
       </dl>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_18rem]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_18rem]">
         <section aria-labelledby="events-title">
           <h2 id="events-title" className="mb-3 font-sans text-lg font-semibold">
             {t('events')}

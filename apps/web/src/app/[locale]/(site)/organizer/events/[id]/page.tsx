@@ -105,7 +105,7 @@ export default async function ManageEventPage({
         <EventActions eventId={event.id} canCancel={!locked && event.status !== 'draft'} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_18rem]">
         <ManagePanel
           eventId={event.id}
           attendees={attendees}

@@ -176,8 +176,8 @@ export function Wizard({
   const stepProps = { form, patchForm, eventId };
 
   return (
-    <div className="mt-4 grid gap-6 lg:grid-cols-[14rem_1fr]">
-      <nav aria-label={t('steps.basics')} className="lg:sticky lg:top-24 lg:self-start">
+    <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[14rem_1fr]">
+      <nav aria-label={t('steps.basics')} className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <Progress value={((step + 1) / STEPS.length) * 100} className="mb-3 h-1.5 lg:hidden" />
         <ol className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:flex-col lg:px-0">
           {STEPS.map((name, index) => (
