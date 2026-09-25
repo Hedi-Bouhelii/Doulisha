@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { getEventBySlug } from '../services/event-detail';
-import { listUpcomingPublicEvents } from '../services/events';
+import { listSitemapEvents, listUpcomingPublicEvents } from '../services/events';
 import { publicProcedure, router } from '../trpc';
 
 export const eventsRouter = router({
@@ -43,5 +43,8 @@ export const eventsRouter = router({
    */
   bySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1).max(120) }))
-    .query(({ ctx, input }) => getEventBySlug(ctx.db, ctx.locale, input.slug)),
+    .query(({ ctx, input }) => getEventBySlug(ctx.db, ctx.locale, input.slug, ctx.actor)),
+
+  /** Slugs of public upcoming events, for sitemap.xml. */
+  sitemap: publicProcedure.query(({ ctx }) => listSitemapEvents(ctx.db)),
 });

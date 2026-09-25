@@ -38,15 +38,19 @@ export function allowedPayments(registrationType: string): PaymentChoice[] {
 }
 
 /** Events that accept bookings right now. */
-export function assertBookable(event: typeof schema.events.$inferSelect, now = new Date()): void {
-  const open =
+export function isBookable(event: typeof schema.events.$inferSelect, now = new Date()): boolean {
+  return (
     (event.status === 'published' || event.status === 'full') &&
     event.visibility !== 'private' &&
     event.deletedAt === null &&
     event.startsAt > now &&
     (event.bookingOpensAt === null || event.bookingOpensAt <= now) &&
-    (event.bookingClosesAt === null || event.bookingClosesAt > now);
-  if (!open) throw new AppError('BAD_REQUEST', 'errors.eventNotBookable');
+    (event.bookingClosesAt === null || event.bookingClosesAt > now)
+  );
+}
+
+export function assertBookable(event: typeof schema.events.$inferSelect, now = new Date()): void {
+  if (!isBookable(event, now)) throw new AppError('BAD_REQUEST', 'errors.eventNotBookable');
 }
 
 export interface BookingResult {

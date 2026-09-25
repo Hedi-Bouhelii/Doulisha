@@ -185,3 +185,16 @@ export async function listUpcomingPublicEvents(
       : null,
   }));
 }
+
+/** Public upcoming events for the sitemap (DSC-03 SEO). Private and unlisted events never appear. */
+export async function listSitemapEvents(
+  db: Db,
+  now = new Date(),
+): Promise<{ slug: string; updatedAt: Date }[]> {
+  return db
+    .select({ slug: schema.events.slug, updatedAt: schema.events.updatedAt })
+    .from(schema.events)
+    .where(and(...publicListingConditions(now)))
+    .orderBy(asc(schema.events.startsAt))
+    .limit(5000);
+}

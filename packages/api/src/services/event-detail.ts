@@ -5,6 +5,8 @@ import type { EventBrief } from '@doulisha/templates';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { AppError } from '../errors';
+import { type Actor, canManageEvent } from '../permissions';
+import { isBookable } from './booking';
 import { placesLeft } from './events';
 
 export interface EventDetailDto {
@@ -53,6 +55,11 @@ export interface EventDetailDto {
   programme: { id: string; title: string; startsAt: Date | null; day: number }[];
   /** Attendees who chose to show their attendance publicly (ACC-06). */
   publicAttendees: { name: string; image: string | null }[];
+  /** Bookings are open now (dates, status); a full event may still take a waitlist. */
+  bookingOpen: boolean;
+  waitlistEnabled: boolean;
+  /** The viewer is the creator, the organizer's owner or an admin. */
+  canManage: boolean;
 }
 
 /** Statuses a visitor may open. Drafts stay private to their organizer. */
@@ -67,6 +74,7 @@ export async function getEventBySlug(
   db: Db,
   locale: Locale,
   slug: string,
+  actor: Actor | null = null,
 ): Promise<EventDetailDto> {
   const e = schema.events;
   const [row] = await db
@@ -173,5 +181,11 @@ export async function getEventBySlug(
     meetingPoints: points.map((p) => ({ id: p.id, name: p.name, meetAt: p.meetAt })),
     programme: steps.map((s) => ({ id: s.id, title: s.title, startsAt: s.startsAt, day: s.day })),
     publicAttendees: attendees,
+    bookingOpen: isBookable(event),
+    waitlistEnabled: event.waitlistEnabled,
+    canManage: canManageEvent(actor, {
+      creatorId: event.creatorId,
+      organizerOwnerId: organizer?.ownerUserId ?? null,
+    }),
   };
 }
