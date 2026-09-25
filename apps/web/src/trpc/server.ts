@@ -24,3 +24,19 @@ export const api = cache(async () => {
   });
   return createCaller(ctx);
 });
+
+/**
+ * Caller for route handlers, where the locale comes from the request (query
+ * string) rather than from the page's `[locale]` segment.
+ */
+export async function apiForLocale(locale: 'ar' | 'fr' | 'en') {
+  const requestHeaders = new Headers(await headers());
+  requestHeaders.set('x-doulisha-locale', locale);
+  const ctx = await createContext({
+    db: getDb(),
+    auth: getAuth(),
+    headers: requestHeaders,
+    deps: getServiceDeps(),
+  });
+  return createCaller(ctx);
+}
