@@ -2,6 +2,7 @@ import { BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Link } from '@/i18n/navigation';
 
 import { initials } from './friends-going';
 
@@ -9,7 +10,13 @@ import { initials } from './friends-going';
 export function OrganizerCard({
   organizer,
 }: {
-  organizer: { name: string; logoUrl: string | null; bio: string | null; verified: boolean };
+  organizer: {
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+    bio: string | null;
+    verified: boolean;
+  };
 }) {
   const t = useTranslations('Event');
   return (
@@ -33,6 +40,13 @@ export function OrganizerCard({
         {organizer.bio ? (
           <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{organizer.bio}</p>
         ) : null}
+        <Link
+          href={`/organizers/${organizer.slug}`}
+          className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
+          data-testid="organizer-link"
+        >
+          {t('seeOrganizer')}
+        </Link>
       </div>
     </div>
   );

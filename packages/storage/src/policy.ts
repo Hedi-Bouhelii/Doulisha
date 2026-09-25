@@ -14,6 +14,22 @@ export const uploadPolicies = {
     maxBytes: 5 * 1024 * 1024,
     contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
+  'organizer-logo': {
+    bucket: 'public',
+    maxBytes: 2 * 1024 * 1024,
+    contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  },
+  'organizer-cover': {
+    bucket: 'public',
+    maxBytes: 5 * 1024 * 1024,
+    contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  },
+  /** Photos of past events on the organizer's profile. */
+  'organizer-photo': {
+    bucket: 'public',
+    maxBytes: 5 * 1024 * 1024,
+    contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  },
   'payment-proof': {
     bucket: 'private',
     maxBytes: 8 * 1024 * 1024,

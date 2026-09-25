@@ -73,6 +73,8 @@ export interface ListUpcomingInput {
   available?: boolean | undefined;
   /** DSC-02 "near me": within `radiusKm` of a point (PostGIS). */
   near?: { lat: number; lng: number; radiusKm: number } | undefined;
+  /** Events published by one organizer profile (public organizer page). */
+  organizerProfileId?: string | undefined;
 }
 
 /** DSC-01 filters as SQL conditions (pure, unit-tested). */
@@ -144,6 +146,9 @@ export async function listUpcomingPublicEvents(
     );
   }
   conditions.push(...filterConditions(input, now));
+  if (input.organizerProfileId) {
+    conditions.push(eq(e.organizerProfileId, input.organizerProfileId));
+  }
 
   const rows = await db
     .select({

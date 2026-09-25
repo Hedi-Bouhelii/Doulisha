@@ -124,6 +124,7 @@ export default async function DesignPage({ params }: PageProps<'/[locale]/design
           <OrganizerCard
             organizer={{
               name: 'Kroumirie Trekkers',
+              slug: 'kroumirie-trekkers',
               logoUrl: null,
               bio: 'Club de randonnée basé à Jendouba.',
               verified: true,

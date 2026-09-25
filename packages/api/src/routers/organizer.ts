@@ -11,7 +11,14 @@ import {
   organizerDashboard,
   setAttendeeNote,
 } from '../services/organizer-tools';
-import { createProfile, listOwnProfiles, updateProfile } from '../services/organizers';
+import {
+  addPhoto,
+  createProfile,
+  getOwnProfileDetail,
+  listOwnProfiles,
+  removePhoto,
+  updateProfile,
+} from '../services/organizers';
 import { recordManualPayment, reviewProof } from '../services/payments';
 import { cancelEvent, decideRefund } from '../services/refunds';
 import { protectedProcedure, router } from '../trpc';
@@ -28,12 +35,30 @@ export const organizerRouter = router({
   /** Creates an organizer profile and grants the organizer role. */
   createProfile: protectedProcedure
     .input(organizerProfileInputSchema)
-    .mutation(({ ctx, input }) => createProfile(ctx.db, ctx.actor, input)),
+    .mutation(({ ctx, input }) => createProfile(ctx.db, ctx.deps, ctx.actor, input)),
 
   /** Updates one of the member's organizer profiles. */
   updateProfile: protectedProcedure
     .input(organizerProfileInputSchema.extend({ id: z.uuid() }))
-    .mutation(({ ctx, input }) => updateProfile(ctx.db, ctx.actor, input.id, input)),
+    .mutation(({ ctx, input }) => updateProfile(ctx.db, ctx.deps, ctx.actor, input.id, input)),
+
+  /** The member's organizer profile with its photos (null if none). */
+  myProfile: protectedProcedure.query(({ ctx }) => getOwnProfileDetail(ctx.db, ctx.actor)),
+
+  /** Adds an uploaded photo of a past event to the profile (at most 12). */
+  addPhoto: protectedProcedure
+    .input(
+      z.object({
+        profileId: z.uuid(),
+        key: z.string().min(10).max(300),
+        caption: z.string().trim().max(120).nullish(),
+      }),
+    )
+    .mutation(({ ctx, input }) => addPhoto(ctx.db, ctx.deps, ctx.actor, input)),
+
+  removePhoto: protectedProcedure
+    .input(z.object({ photoId: z.uuid() }))
+    .mutation(({ ctx, input }) => removePhoto(ctx.db, ctx.actor, input.photoId)),
 
   /** ORG-01: upcoming events, fill rate, revenue, pending payments, booking sources. */
   dashboard: protectedProcedure.query(({ ctx }) => organizerDashboard(ctx.db, ctx.actor)),

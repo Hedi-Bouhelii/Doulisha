@@ -1,44 +1,38 @@
-import { BadgeCheck } from 'lucide-react';
+import { CalendarPlus } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
+import { EmptyState } from '@/components/doulisha/empty-state';
 import { resolveLocale } from '@/i18n/locale';
 import { api } from '@/trpc/server';
 
-import { ProfileForm } from './profile-form';
+import { BecomeOrganizerButton } from './become-organizer-button';
+import { ProfileTab } from './profile-tab';
 
-/** ACC-03: the organizer profile that sells tickets and appears on event pages. */
+/** ACC-03: the organizer profile as participants see it, with an edit mode. */
 export default async function OrganizerProfilePage({
   params,
 }: PageProps<'/[locale]/organizer/profile'>) {
   await resolveLocale(params);
   const t = await getTranslations('Organizer');
-  const tEvent = await getTranslations('Event');
-  const [profile] = await (await api()).organizer.profiles();
+  const caller = await api();
+  const [profile, categories] = await Promise.all([
+    caller.organizer.myProfile(),
+    caller.catalog.categories(),
+  ]);
 
-  return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold">{profile ? t('profile') : t('becomeTitle')}</h1>
-      {profile ? (
-        <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <BadgeCheck className="size-4" aria-hidden="true" />
-          {profile.verifiedAt ? tEvent('verified') : t('unverified')}
-        </p>
-      ) : (
-        <p className="mt-2 text-muted-foreground">{t('becomeHint')}</p>
-      )}
-      <ProfileForm
-        profile={
-          profile
-            ? {
-                id: profile.id,
-                name: profile.name,
-                bio: profile.bio,
-                legalStatus: profile.legalStatus,
-                regions: profile.regions,
-              }
-            : null
-        }
+  if (!profile) {
+    return (
+      <EmptyState
+        title={t('becomeTitle')}
+        hint={t('becomeHint')}
+        action={<BecomeOrganizerButton icon={<CalendarPlus aria-hidden="true" />} />}
       />
-    </div>
+    );
+  }
+  return (
+    <ProfileTab
+      profile={profile}
+      categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
+    />
   );
 }

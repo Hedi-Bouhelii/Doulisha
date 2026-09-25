@@ -1,8 +1,10 @@
+import { accountRouter } from './routers/account';
 import { adminRouter } from './routers/admin';
 import { bookingRouter } from './routers/booking';
 import { editorRouter } from './routers/editor';
 import { invitationsRouter } from './routers/invitations';
 import { organizerRouter } from './routers/organizer';
+import { organizersRouter } from './routers/organizers';
 import { uploadsRouter } from './routers/uploads';
 import { catalogRouter } from './routers/catalog';
 import { eventsRouter } from './routers/events';
@@ -14,11 +16,13 @@ import { createCallerFactory, router } from './trpc';
 export const appRouter = router({
   health: healthRouter,
   me: meRouter,
+  account: accountRouter,
   catalog: catalogRouter,
   events: eventsRouter,
   editor: editorRouter,
   booking: bookingRouter,
   organizer: organizerRouter,
+  organizers: organizersRouter,
   invitations: invitationsRouter,
   uploads: uploadsRouter,
   admin: adminRouter,
