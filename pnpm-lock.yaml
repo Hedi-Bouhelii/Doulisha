@@ -232,6 +232,15 @@ importers:
       '@doulisha/notifications':
         specifier: workspace:*
         version: link:../../packages/notifications
+      '@doulisha/payments':
+        specifier: workspace:*
+        version: link:../../packages/payments
+      '@doulisha/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      '@doulisha/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
       '@doulisha/ui-tokens':
         specifier: workspace:*
         version: link:../../packages/ui-tokens
@@ -347,6 +356,15 @@ importers:
       '@doulisha/i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@doulisha/notifications':
+        specifier: workspace:*
+        version: link:../notifications
+      '@doulisha/payments':
+        specifier: workspace:*
+        version: link:../payments
+      '@doulisha/storage':
+        specifier: workspace:*
+        version: link:../storage
       '@doulisha/templates':
         specifier: workspace:*
         version: link:../templates

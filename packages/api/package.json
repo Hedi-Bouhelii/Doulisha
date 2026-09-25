@@ -10,7 +10,8 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests --exclude \"**/*.int.test.ts\"",
+    "test:integration": "vitest run src/integration --testTimeout=300000"
   },
   "devDependencies": {
     "@doulisha/config": "workspace:*",
@@ -23,6 +24,9 @@
     "@doulisha/auth": "workspace:*",
     "@doulisha/db": "workspace:*",
     "@doulisha/i18n": "workspace:*",
+    "@doulisha/notifications": "workspace:*",
+    "@doulisha/payments": "workspace:*",
+    "@doulisha/storage": "workspace:*",
     "@doulisha/templates": "workspace:*",
     "@doulisha/validators": "workspace:*",
     "@trpc/server": "^11.19.0",

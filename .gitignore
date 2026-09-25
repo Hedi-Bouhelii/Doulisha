@@ -33,3 +33,7 @@ playwright-report/
 
 # Claude Code: shared skills are committed, personal settings are not
 .claude/settings.local.json
+
+# Local development uploads (Cloudflare R2 in production)
+apps/web/public/uploads/
+apps/web/.private-uploads/

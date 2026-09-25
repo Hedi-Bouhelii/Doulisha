@@ -1,4 +1,4 @@
-import type { Db } from '@doulisha/db';
+import type { Executor } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import { eq } from 'drizzle-orm';
 
@@ -8,7 +8,7 @@ export type UserRole = (typeof schema.userRole.enumValues)[number];
  * Roles held by a user (ACC-05). Everyone is a participant, whether or not the
  * row exists, so the list always contains `participant`.
  */
-export async function getUserRoles(db: Db, userId: string): Promise<UserRole[]> {
+export async function getUserRoles(db: Executor, userId: string): Promise<UserRole[]> {
   const rows = await db
     .select({ role: schema.userRoles.role })
     .from(schema.userRoles)
@@ -17,6 +17,6 @@ export async function getUserRoles(db: Db, userId: string): Promise<UserRole[]> 
   return [...roles];
 }
 
-export async function grantRole(db: Db, userId: string, role: UserRole): Promise<void> {
+export async function grantRole(db: Executor, userId: string, role: UserRole): Promise<void> {
   await db.insert(schema.userRoles).values({ userId, role }).onConflictDoNothing();
 }

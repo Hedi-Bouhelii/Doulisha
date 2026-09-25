@@ -15,6 +15,8 @@ export interface EventDetailDto {
   language: Locale;
   coverUrl: string | null;
   status: (typeof schema.eventStatus.enumValues)[number];
+  visibility: (typeof schema.eventVisibility.enumValues)[number];
+  audience: string[];
   model: (typeof schema.eventModel.enumValues)[number];
   startsAt: Date;
   endsAt: Date | null;
@@ -128,6 +130,8 @@ export async function getEventBySlug(
     language: event.language,
     coverUrl: event.coverUrl,
     status: event.status,
+    visibility: event.visibility,
+    audience: event.audience,
     model: event.model,
     startsAt: event.startsAt,
     endsAt: event.endsAt,

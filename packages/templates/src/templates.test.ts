@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { categories } from './categories';
 import { templateDefinitions } from './definitions';
+import { localizeBrief, templateDefinitionSchema } from './definition-schema';
 import { buildDetailsSchema } from './details-schema';
 
 const hiking = templateDefinitions.find((t) => t.key === 'hiking_trip');
@@ -54,5 +55,29 @@ describe('buildDetailsSchema', () => {
     const schema = buildDetailsSchema(workshop.definition);
     expect(schema.safeParse({ level: 'beginner' }).success).toBe(true);
     expect(schema.safeParse({ level: 'expert' }).success).toBe(false);
+  });
+});
+
+describe('templateDefinitionSchema (EVT-09)', () => {
+  it('accepts every shipped template', () => {
+    for (const t of templateDefinitions) {
+      expect(templateDefinitionSchema.safeParse(t.definition).success, t.key).toBe(true);
+    }
+  });
+
+  it('rejects duplicate field keys and unknown filters', () => {
+    const def = structuredClone(hiking!.definition);
+    def.fields.push({ ...def.fields[0]! });
+    expect(templateDefinitionSchema.safeParse(def).success).toBe(false);
+    const def2 = { ...structuredClone(hiking!.definition), searchFilters: ['nope'] };
+    expect(templateDefinitionSchema.safeParse(def2).success).toBe(false);
+  });
+});
+
+describe('localizeBrief', () => {
+  it('returns the brief in the event language', () => {
+    const brief = localizeBrief(hiking!.definition.defaultBrief, 'fr');
+    expect(brief.whatToBring).toContain('Chaussures de randonnée');
+    expect(brief.safety).toMatch(/groupe/);
   });
 });

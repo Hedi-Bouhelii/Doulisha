@@ -2,7 +2,13 @@ import { and } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import { describe, expect, it } from 'vitest';
 
-import { escapeLike, placesLeft, publicListingConditions, textSearchCondition } from './events';
+import {
+  escapeLike,
+  filterConditions,
+  placesLeft,
+  publicListingConditions,
+  textSearchCondition,
+} from './events';
 
 const dialect = new PgDialect({ casing: 'snake_case' });
 
@@ -42,5 +48,42 @@ describe('text search', () => {
     );
     expect(sql).toContain('"events"."city"');
     expect(params[0]).toBe('%Aïn Draham%');
+  });
+});
+
+describe('filterConditions (DSC-01, DSC-02)', () => {
+  const now = new Date('2026-09-24T09:00:00Z');
+  const render = (input: Parameters<typeof filterConditions>[0]) =>
+    dialect.sqlToQuery(and(...filterConditions(input, now))!);
+
+  it('adds no condition without filters', () => {
+    expect(filterConditions({ limit: 10 }, now)).toHaveLength(0);
+  });
+
+  it('filters by date preset, price and audience', () => {
+    const { sql, params } = render({
+      limit: 10,
+      when: 'weekend',
+      price: 'free',
+      audience: ['family'],
+    });
+    expect(sql).toContain('"events"."starts_at" >= $1');
+    expect(sql).toContain('"events"."starts_at" < $2');
+    expect(sql).toContain('coalesce("events"."price_from_millimes", 0) = 0');
+    expect(sql).toContain('"events"."audience" && $3');
+    expect(params[0]).toBe('2026-09-25T17:00:00.000Z');
+  });
+
+  it('filters by distance with PostGIS', () => {
+    const { sql, params } = render({ limit: 10, near: { lat: 36.8, lng: 10.18, radiusKm: 25 } });
+    expect(sql).toContain('ST_DWithin("events"."location"');
+    expect(params).toEqual([10.18, 36.8, 25_000]);
+  });
+
+  it('keeps only events with places left', () => {
+    const { sql } = render({ limit: 10, available: true });
+    expect(sql).toContain(
+      '"events"."capacity" is null or "events"."places_taken" < "events"."capacity"',
+    );
   });
 });

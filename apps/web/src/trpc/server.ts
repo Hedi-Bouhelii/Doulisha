@@ -7,6 +7,7 @@ import { cache } from 'react';
 
 import { getAuth } from '@/server/auth';
 import { getDb } from '@/server/db';
+import { getServiceDeps } from '@/server/deps';
 
 /**
  * tRPC caller for React Server Components: same procedures, permissions and
@@ -15,6 +16,11 @@ import { getDb } from '@/server/db';
 export const api = cache(async () => {
   const requestHeaders = new Headers(await headers());
   requestHeaders.set('x-doulisha-locale', await getLocale());
-  const ctx = await createContext({ db: getDb(), auth: getAuth(), headers: requestHeaders });
+  const ctx = await createContext({
+    db: getDb(),
+    auth: getAuth(),
+    headers: requestHeaders,
+    deps: getServiceDeps(),
+  });
   return createCaller(ctx);
 });

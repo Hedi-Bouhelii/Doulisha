@@ -1,7 +1,22 @@
 import type { Db } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
-import { and, asc, eq, gt, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  arrayOverlaps,
+  asc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
+
+import { whenRange, type WhenFilter } from '../domain/dates';
 
 /** Data an event card needs (DSC-03 cards, template "Trending events"). */
 export interface EventCardDto {
@@ -48,6 +63,43 @@ export interface ListUpcomingInput {
   query?: string | undefined;
   /** Exact city, ignoring case and accents. */
   city?: string | undefined;
+  /** DSC-02 date presets in Tunisia time. */
+  when?: WhenFilter | undefined;
+  price?: 'free' | 'paid' | undefined;
+  maxPriceMillimes?: number | undefined;
+  /** DSC-01 "for whom". */
+  audience?: string[] | undefined;
+  /** Only events with places left. */
+  available?: boolean | undefined;
+  /** DSC-02 "near me": within `radiusKm` of a point (PostGIS). */
+  near?: { lat: number; lng: number; radiusKm: number } | undefined;
+}
+
+/** DSC-01 filters as SQL conditions (pure, unit-tested). */
+export function filterConditions(input: ListUpcomingInput, now: Date): SQL[] {
+  const e = schema.events;
+  const conditions: SQL[] = [];
+  if (input.when) {
+    const { from, to } = whenRange(input.when, now);
+    conditions.push(gte(e.startsAt, from), lt(e.startsAt, to));
+  }
+  if (input.price === 'free') {
+    conditions.push(sql`coalesce(${e.priceFromMillimes}, 0) = 0`);
+  }
+  if (input.price === 'paid') conditions.push(gt(e.priceFromMillimes, 0));
+  if (input.maxPriceMillimes !== undefined) {
+    conditions.push(sql`coalesce(${e.priceFromMillimes}, 0) <= ${input.maxPriceMillimes}`);
+  }
+  if (input.audience?.length) conditions.push(arrayOverlaps(e.audience, input.audience));
+  if (input.available) {
+    conditions.push(or(isNull(e.capacity), lt(e.placesTaken, e.capacity))!);
+  }
+  if (input.near) {
+    conditions.push(
+      sql`ST_DWithin(${e.location}, ST_SetSRID(ST_MakePoint(${input.near.lng}, ${input.near.lat}), 4326)::geography, ${input.near.radiusKm * 1000})`,
+    );
+  }
+  return conditions;
 }
 
 /** Cities that have upcoming public events, for the search city picker. */
@@ -91,6 +143,7 @@ export async function listUpcomingPublicEvents(
       sql`immutable_unaccent(lower(${e.city})) = immutable_unaccent(lower(${input.city}))`,
     );
   }
+  conditions.push(...filterConditions(input, now));
 
   const rows = await db
     .select({

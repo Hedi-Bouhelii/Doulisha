@@ -1,4 +1,9 @@
 import { adminRouter } from './routers/admin';
+import { bookingRouter } from './routers/booking';
+import { editorRouter } from './routers/editor';
+import { invitationsRouter } from './routers/invitations';
+import { organizerRouter } from './routers/organizer';
+import { uploadsRouter } from './routers/uploads';
 import { catalogRouter } from './routers/catalog';
 import { eventsRouter } from './routers/events';
 import { healthRouter } from './routers/health';
@@ -11,6 +16,11 @@ export const appRouter = router({
   me: meRouter,
   catalog: catalogRouter,
   events: eventsRouter,
+  editor: editorRouter,
+  booking: bookingRouter,
+  organizer: organizerRouter,
+  invitations: invitationsRouter,
+  uploads: uploadsRouter,
   admin: adminRouter,
 });
 
