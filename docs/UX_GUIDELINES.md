@@ -54,26 +54,41 @@ Every data view has:
 - **Error:** `EmptyState tone="alert"` with a retry (`[locale]/error.tsx` for whole pages).
 - **Not found:** the localized 404 (`[locale]/not-found.tsx`); unknown paths inside a locale land there.
 
+## Forms and flows (Phase 2)
+
+- **Steps, not long pages:** checkout has three steps (tickets, details, payment) with the order summary always visible; the event wizard has seven. The current step is shown by name and number.
+- **Nothing is lost:** the wizard auto-saves a second after typing stops and shows "Saving… / Draft saved / Could not save".
+- **Local methods first:** online payment, D17, bank transfer and cash are listed with a one-line explanation each.
+- **Dates:** `datetime-local` inputs, always read as Tunisia time.
+- **Guests:** booking and RSVP never require an account; a guest session is created on submit.
+- **Door check-in:** results are big and coloured (green OK, amber paid-later or already checked in, terracotta invalid) so they read at arm's length.
+- **Print:** the header, footer and organizer navigation are `print:hidden`; the attendee list prints as a plain table.
+
 ## Motion
 
 150–250 ms with `ease-standard`; card hover lifts and image zoom only. `prefers-reduced-motion` disables animations and transitions globally.
 
 ## Components
 
-| Component                        | Where                     | Notes                                                                                                                                                                              |
-| -------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `EventCard`, `EventCardSkeleton` | home, explore             | Whole card is one link; urgency badge when ≤ 5 places or full                                                                                                                      |
-| `CategoryChip`                   | explore                   | Links (filters work without JavaScript)                                                                                                                                            |
-| `CategoryTile`                   | home                      | Overlaps the hero, category accent colours                                                                                                                                         |
-| `PriceTag`                       | cards, event page         | "From 45 DT" / "Free", integer millimes in                                                                                                                                         |
-| `PlacesLeft`                     | cards, event page         | Terracotta under 20% of capacity                                                                                                                                                   |
-| `FriendsGoing`                   | event page                | Only attendees who made their attendance public (ACC-06)                                                                                                                           |
-| `OrganizerCard`                  | event page                | Verified badge                                                                                                                                                                     |
-| `StickyCTA`                      | event page                | Fixed bottom bar on mobile, sidebar card on desktop                                                                                                                                |
-| `TicketQR`                       | tickets (Phase 2)         | Server-rendered SVG, works offline once loaded                                                                                                                                     |
-| `AttendeeRow`                    | organizer lists (Phase 2) | Payment status colours: paid, deposit, pending, refunded                                                                                                                           |
-| `EmptyState`                     | everywhere                | Empty and error states                                                                                                                                                             |
-| `Logo`, `LogoMark`               | header, footer, sign-in   | Brand files in `public/images/brand` (trimmed from `public/images/logo.png` and `symbol.png`). On dark backgrounds the symbol sits on a cream badge and the wordmark is cream text |
+| Component                        | Where                   | Notes                                                                                                                                                                              |
+| -------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EventCard`, `EventCardSkeleton` | home, explore           | Whole card is one link; urgency badge when ≤ 5 places or full                                                                                                                      |
+| `CategoryChip`                   | explore                 | Links (filters work without JavaScript)                                                                                                                                            |
+| `CategoryTile`                   | home                    | Overlaps the hero, category accent colours                                                                                                                                         |
+| `PriceTag`                       | cards, event page       | "From 45 DT" / "Free", integer millimes in                                                                                                                                         |
+| `PlacesLeft`                     | cards, event page       | Terracotta under 20% of capacity                                                                                                                                                   |
+| `FriendsGoing`                   | event page              | Only attendees who made their attendance public (ACC-06)                                                                                                                           |
+| `OrganizerCard`                  | event page              | Verified badge                                                                                                                                                                     |
+| `StickyCTA`                      | event page              | Fixed bottom bar on mobile, sidebar card on desktop                                                                                                                                |
+| `TicketQR`                       | ticket page             | Server-rendered SVG, works offline once loaded; the code is printed under it for manual check-in                                                                                   |
+| `AttendeeRow`                    | component gallery       | The organizer list (`ManagePanel`) uses the same payment colours, plus order actions (mark paid, notes)                                                                            |
+| `EmptyState`                     | everywhere              | Empty and error states                                                                                                                                                             |
+| `Logo`, `LogoMark`               | header, footer, sign-in | Brand files in `public/images/brand` (trimmed from `public/images/logo.png` and `symbol.png`). On dark backgrounds the symbol sits on a cream badge and the wordmark is cream text |
+| `Field`, `NativeSelect`          | every form              | Label above the field, optional hint; native `<select>` (phone pickers, RTL arrow)                                                                                                 |
+| `ShareBar`                       | event page, manage page | WhatsApp, Facebook, Messenger (phones), copy, share sheet, share images; every link carries `utm_source`                                                                           |
+| `StatusBadge`                    | organizer space         | Event status pill: draft grey, published green, cancelled terracotta                                                                                                               |
+| `NearMeRail`, `NearMeField`      | home, explore           | Ask for the position only after a tap; clear message when refused                                                                                                                  |
+| `LegalPage`                      | terms, privacy          | Placeholder until the lawyer's texts (OPEN_QUESTIONS Q17)                                                                                                                          |
 
 ## Performance budget
 

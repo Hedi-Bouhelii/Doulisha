@@ -47,7 +47,10 @@ pnpm --filter @doulisha/db exec drizzle-kit check   # CI: migrations consistent 
 
 - `0000_extensions.sql` (custom): `postgis`, `pg_trgm`, `unaccent` and the `immutable_unaccent()` wrapper needed for the accent-insensitive trigram index.
 - `0001_init.sql`: all MVP tables. drizzle-kit quotes custom column types, so `geography(Point, 4326)` was unquoted by hand in this file; do the same if a new migration adds a geography column.
+- `0002_event_audience.sql`: `events.audience` (`text[]`, "for whom" filter, DSC-02).
 - Never run `drizzle-kit push` against production.
+
+Stock changes (bookings, payments, cancellations) run in WebSocket `Pool` transactions that lock the event row first (ADR 0011). `pnpm --filter @doulisha/api test:integration` runs the 50-parallel-bookings test against the branch in `.env.local`.
 
 ## Seed
 

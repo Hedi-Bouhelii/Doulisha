@@ -4,6 +4,33 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Phase 2, events, booking, payments, organizers and sharing (2026-09-25)
+
+- **Event creation (EVT-01..09):**
+  - "What are you organizing?" picker, then a seven-step wizard driven by the template: basics and cover, date and place, template fields, tickets, logistics, brief, publish.
+  - Auto-saved drafts, publish checks shared with the server, duplicate, cancel with full refunds.
+  - Admins edit templates as validated JSON at `/admin/templates`.
+- **Discovery (DSC-01..05):**
+  - Explore filters: when, price, for whom, places left, near me (URL parameters, work without JavaScript).
+  - Home rails: tonight, this weekend, near me, and an "organize something" section.
+  - Event pages: booking button (book, join the waitlist, closed), JSON-LD `Event`, canonical and language alternates, share image as the preview, `noindex` for unlisted events.
+  - `sitemap.xml` (public upcoming events only) and `robots.txt`; Terms and Privacy placeholder pages.
+- **Booking and tickets (TKT-01..05):**
+  - Three-step checkout for members and guests: ticket types, deposit, details per person, pick-up point, questions, payment method.
+  - Row-locked stock with 15-minute holds and a waitlist whose offers last 24 hours; proven by an integration test (50 parallel bookings, 10 places, exactly 10 sold).
+  - "My tickets" with status, amounts due, QR codes, calendar file, receipt upload and cancellation under the refund policy.
+- **Payments (PAY-01..04):** mock online gateway with signed, idempotent webhooks; D17, bank transfer and cash confirmed by the organizer or by an approved receipt; refunds; double-entry ledger.
+- **Organizer tools (ORG-01, PRT-01..05, LOG-01):** dashboard (fill rate, collected, pending, sources), organizer profile, attendee list with payment status, notes and search, manual bookings, receipt and refund review, waitlist, door check-in by camera or code, Excel export and a print view for PDF.
+- **Private events (INV-01..03):** quick invitation form, link to share on WhatsApp, RSVP without an account (going, maybe, can't come, +1s, food notes); the guest list is shown only to the host and to guests who answered.
+- **Sharing (SHR-01..04):** WhatsApp, Facebook, Messenger, copy link and share sheet with `utm_source`; generated share images (link preview, square post, story, invitation card) in three languages, Arabic included; bookings by source for organizers.
+- **Packages:** `packages/payments` (mock and manual providers) and `packages/storage` (upload policies, signed tokens, local provider).
+- **Tests:** unit tests for pricing, availability, refund policy, ledger, publish checks, dates, Arabic shaping, wizard conversions and upload ownership; Playwright E2E for the Phase 2 flow in Arabic, French and English, and for private invitations.
+- **Docs:** API reference for every router, ADRs 0011–0015, open questions Q14–Q20.
+
+### Security (2026-09-25)
+
+- Event covers were free URLs that the share-image route fetched from the server. Forms now send the upload key, the API accepts only the member's own cover uploads, and the route reads covers from disk only.
+
 ### Added: Phase 1, data, auth, i18n and design system (2026-09-24)
 
 - **Database (`packages/db`):**

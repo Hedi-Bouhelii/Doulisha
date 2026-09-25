@@ -112,3 +112,52 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** From this development machine, each database round trip takes roughly 150–500 ms, and a few requests stalled until timeout ("fetch failed") before succeeding on retry. Sign-in steps make several sequential queries (1–3 s locally, once 15 s). In production, Vercel functions run in `cle1` next to the database, so this mostly affects local work and E2E runs.
 - **Assumption:** No code change now. Phase 6 adds database timeouts and retries and re-measures from Tunisia.
 - **Decision:**
+
+### Q14. Booking questions: per booking or per person?
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** TKT-03 lets organizers add questions at booking (size, allergy…). The spec does not say whether each person on a group booking answers separately.
+- **Assumption:** Asked once per booking and stored on the buyer's ticket (the first person). Simplest for the buyer on a phone; per-person answers can be added if organizers need them.
+- **Decision:**
+
+### Q15. Map pin and map tiles
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** The wizard should let organizers pin the venue (EVT-02) so "near me" (DSC-02/04) finds the event. A map needs a tile provider (OpenFreeMap, MapTiler, Mapbox…) with its own terms and costs.
+- **Assumption:** Not in Phase 2. Events created in the app have no coordinates yet; seeded events do. Proposal: MapLibre with a free OpenStreetMap-based provider, chosen with the founder.
+- **Decision:**
+
+### Q16. GPX track upload for hikes
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** The hiking template has an optional `gpx` field. Uploads accept only images and PDF so far.
+- **Assumption:** The wizard hides the field until a `gpx` upload purpose and a track preview exist (with the map, Q15).
+- **Decision:**
+
+### Q17. Terms of use and privacy policy texts
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** `/terms` and `/privacy` exist and are linked from the footer, but the legal texts (law 2004-63, INPDP) must come from the founder's lawyer.
+- **Assumption:** The pages say plainly that the text is pending legal review. No legal wording is invented.
+- **Decision:**
+
+### Q18. Messenger sharing on desktop
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** SHR-01 lists Messenger. On phones the `fb-messenger://share` link opens the app; on desktop, Messenger's send dialog needs a Facebook app id.
+- **Assumption:** The Messenger button shows on phones only. Add the desktop dialog when the Facebook app exists (Phase 6, with Facebook login).
+- **Decision:**
+
+### Q19. File storage before production
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** Covers and receipts use the local disk provider, which does not survive serverless deployments.
+- **Assumption:** Production must use Cloudflare R2 (Phase 6, `STORAGE_PROVIDER=r2`). `STORAGE_PROVIDER` accepts only `local` until then, so a deployment cannot silently use the disk.
+- **Decision:**
+
+### Q20. E2E data on the dev branch
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** Each Phase 2 E2E run publishes real test hikes and invitations on the Neon `dev` branch; they then appear in local listings.
+- **Assumption:** Acceptable: `pnpm db:seed` resets the branch, and CI runs on a throwaway branch per pull request. Tests use unique titles so runs never collide.
+- **Decision:**

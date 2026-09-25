@@ -104,9 +104,27 @@ Rules:
 - **Money** is stored as integer millimes (`*_millimes`). Times are `timestamptz`, displayed in `Africa/Tunis`.
 - **Idempotency.** Payment webhooks, booking creation and notifications take idempotency keys.
 
-## 4. Event engine (target, Phase 2)
+## 4. Event engine
 
-There is one `events` table for every kind of event. Each event references a **template**, and the template picks one of the four models (A ticketed, B group trip, C private, D slot booking). Fields shared by every template are columns. Fields specific to a category live in `events.details` (JSONB), validated on write by the template's Zod schema from `packages/templates`. Admins edit templates as data (EVT-09).
+There is one `events` table for every kind of event. Each event references a **template**, and the template picks one of the four models (A ticketed, B group trip, C private, D slot booking). Fields shared by every template are columns. Fields specific to a category live in `events.details` (JSONB), validated on write by the template's Zod schema from `packages/templates`. Admins edit templates as data at `/admin/templates` (EVT-09).
+
+```mermaid
+flowchart LR
+  T[Template] -->|editor.create| D[Draft]
+  D -->|wizard auto-save| D
+  D -->|editor.publish, no problems| P[Published]
+  P -->|booking.create| B{Places left?}
+  B -->|yes, online| H[Held 15 min] -->|mock or gateway webhook| C[Confirmed + QR]
+  B -->|yes, cash / D17 / transfer| M[Confirmed, payment pending] -->|markPaid or proof approved| C
+  M -->|organizer.checkIn, flagged unpaid| I
+  B -->|no| W[Waitlist] -->|place freed| O[Offered 24 h] --> H
+  C -->|organizer.checkIn| I[Checked in]
+```
+
+- **Stock:** every change locks the event row first (ADR 0011). Expired holds and offers are released at the start of the next locked transaction.
+- **Payments:** providers behind one interface, a double-entry ledger, idempotent webhooks (ADR 0012).
+- **Private events** (model C) skip the wizard: `/host/new` creates them with a link invitation; guests answer at `/invite/{token}` without an account.
+- **Sharing:** share links carry `utm_source`; the booking stores the first UTM seen in the session, and organizers see bookings by source (SHR-04). Share images are generated per event (ADR 0013).
 
 ## 5. Environments
 
@@ -121,6 +139,6 @@ There is one `events` table for every kind of event. Each event references a **t
 - **Project:** `Doulisha` (`delicate-brook-47760427`), Postgres 18, region aws-us-east-2 (confirmed, OPEN_QUESTIONS Q9). Vercel functions run in `cle1` (Cleveland) so they sit next to the database.
 - **Database:** `Doulisha`. The default branch is `production`.
 - **Local link:** `neon link` stores the project and branch in `.neon` (gitignored). It also writes `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) to the root `.env.local` (gitignored).
-- **Web app structure:** `apps/web/src/app/[locale]` is the root layout (ADR 0008); `(site)` pages share the header and footer; `admin` checks the role on the server; `proxy.ts` handles locale redirects.
+- **Web app structure:** `apps/web/src/app/[locale]` is the root layout (ADR 0008); `(site)` pages share the header and footer; `(site)/organizer` and `(site)/host` require a member session; `admin` checks the role on the server; `proxy.ts` handles locale redirects.
 - **Auth:** self-managed Better Auth, with its tables in our schema. Neon Managed Auth (`neon_auth`) is enabled on the branch but not used (Q10).
 - **Extensions:** `postgis`, `pg_trgm` and `unaccent` are available on the branch and are enabled by the first migration in Phase 1.
