@@ -119,7 +119,7 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
       {event.visibility === 'public' ? (
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger -- JSON-LD must be raw; jsonLdScript escapes "<"
+          // JSON-LD must be raw; jsonLdScript escapes "<" so user text cannot close the script.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(eventJsonLd(event, locale)) }}
         />
       ) : null}
