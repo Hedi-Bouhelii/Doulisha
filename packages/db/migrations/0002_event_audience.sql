@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "audience" text[] DEFAULT '{}'::text[] NOT NULL;

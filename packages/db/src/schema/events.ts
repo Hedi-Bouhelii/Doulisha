@@ -104,6 +104,11 @@ export const events = pgTable(
     /** EVT-02 "place revealed after booking". */
     locationHiddenUntilBooking: boolean().notNull().default(false),
     minAge: smallint(),
+    /** DSC-01 "for whom": solo, couple, friends, family, kids. */
+    audience: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
 
     /** EVT-04 capacity. Null means unlimited. */
     capacity: integer(),
