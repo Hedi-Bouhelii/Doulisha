@@ -116,3 +116,47 @@ for (const locale of ['fr', 'ar', 'en'] as const) {
     await guestContext.close();
   });
 }
+
+test('private invitation: a guest answers without an account (ar)', async ({
+  page,
+  browser,
+}, testInfo) => {
+  test.setTimeout(180_000);
+  const stamp = `${Date.now().toString(36)}${testInfo.project.name[0]}`;
+  const title = `عيد ميلاد ${stamp}`;
+  const guestName = `ضيف ${stamp}`;
+
+  await signInWithPhone(page, 'ar', ORGANIZER_PHONE);
+  await expect(page.getByTestId('user-menu')).toBeVisible();
+  await page.goto('/ar/host/new');
+  await page.getByTestId('host-title').fill(title);
+  await page.getByTestId('host-create').click();
+  await expect(page.getByTestId('invite-ready')).toBeVisible();
+  const inviteUrl = (await page.getByTestId('invite-url').innerText()).trim();
+
+  const { viewport, userAgent, isMobile, hasTouch, deviceScaleFactor } = testInfo.project.use;
+  const guestContext = await browser.newContext({
+    viewport,
+    userAgent,
+    isMobile,
+    hasTouch,
+    deviceScaleFactor,
+  });
+  const guest = await guestContext.newPage();
+  await guest.goto(inviteUrl);
+  await expect(guest.getByTestId('invite-title')).toHaveText(title);
+  await expect(guest.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  // The guest list stays hidden until the guest answers (TRS-06).
+  await expect(guest.getByTestId('guest-list')).toHaveCount(0);
+
+  await guest.getByTestId('rsvp-going').click();
+  await guest.getByTestId('rsvp-name').fill(guestName);
+  await guest.getByTestId('rsvp-send').click();
+  await expect(guest.getByTestId('rsvp-done')).toBeVisible();
+  await expect(guest.getByTestId('guest-list')).toContainText(guestName);
+
+  // The host sees the answer too.
+  await page.goto(inviteUrl);
+  await expect(page.getByTestId('guest-list')).toContainText(guestName);
+  await guestContext.close();
+});

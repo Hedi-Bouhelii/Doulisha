@@ -165,6 +165,8 @@ export async function getInvitation(db: Executor, actor: Actor | null, token: st
     startsAt: event.startsAt,
     venueName: showAddress ? event.venueName : null,
     address: showAddress ? event.address : null,
+    /** The host shares the address only with guests who are going. */
+    addressHidden: !showAddress,
     city: event.city,
     status: event.status,
     hostName,
