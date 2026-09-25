@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "e2e": "playwright test",
-    "test": "vitest run --passWithNoTests --dir src"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@doulisha/api": "workspace:*",

@@ -4,7 +4,7 @@ import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { coverUrlFromKey } from './uploads';
 
-const actor: Actor = { userId: 'user-1', roles: ['member'], isAnonymous: false };
+const actor: Actor = { userId: 'user-1', roles: ['participant'], isAnonymous: false };
 const deps = { storage: { publicUrl: (key: string) => `/uploads/${key}` } } as never;
 
 describe('coverUrlFromKey', () => {
