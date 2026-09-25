@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
+  "dependencies": {
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@doulisha/config": "workspace:*",
     "@types/node": "catalog:",

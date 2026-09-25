@@ -1,5 +1,8 @@
 /**
- * @doulisha/ui-tokens: Design tokens for Tailwind, kept framework-free for reuse by the future mobile app.
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/ui-tokens: colours, radii, fonts and motion from the Doulisha UI
+ * template. Framework-free (reused by the future mobile app); the web app
+ * imports the generated '@doulisha/ui-tokens/tokens.css'.
  */
-export {};
+export * from './contrast';
+export * from './css';
+export * from './tokens';

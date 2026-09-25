@@ -28,6 +28,10 @@ pnpm install          # install everything
 pnpm dev              # web app on localhost:3000
 pnpm check            # format check + lint + typecheck + test (run before finishing any step)
 pnpm build            # production build of the web app
+pnpm e2e              # Playwright E2E (desktop + mobile) against localhost:3000
+pnpm db:migrate       # apply migrations to the branch in .env.local
+pnpm db:seed          # reset the branch with demo data (refuses production)
+pnpm db:use-doulisha  # after `neon link`/`neon checkout`: point URLs at the Doulisha database
 pnpm --filter @doulisha/web <script>     # run a script in one package
 ```
 
@@ -48,7 +52,8 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
   - Never run `drizzle-kit push` against production.
   - `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) are in the root `.env.local`, written by `neon link`. The database is `Doulisha`, not `neondb`.
   - The `neon` CLI is installed and logged in. Neon agent skills are in `.claude/skills/`: use them for Neon questions.
-  - Auth is **self-managed Better Auth**, not Neon Managed Auth (OPEN_QUESTIONS Q10).
+  - Auth is **self-managed Better Auth**, not Neon Managed Auth (OPEN_QUESTIONS Q10). Details in ADR 0010.
+  - Local work uses the Neon `dev` branch. Never migrate or seed `production` by hand.
 - **RTL:** use logical properties only (`ms-`, `pe-`, `start-`, `end-`, never `ml-`, `pr-`, `left-`). Mirror directional icons. Test every screen in Arabic.
 - **Arabic copy:** mark any Arabic or Tunisian wording you are unsure of with `// TODO(i18n-review)`.
 - **Development mocks:** SMS, payments and email always use mocks in development. Never hard-code credentials.
@@ -56,6 +61,13 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
   - Private events are never listed or indexed.
   - Guest lists are visible only to hosts and guests.
 - **Web app:** before writing Next.js code, read `apps/web/AGENTS.md`. Next 16 has breaking changes; its docs are in `node_modules/next/dist/docs/`.
+  - `app/[locale]/layout.tsx` is the root layout. Do not add `app/layout.tsx`: it breaks `next/root-params`, which next-intl uses for the locale (ADR 0008).
+  - Keep the `proxy.ts` matcher simple; complex negative lookaheads are silently not matched.
+  - Pages validate the locale with `resolveLocale(params)`; do not use `setRequestLocale`.
+  - Server code reads data through `api()` (tRPC caller) and the session through `getSession()`. Call `headers()` before touching secrets so builds without secrets stay dynamic.
+  - UI follows the founder's template: tokens and components in `docs/UX_GUIDELINES.md`. Every screen has loading, empty and error states. Check new screens in `/ar` and on a 390 px wide viewport.
+  - Write escapes for invisible characters (`\u00a0`, `\u2066`) instead of the raw characters.
+- **Tests:** unit tests next to services (`*.test.ts`, Vitest). E2E tests in `apps/web/e2e` run with one worker because they share seeded accounts and the dev outbox.
 
 ## Toolchain notes
 

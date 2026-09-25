@@ -1,5 +1,6 @@
 /**
- * @doulisha/auth: Better Auth server configuration.
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/auth: Better Auth server configuration (ADR 0003, ADR 0010).
+ * The browser client lives in '@doulisha/auth/client'.
  */
-export {};
+export * from './auth';
+export * from './roles';

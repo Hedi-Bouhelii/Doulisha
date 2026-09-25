@@ -5,16 +5,26 @@
   "description": "Better Auth server configuration",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
+  "dependencies": {
+    "@doulisha/db": "workspace:*",
+    "@doulisha/notifications": "workspace:*",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
+    "react": "19.2.8",
+    "uuidv7": "^1.2.1"
+  },
   "devDependencies": {
     "@doulisha/config": "workspace:*",
     "@types/node": "catalog:",
+    "@types/react": "~19.2.2",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

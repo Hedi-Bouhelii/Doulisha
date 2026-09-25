@@ -4,15 +4,24 @@ packages:
 
 # Shared versions: reference them with "catalog:" in package.json files.
 catalog:
+  '@neondatabase/serverless': ^1.1.0
   '@types/node': ^24.13.6
+  better-auth: ^1.7.5
+  drizzle-kit: ^0.31.11
+  drizzle-orm: ^0.45.3
   eslint: ^9.39.5
   prettier: ^3.9.0
+  tsx: ^4.23.15
   turbo: ^2.11.3
   typescript: ~6.0.3
   vitest: ^5.0.1
   zod: ^4.6.5
 
 # Packages allowed (true) or refused (false) to run install scripts.
-# unrs-resolver ships prebuilt binaries, so its script is not needed.
+# - unrs-resolver, @parcel/watcher and @swc/core ship prebuilt binaries.
+# - esbuild (tsx, drizzle-kit) verifies its platform binary on install.
 allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  esbuild: true
   unrs-resolver: false

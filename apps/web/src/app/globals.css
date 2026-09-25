@@ -1,32 +1,62 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@doulisha/ui-tokens/tokens.css';
 
-/*
- * Temporary brand colours from the specification (section 8).
- * Phase 1 replaces this block with the shared tokens from @doulisha/ui-tokens.
- */
-:root {
-  --background: #f7f1e5;
-  --foreground: #1f2a22;
-  --brand: #2f5d3a;
-  --accent: #c4623a;
-}
+/* Dark mode follows the `dark` class that next-themes sets on <html> before paint. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-accent: var(--accent);
+  /* Latin first, then Arabic: each script falls back to its own font per glyph. */
+  --font-sans: var(--font-inter), var(--font-plex-arabic), system-ui, sans-serif;
+  --font-display: var(--font-playfair), var(--font-amiri), Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #141a16;
-    --foreground: #f7f1e5;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  /* Arabic reads better slightly larger and with more line height. */
+  :lang(ar) body {
+    line-height: 1.7;
+  }
+
+  /* Visible focus for keyboard users on every interactive element. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Numbers, prices and phone numbers keep left-to-right order inside RTL text. */
+  .ltr-nums {
+    direction: ltr;
+    unicode-bidi: isolate;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, sans-serif;
+/* Respect "reduce motion": no animations or smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

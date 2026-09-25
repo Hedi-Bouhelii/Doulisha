@@ -1,5 +1,8 @@
 /**
- * @doulisha/templates: Category template definitions and their Zod field schemas.
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/templates: category templates (spec 6.2, EVT-09).
+ * The definitions here seed the `templates` table; admins then edit the rows.
  */
-export {};
+export * from './categories';
+export * from './definitions';
+export * from './details-schema';
+export type * from './types';

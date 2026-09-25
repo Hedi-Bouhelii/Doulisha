@@ -8,3 +8,4 @@ docs/BUILD_PROMPT.md
 **/next-env.d.ts
 .claude/
 skills-lock.json
+packages/ui-tokens/tokens.css
