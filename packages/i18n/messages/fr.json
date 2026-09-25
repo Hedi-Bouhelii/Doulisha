@@ -451,7 +451,8 @@
     "print": "Imprimer ou enregistrer en PDF",
     "shareTitle": "Partagez votre événement",
     "hostPrivate": "Mes événements privés",
-    "copyInvite": "Copier le lien d’invitation"
+    "copyInvite": "Copier le lien d’invitation",
+    "keepEvent": "Garder l’événement"
   },
   "Wizard": {
     "newTitle": "Qu’organisez-vous ?",

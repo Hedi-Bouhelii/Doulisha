@@ -8,7 +8,7 @@ export async function SiteFooter() {
   const t = await getTranslations('Home');
   const tFooter = await getTranslations('Footer');
   return (
-    <footer className="mt-16 bg-primary text-primary-foreground">
+    <footer className="mt-16 bg-primary print:hidden text-primary-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
         <Logo tone="light" />
         <p className="font-display text-xl italic">{t('tagline')}</p>
