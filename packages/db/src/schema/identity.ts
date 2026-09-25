@@ -173,13 +173,41 @@ export const organizerProfiles = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    /** facebook, instagram, tiktok, website: public profile URLs. */
     socialLinks: jsonb().$type<Record<string, string>>().notNull().default({}),
     legalStatus: legalStatus().notNull(),
+    /** Public contact shown on the organizer page (E.164 phone). */
+    contactPhone: text(),
+    contactEmail: text(),
+    /**
+     * Where buyers send D17 and bank transfers (PAY-02). Shown only to buyers
+     * who chose that method, on their own booking.
+     */
+    paymentInstructions: jsonb()
+      .$type<{ d17Number?: string; bankName?: string; rib?: string; accountHolder?: string }>()
+      .notNull()
+      .default({}),
     verifiedAt: timestamp({ withTimezone: true }),
     ...timestamps(),
     deletedAt: deletedAt(),
   },
   (t) => [index().on(t.ownerUserId)],
+);
+
+/** Photos of past events on an organizer's profile (founder decision, OPEN_QUESTIONS Q21). */
+export const organizerPhotos = pgTable(
+  'organizer_photos',
+  {
+    id: id(),
+    organizerProfileId: uuid()
+      .notNull()
+      .references(() => organizerProfiles.id, { onDelete: 'cascade' }),
+    url: text().notNull(),
+    caption: text(),
+    sort: integer().notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.organizerProfileId, t.sort)],
 );
 
 /** PRV-01 / PRV-02 provider directory. */

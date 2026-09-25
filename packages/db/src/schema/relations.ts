@@ -10,7 +10,7 @@ import {
   templates,
   ticketTypes,
 } from './events';
-import { organizerProfiles, profiles, userRoles, users } from './identity';
+import { organizerPhotos, organizerProfiles, profiles, userRoles, users } from './identity';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, { fields: [users.id], references: [profiles.userId] }),
@@ -29,6 +29,14 @@ export const profilesRelations = relations(profiles, ({ one }) => ({
 export const organizerProfilesRelations = relations(organizerProfiles, ({ one, many }) => ({
   owner: one(users, { fields: [organizerProfiles.ownerUserId], references: [users.id] }),
   events: many(events),
+  photos: many(organizerPhotos),
+}));
+
+export const organizerPhotosRelations = relations(organizerPhotos, ({ one }) => ({
+  organizer: one(organizerProfiles, {
+    fields: [organizerPhotos.organizerProfileId],
+    references: [organizerProfiles.id],
+  }),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
