@@ -99,7 +99,6 @@
     "noReviews": "Reviews open after the event, for people who attended.",
     "getTicket": "Get ticket",
     "rsvp": "RSVP",
-    "bookingSoon": "Booking opens in the next update",
     "whatToBring": "What to bring",
     "dressCode": "Dress code",
     "rules": "Rules",
@@ -643,6 +642,7 @@
   },
   "Footer": {
     "terms": "Terms",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "legal": "Legal"
   }
 }

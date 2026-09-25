@@ -26,13 +26,21 @@ export async function SiteHeader() {
   const links = [
     { href: '/', label: t('home') },
     { href: '/explore', label: t('explore') },
-    ...(user?.isAdmin ? [{ href: '/admin', label: t('admin') }] : []),
+    { href: '/tickets', label: t('myTickets') },
   ];
+  // Member spaces: in the account menu on large screens, in the menu sheet on phones.
+  const spaces = user
+    ? [
+        { href: '/organizer', label: t('organizer') },
+        { href: '/host', label: t('host') },
+        ...(user.isAdmin ? [{ href: '/admin', label: t('admin') }] : []),
+      ]
+    : [];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:px-6">
-        <MobileNav links={links} />
+        <MobileNav links={[...links, ...spaces]} />
         <Link href="/" className="me-auto rounded-lg md:me-6" aria-label="Doulisha">
           <Logo />
         </Link>
@@ -56,7 +64,7 @@ export async function SiteHeader() {
           <LocaleSwitcher />
         </Suspense>
         <ThemeToggle className="hidden sm:inline-flex" />
-        <UserMenu user={user} />
+        <UserMenu user={user} links={spaces} />
       </div>
     </header>
   );

@@ -99,7 +99,6 @@
     "noReviews": "Les avis s’ouvrent après l’événement, pour les participants présents.",
     "getTicket": "Réserver",
     "rsvp": "Répondre",
-    "bookingSoon": "La réservation arrive dans la prochaine mise à jour",
     "whatToBring": "À apporter",
     "dressCode": "Tenue",
     "rules": "Règles",
@@ -643,6 +642,7 @@
   },
   "Footer": {
     "terms": "Conditions",
-    "privacy": "Confidentialité"
+    "privacy": "Confidentialité",
+    "legal": "Informations légales"
   }
 }
