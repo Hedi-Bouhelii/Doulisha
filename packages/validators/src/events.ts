@@ -36,7 +36,8 @@ export const eventPatchSchema = z.object({
   title: z.string().trim().max(120).optional(),
   description: z.string().trim().max(5000).nullish(),
   language: localeSchema.optional(),
-  coverUrl: z.string().max(500).nullish(),
+  /** Key of the member's own `event-cover` upload; null removes the cover. */
+  coverKey: z.string().max(300).nullish(),
   startsAt: z.coerce.date().optional(),
   endsAt: z.coerce.date().nullish(),
   venueName: z.string().trim().max(120).nullish(),
@@ -140,7 +141,7 @@ export const quickPrivateEventSchema = z.object({
   venueName: z.string().trim().max(120).nullish(),
   city: z.string().trim().max(80).nullish(),
   description: z.string().trim().max(2000).nullish(),
-  coverUrl: z.string().max(500).nullish(),
+  coverKey: z.string().max(300).nullish(),
   locationHiddenUntilBooking: z.boolean().default(false),
 });
 

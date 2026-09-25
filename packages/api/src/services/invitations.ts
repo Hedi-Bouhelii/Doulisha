@@ -8,10 +8,12 @@ import type { quickPrivateEventSchema, rsvpInputSchema } from '@doulisha/validat
 import { and, asc, eq } from 'drizzle-orm';
 import type { z } from 'zod';
 
+import type { ServiceDeps } from '../deps';
 import { makeSlug } from '../domain/slug';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { loadManagedEvent } from './event-editor';
+import { coverUrlFromKey } from './uploads';
 
 /** Unguessable token for invitation links (INV-02). */
 export function invitationToken() {
@@ -24,6 +26,7 @@ export function invitationToken() {
  */
 export async function createQuickPrivateEvent(
   db: Executor,
+  deps: Pick<ServiceDeps, 'storage'>,
   actor: Actor,
   input: z.infer<typeof quickPrivateEventSchema>,
   locale: Locale,
@@ -47,7 +50,7 @@ export async function createQuickPrivateEvent(
       title: input.title,
       description: input.description ?? null,
       language: locale,
-      coverUrl: input.coverUrl ?? null,
+      coverUrl: input.coverKey ? coverUrlFromKey(deps, actor, input.coverKey) : null,
       startsAt: input.startsAt,
       venueName: input.venueName ?? null,
       city: input.city ?? null,

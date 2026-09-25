@@ -58,7 +58,9 @@ export const editorRouter = router({
   /** Auto-save: partial update of the event fields (template details validated). */
   update: protectedProcedure
     .input(eventId.extend({ patch: eventPatchSchema }))
-    .mutation(({ ctx, input }) => updateEvent(ctx.db, ctx.actor, input.eventId, input.patch)),
+    .mutation(({ ctx, input }) =>
+      updateEvent(ctx.db, ctx.deps, ctx.actor, input.eventId, input.patch),
+    ),
 
   /** Replaces the ticket types (TKT-02); types with sales are kept and deactivated. */
   setTickets: protectedProcedure

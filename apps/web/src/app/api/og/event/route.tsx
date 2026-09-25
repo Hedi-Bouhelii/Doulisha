@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 import {
   formatEventDateTime,
@@ -51,12 +51,19 @@ function loadFonts() {
   return fonts;
 }
 
-async function imageDataUrl(path: string | null, appUrl: string): Promise<string | null> {
-  if (!path) return null;
+const publicDir = join(process.cwd(), 'public');
+
+/**
+ * Loads a cover or the logo from /public only. Never fetches a URL: covers are
+ * checked uploads (coverUrlFromKey), and reading from disk keeps this route
+ * from being used to reach other hosts. R2 covers arrive in Phase 6.
+ */
+async function imageDataUrl(path: string | null): Promise<string | null> {
+  if (!path?.startsWith('/') || path.includes('..')) return null;
   try {
-    const source = path.startsWith('/')
-      ? await readFile(join(process.cwd(), 'public', ...path.split('/').filter(Boolean)))
-      : Buffer.from(await (await fetch(new URL(path, appUrl))).arrayBuffer());
+    const file = resolve(publicDir, ...path.split('?')[0]!.split('/').filter(Boolean));
+    if (!file.startsWith(publicDir + sep)) return null;
+    const source = await readFile(file);
     if (path.endsWith('.png')) return `data:image/png;base64,${source.toString('base64')}`;
     // Satori reads PNG and JPEG only; covers are WebP, so convert (and shrink) first.
     const jpeg = await sharp(source)
@@ -155,8 +162,8 @@ export async function GET(request: Request) {
   const accent =
     categoryAccents[event.category.accent as keyof typeof categoryAccents] ??
     categoryAccents.outdoor;
-  const cover = await imageDataUrl(event.coverUrl, url.origin);
-  const symbol = await imageDataUrl('/images/brand/symbol.png', url.origin);
+  const cover = await imageDataUrl(event.coverUrl);
+  const symbol = await imageDataUrl('/images/brand/symbol.png');
   const rtl = getDirection(locale) === 'rtl';
   // Satori cannot shape Amiri's Arabic; IBM Plex Sans Arabic renders correctly.
   const titleFont = ARABIC.test(event.title) ? 'Plex Arabic' : 'Playfair';

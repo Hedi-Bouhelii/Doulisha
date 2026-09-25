@@ -15,7 +15,9 @@ export const invitationsRouter = router({
   /** INV-01: creates and publishes a private event; returns the invitation token. */
   quickCreate: protectedProcedure
     .input(quickPrivateEventSchema)
-    .mutation(({ ctx, input }) => createQuickPrivateEvent(ctx.db, ctx.actor, input, ctx.locale)),
+    .mutation(({ ctx, input }) =>
+      createQuickPrivateEvent(ctx.db, ctx.deps, ctx.actor, input, ctx.locale),
+    ),
 
   /** The shareable link token of one of the host's events. */
   link: protectedProcedure

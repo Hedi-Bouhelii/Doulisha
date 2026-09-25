@@ -18,8 +18,10 @@ import type { z } from 'zod';
 
 import { publishProblems, type PublishProblem } from '../domain/publish';
 import { makeSlug } from '../domain/slug';
+import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import { assertCanManageEvent, type Actor } from '../permissions';
+import { coverUrlFromKey } from './uploads';
 
 /** Loads an event with what permission checks need, or throws NOT_FOUND. */
 export async function loadManagedEvent(db: Executor, actor: Actor | null, eventId: string) {
@@ -162,7 +164,13 @@ function validateDetails(definition: TemplateDefinitionData, details: Record<str
 }
 
 /** EVT-02 to EVT-05: auto-saves wizard fields (a partial update). */
-export async function updateEvent(db: Executor, actor: Actor, eventId: string, patch: EventPatch) {
+export async function updateEvent(
+  db: Executor,
+  deps: Pick<ServiceDeps, 'storage'>,
+  actor: Actor,
+  eventId: string,
+  patch: EventPatch,
+) {
   const event = await loadManagedEvent(db, actor, eventId);
   if (event.status === 'cancelled' || event.status === 'completed') {
     throw new AppError('BAD_REQUEST', 'errors.eventLocked');
@@ -176,10 +184,14 @@ export async function updateEvent(db: Executor, actor: Actor, eventId: string, p
     const template = await loadTemplate(db, event.templateId);
     details = validateDetails(template.definition, { ...event.details, ...patch.details });
   }
-  const { details: _ignored, ...rest } = patch;
+  const { details: _ignored, coverKey, ...rest } = patch;
+  const cover =
+    coverKey === undefined
+      ? {}
+      : { coverUrl: coverKey === null ? null : coverUrlFromKey(deps, actor, coverKey) };
   await db
     .update(schema.events)
-    .set({ ...rest, details })
+    .set({ ...rest, ...cover, details })
     .where(eq(schema.events.id, eventId));
 }
 
