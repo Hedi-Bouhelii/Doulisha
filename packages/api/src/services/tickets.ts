@@ -5,6 +5,7 @@ import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { refundAmount } from '../domain/refund-policy';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
+import { allowedPayments } from './booking';
 import { attendeePayment } from './organizer-tools';
 import { getOwnOrder } from './payments';
 
@@ -90,6 +91,17 @@ export async function getMyOrder(
     .orderBy(desc(schema.refunds.createdAt))
     .limit(1);
 
+  const [organizer] = event.organizerProfileId
+    ? await db
+        .select({
+          name: schema.organizerProfiles.name,
+          slug: schema.organizerProfiles.slug,
+          paymentInstructions: schema.organizerProfiles.paymentInstructions,
+        })
+        .from(schema.organizerProfiles)
+        .where(eq(schema.organizerProfiles.id, event.organizerProfileId))
+    : [];
+
   const status = bookings[0]?.booking.status ?? 'cancelled';
   const pendingManual = payments.find((p) => p.status === 'pending' && p.provider === 'manual');
   const canCancel =
@@ -111,6 +123,14 @@ export async function getMyOrder(
     waitlistPosition:
       bookings.find((b) => b.booking.status === 'waitlisted')?.booking.waitlistPosition ?? null,
     manualMethod: pendingManual?.method ?? null,
+    /**
+     * Where to send the money, only for the method the buyer chose (PAY-02).
+     * Null when the organizer has not filled it in yet.
+     */
+    payTo: payToFor(pendingManual?.method ?? null, organizer),
+    /** Methods the event accepts, for "Pay differently". */
+    paymentMethods: allowedPayments(event.registrationType),
+    organizer: organizer ? { name: organizer.name, slug: organizer.slug } : null,
     proofStatus: proofs.at(-1)?.status ?? null,
     refund: refund ? { status: refund.status, amountMillimes: refund.amountMillimes } : null,
     canCancel,
@@ -150,6 +170,24 @@ export async function getMyOrder(
       };
     }),
   };
+}
+
+function payToFor(
+  method: string | null,
+  organizer: { paymentInstructions: Record<string, string | undefined> } | undefined,
+) {
+  const info = organizer?.paymentInstructions ?? {};
+  if (method === 'd17' && info.d17Number)
+    return { method: 'd17' as const, d17Number: info.d17Number };
+  if (method === 'bank_transfer' && info.rib) {
+    return {
+      method: 'bank_transfer' as const,
+      rib: info.rib,
+      bankName: info.bankName ?? null,
+      accountHolder: info.accountHolder ?? null,
+    };
+  }
+  return null;
 }
 
 /** Private file key of a proof, for organizers of the order's event (served via a checked route). */

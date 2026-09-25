@@ -2,7 +2,7 @@ import { createBookingSchema } from '@doulisha/validators';
 import { z } from 'zod';
 
 import { createBooking, getCheckoutOptions } from '../services/booking';
-import { attachProof, payOnline } from '../services/payments';
+import { attachProof, changeManualMethod, payOnline } from '../services/payments';
 import { cancelOwnBooking } from '../services/refunds';
 import { getMyOrder, listMyOrders } from '../services/tickets';
 import { publicProcedure, router } from '../trpc';
@@ -47,4 +47,11 @@ export const bookingRouter = router({
   cancel: publicProcedure
     .input(reference)
     .mutation(({ ctx, input }) => cancelOwnBooking(ctx.db, ctx.deps, ctx.actor, input.reference)),
+
+  /** "Pay differently": switch between D17, transfer and cash before paying. */
+  changeMethod: publicProcedure
+    .input(reference.extend({ method: z.enum(['cash', 'bank_transfer', 'd17']) }))
+    .mutation(({ ctx, input }) =>
+      changeManualMethod(ctx.db, ctx.actor, input.reference, input.method),
+    ),
 });

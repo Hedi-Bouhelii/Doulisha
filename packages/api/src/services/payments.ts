@@ -10,6 +10,7 @@ import { isBalanced, paymentEntries } from '../domain/ledger';
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
+import { allowedPayments } from './booking';
 import { lockEventStock, movePlaces, orderBookings } from './stock';
 
 /** Ledger key of the organizer (profile) or host who receives the money. */
@@ -361,4 +362,49 @@ export async function reviewProof(
       await applySucceededPayment(tx, payment, now, { confirmedById: reviewerId });
     }
   });
+}
+
+/**
+ * The buyer switches between D17, transfer and cash before paying ("Pay
+ * differently"). Only while a manual payment is pending and no receipt is
+ * under review; online payment has its own path (`payOnline`).
+ */
+export async function changeManualMethod(
+  db: Executor,
+  actor: Actor | null,
+  reference: string,
+  method: 'cash' | 'bank_transfer' | 'd17',
+) {
+  const order = await getOwnOrder(db, actor, reference);
+  const [event] = await db
+    .select({ registrationType: schema.events.registrationType })
+    .from(schema.events)
+    .where(eq(schema.events.id, order.eventId!));
+  if (!event || !allowedPayments(event.registrationType).includes(method)) {
+    throw new AppError('BAD_REQUEST', 'errors.paymentMethodNotAllowed');
+  }
+  const [payment] = await db
+    .select()
+    .from(schema.payments)
+    .where(
+      and(
+        eq(schema.payments.orderId, order.id),
+        eq(schema.payments.provider, 'manual'),
+        eq(schema.payments.status, 'pending'),
+      ),
+    )
+    .limit(1);
+  if (!payment) throw new AppError('BAD_REQUEST', 'errors.nothingToPay');
+  const [pendingProof] = await db
+    .select({ id: schema.paymentProofs.id })
+    .from(schema.paymentProofs)
+    .where(
+      and(
+        eq(schema.paymentProofs.paymentId, payment.id),
+        eq(schema.paymentProofs.status, 'pending'),
+      ),
+    )
+    .limit(1);
+  if (pendingProof) throw new AppError('BAD_REQUEST', 'errors.proofUnderReview');
+  await db.update(schema.payments).set({ method }).where(eq(schema.payments.id, payment.id));
 }
