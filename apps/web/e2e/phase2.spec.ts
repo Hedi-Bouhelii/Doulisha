@@ -83,7 +83,7 @@ for (const locale of ['fr', 'ar', 'en'] as const) {
     await guest.locator('#name-0').fill(guestName);
     await guest.locator('#phone-0').fill('55123456');
     await guest.getByTestId('checkout-next-payment').click();
-    await guest.locator('input[name=payment][value=online]').check();
+    await guest.getByTestId('pay-method-online').click();
     await guest.getByTestId('confirm-booking').click();
     await guest.getByTestId('mock-pay').click();
     await guest.waitForURL(new RegExp(`/${locale}/tickets/`));

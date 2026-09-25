@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { readOutbox, signInWithPhone } from './helpers';
+import { completeSetupIfAsked, E2E_PASSWORD, enterCode, signInWithPhone } from './helpers';
 
 /**
  * Phase 1 acceptance (BUILD_PROMPT section 8, web only):
@@ -10,16 +10,29 @@ import { readOutbox, signInWithPhone } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
-test('a new member signs up with phone OTP and chooses a name', async ({ page }) => {
+test('a new member signs up with a phone code, then signs in with a password', async ({ page }) => {
   // A random 8-digit Tunisian mobile number starting with 9 (not used by the seed).
   const localPhone = `9${Math.floor(1_000_000 + Math.random() * 8_999_999)}`;
-  await signInWithPhone(page, 'fr', localPhone);
+  await page.goto('/fr/sign-up');
+  await page.getByTestId('account-type-participant').click();
+  await page.locator('#phone').fill(localPhone);
+  const since = Date.now() - 1000;
+  await page.getByTestId('send-code').click();
+  await enterCode(page, 'sms', `+216${localPhone}`, since);
 
-  await expect(page.locator('#name')).toBeVisible();
-  await page.locator('#name').fill('Testeur Playwright');
-  await page.getByRole('button', { name: 'Continuer' }).click();
-
+  await expect(page).toHaveURL(/\/fr\/account\/setup/);
+  await page.getByTestId('setup-name').fill('Testeur Playwright');
+  await page.locator('#new-password').fill(E2E_PASSWORD);
+  await page.getByTestId('setup-submit').click();
   await expect(page).toHaveURL(/\/fr$/);
+  await expect(page.getByTestId('user-menu')).toBeVisible();
+
+  // Next time: phone and password, no code.
+  await page.context().clearCookies();
+  await page.goto('/fr/sign-in');
+  await page.locator('#phone').fill(localPhone);
+  await page.locator('#password').fill(E2E_PASSWORD);
+  await page.getByTestId('sign-in-submit').click();
   await expect(page.getByTestId('user-menu')).toBeVisible();
 });
 
@@ -61,24 +74,24 @@ test('private and draft events are never reachable publicly', async ({ page }) =
   await expect(page.getByText('Randonnée à Rtiba')).toHaveCount(0);
 });
 
-test('a member signs in with an email magic link', async ({ page }) => {
+test('a member signs in with an email code and sets a password', async ({ page }) => {
   const email = `e2e-${Date.now()}@example.tn`;
   await page.goto('/en/sign-in');
-  await page.getByRole('tab', { name: 'Email' }).click();
+  await page.getByTestId('use-code').click();
+  await page.getByTestId('method-email').click();
   await page.locator('#email').fill(email);
   const since = Date.now() - 1000;
-  await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
-  await expect(page.getByRole('status')).toContainText(email);
-
-  const link = await readOutbox(page, {
-    channel: 'email',
-    to: email,
-    since,
-    pattern: /https?:\/\/\S+/,
-  });
-  await page.goto(link);
+  await page.getByTestId('send-code').click();
+  await enterCode(page, 'email', email, since);
+  await completeSetupIfAsked(page, 'Email Member');
   await expect(page).toHaveURL(/\/en$/);
   await expect(page.getByTestId('user-menu')).toBeVisible();
+});
+
+test('visitors see no "My tickets" link', async ({ page }) => {
+  await page.goto('/en');
+  await expect(page.getByTestId('header-sign-up')).toBeVisible();
+  await expect(page.locator('header a[href="/en/tickets"]')).toHaveCount(0);
 });
 
 test('guests can get an anonymous session for RSVP without an account', async ({ request }) => {
