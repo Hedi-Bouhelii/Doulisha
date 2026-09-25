@@ -59,8 +59,9 @@ pnpm db:seed      # demo data in Arabic, French and English (wipes the branch fi
 pnpm dev          # http://localhost:3000 → redirects to /fr, /ar or /en
 ```
 
-- **Sign in** at `/fr/sign-in` with any phone number. The code appears in the dev outbox at `/fr/dev/outbox` (nothing is really sent).
-- **Admin:** sign in with `20 000 001` (the seeded admin) and open `/fr/admin` to browse the seed data.
+- **Create an account** at `/fr/sign-up` (participant or organizer) with any phone number or email. Codes appear in the dev outbox at `/fr/dev/outbox` (nothing is really sent). Then choose a password.
+- **Seeded accounts** have no password yet: on `/fr/sign-in`, choose "Receive a code instead" the first time, then set a password.
+- **Admin:** `20 000 001` (the seeded admin); open `/fr/admin` to browse the seed data and `/fr/admin/templates` to edit templates.
 - **Arabic:** use the language menu or open `/ar`; the layout flips to right-to-left.
 - **Components:** `/fr/design` shows every base component and state (development only).
 - **Organizer:** sign in with `22 000 001` (Sami, owner of "Kroumirie Trekkers"), open `/fr/organizer`, create an event from a template and publish it.

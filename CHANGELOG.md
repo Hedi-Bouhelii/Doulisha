@@ -4,6 +4,26 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: Phase 2 founder review (2026-09-25)
+
+- **Accounts (ADR 0016):**
+  - Separate sign-up and sign-in. Sign-up: participant or organizer, then a phone or email code, then name, city and password.
+  - Sign-in with phone or email and password; "Receive a code instead" as a fallback; forgot-password by code.
+  - Email codes replace magic links.
+  - A guest who booked and then signs up keeps their orders and tickets (the link used to fail on them).
+- **Organizers:**
+  - Organizer sign-up creates a profile prefilled from the account, then a three-step onboarding: who you are, what you organize, contact and payment.
+  - Profiles gain a cover, logo, contact phone and email, Facebook / Instagram / TikTok / website links, up to 12 photos of past events, and D17 / bank details for buyers.
+  - The profile tab shows the profile as participants see it, with an edit mode; a public page `/organizers/{slug}` lists upcoming events. Event pages link to it.
+  - "Become an organizer" for existing members.
+- **Booking:**
+  - Redesigned checkout: labelled steps, summary always visible, bottom action bar on phones, payment methods as cards, and "Continue" explains what is missing.
+  - After choosing D17 or a transfer, the ticket page shows only that method: the organizer's number or RIB (copy button) and the receipt upload. "Pay differently" switches method on request.
+  - Redesigned ticket page (next-step card, ticket-style QR cards) and "My tickets" (upcoming / past).
+- **Create an event:** a first choice between a public event and a private invitation, then large template cards with photos and descriptions.
+- **Navigation:** "My tickets" is hidden from visitors; "Create account" next to "Sign in".
+- **Security:** social links accept only http(s) addresses; organizer images are ownership-checked upload keys, like event covers.
+
 ### Added: Phase 2, events, booking, payments, organizers and sharing (2026-09-25)
 
 - **Event creation (EVT-01..09):**

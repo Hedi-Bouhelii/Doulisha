@@ -161,3 +161,30 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** Each Phase 2 E2E run publishes real test hikes and invitations on the Neon `dev` branch; they then appear in local listings.
 - **Assumption:** Acceptable: `pnpm db:seed` resets the branch, and CI runs on a throwaway branch per pull request. Tests use unique titles so runs never collide.
 - **Decision:**
+
+### Q21. Photos of past events on organizer profiles
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The spec's organizer profile (ACC-03) lists name, logo, bio, cover, categories, regions, social links and legal status. The founder asked for photos of previous work too.
+- **Decision (2026-09-25, founder):** Organizers show up to 12 photos of past events on their profile (`organizer_photos`). Moderation of these photos comes with the admin tools (Phase 5).
+
+### Q22. Organizer contacts on the public page
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The organizer profile is prefilled from the account, including the verified phone and email, and organizers want to be reachable.
+- **Assumption:** The contact phone and email appear on the public organizer page; the form says so and the organizer can clear them. Payment details (D17 number, RIB) are never public: buyers see them only on their own booking.
+- **Decision:**
+
+### Q23. "My tickets" for guests
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The founder asked to hide "My tickets" from people who are not signed in. Guests who book without an account have a guest session on their device.
+- **Assumption:** Hidden for visitors without a session; shown for members and for guests who booked on this device, so they can find their ticket again.
+- **Decision:**
+
+### Q24. Linking social accounts
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** Organizer profiles have links to Facebook, Instagram, TikTok and a website. The founder wants to discuss connecting social accounts (sign-in, importing content, publishing).
+- **Assumption:** Links only for now; the linking process is the next topic with the founder.
+- **Decision:**

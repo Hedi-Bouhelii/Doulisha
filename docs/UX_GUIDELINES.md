@@ -63,6 +63,12 @@ Every data view has:
 - **Guests:** booking and RSVP never require an account; a guest session is created on submit.
 - **Door check-in:** results are big and coloured (green OK, amber paid-later or already checked in, terracotta invalid) so they read at arm's length.
 - **Print:** the header, footer and organizer navigation are `print:hidden`; the attendee list prints as a plain table.
+- **Accounts (ADR 0016):** sign-up asks one question first (join or organize), then one field (phone or email), then a code, then name and password on a separate screen. Sign-in shows the password first and "Receive a code instead" as a link.
+- **Never a silent disabled button:** "Continue" stays clickable and lists what is missing (red fields, short sentences) instead of greying out.
+- **Phones:** the main action sits in a bar fixed to the bottom, with the total; the order summary folds into a card at the top.
+- **After booking:** one "what to do now" card for the method the buyer chose (D17 number or RIB with a copy button, then the receipt upload). Other methods only behind "Pay differently".
+- **Tickets** look like tickets: a coloured stub with the person's name, a perforation, a large QR code.
+- **Mixed-language text** (a French title on an Arabic page) uses `dir="auto"` so it truncates and aligns on its own reading side.
 
 ## Motion
 
