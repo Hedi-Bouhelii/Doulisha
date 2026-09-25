@@ -76,7 +76,8 @@ export function CheckoutFlow({
   const places = lines.reduce((s, l) => s + l.quantity * l.ticket.seatsPerTicket, 0);
   const total = lines.reduce((s, l) => s + l.quantity * l.ticket.priceMillimes, 0);
   const canDeposit =
-    options.registrationType === 'deposit' && lines.some((l) => (l.ticket.depositMillimes ?? 0) > 0);
+    options.registrationType === 'deposit' &&
+    lines.some((l) => (l.ticket.depositMillimes ?? 0) > 0);
   // What a deposit would cost now (types without a deposit are paid in full), as the server computes it.
   const depositDue = lines.reduce(
     (s, l) =>
@@ -105,7 +106,10 @@ export function CheckoutFlow({
   }
 
   function changeQuantity(ticketId: string, delta: number, max: number) {
-    setQuantities((q) => ({ ...q, [ticketId]: Math.max(0, Math.min(max, (q[ticketId] ?? 0) + delta)) }));
+    setQuantities((q) => ({
+      ...q,
+      [ticketId]: Math.max(0, Math.min(max, (q[ticketId] ?? 0) + delta)),
+    }));
   }
 
   const book = useMutation(trpc.booking.create.mutationOptions());
@@ -187,7 +191,9 @@ export function CheckoutFlow({
                       {ticket.priceMillimes > 0
                         ? `${formatPrice(ticket.priceMillimes, locale)} ${t('perTicket')}`
                         : tEvent('free')}
-                      {ticket.seatsPerTicket > 1 ? ` · ${t('seats', { count: ticket.seatsPerTicket })}` : ''}
+                      {ticket.seatsPerTicket > 1
+                        ? ` · ${t('seats', { count: ticket.seatsPerTicket })}`
+                        : ''}
                     </p>
                     {ticket.description ? (
                       <p className="mt-1 text-sm text-muted-foreground">{ticket.description}</p>
@@ -220,7 +226,9 @@ export function CheckoutFlow({
                       className="size-11 rounded-full"
                       aria-label={`${t('add')} · ${ticket.name}`}
                       disabled={quantity >= max && !options.waitlistEnabled}
-                      onClick={() => changeQuantity(ticket.id, 1, options.waitlistEnabled ? 10 : max)}
+                      onClick={() =>
+                        changeQuantity(ticket.id, 1, options.waitlistEnabled ? 10 : max)
+                      }
                       data-testid={`add-ticket-${ticket.name}`}
                     >
                       <Plus className="size-4" />
@@ -246,7 +254,9 @@ export function CheckoutFlow({
             ) : null}
 
             {waitlist ? (
-              <p className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">{t('waitlistNote')}</p>
+              <p className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+                {t('waitlistNote')}
+              </p>
             ) : null}
 
             <div className="flex justify-end pt-2">
@@ -261,7 +271,9 @@ export function CheckoutFlow({
                 {t('next')}
               </Button>
             </div>
-            {places === 0 ? <p className="text-end text-sm text-muted-foreground">{t('chooseTickets')}</p> : null}
+            {places === 0 ? (
+              <p className="text-end text-sm text-muted-foreground">{t('chooseTickets')}</p>
+            ) : null}
           </section>
         ) : null}
 
@@ -280,7 +292,9 @@ export function CheckoutFlow({
                     autoComplete={i === 0 ? 'name' : 'off'}
                     value={person.fullName}
                     onChange={(e) =>
-                      setPeople((ps) => ps.map((p, j) => (j === i ? { ...p, fullName: e.target.value } : p)))
+                      setPeople((ps) =>
+                        ps.map((p, j) => (j === i ? { ...p, fullName: e.target.value } : p)),
+                      )
                     }
                     className="h-11"
                     required
@@ -297,7 +311,9 @@ export function CheckoutFlow({
                         autoComplete="tel"
                         value={person.phone}
                         onChange={(e) =>
-                          setPeople((ps) => ps.map((p, j) => (j === 0 ? { ...p, phone: e.target.value } : p)))
+                          setPeople((ps) =>
+                            ps.map((p, j) => (j === 0 ? { ...p, phone: e.target.value } : p)),
+                          )
                         }
                         className="h-11 text-start"
                       />
@@ -311,7 +327,9 @@ export function CheckoutFlow({
                         autoComplete="email"
                         value={person.email}
                         onChange={(e) =>
-                          setPeople((ps) => ps.map((p, j) => (j === 0 ? { ...p, email: e.target.value } : p)))
+                          setPeople((ps) =>
+                            ps.map((p, j) => (j === 0 ? { ...p, email: e.target.value } : p)),
+                          )
                         }
                         className="h-11 text-start"
                       />
@@ -380,7 +398,11 @@ export function CheckoutFlow({
               <Button variant="ghost" className="min-h-11" onClick={() => setStep(0)}>
                 {t('back')}
               </Button>
-              <Button className="min-h-11 rounded-full px-6" disabled={!detailsValid} onClick={() => setStep(2)}>
+              <Button
+                className="min-h-11 rounded-full px-6"
+                disabled={!detailsValid}
+                onClick={() => setStep(2)}
+              >
                 {t('next')}
               </Button>
             </div>
@@ -397,7 +419,9 @@ export function CheckoutFlow({
                     key={method}
                     className={cn(
                       'flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border bg-card p-4',
-                      payment === method ? 'border-primary ring-2 ring-primary/30' : 'border-border',
+                      payment === method
+                        ? 'border-primary ring-2 ring-primary/30'
+                        : 'border-border',
                     )}
                   >
                     <input
@@ -410,13 +434,19 @@ export function CheckoutFlow({
                     />
                     <span>
                       <span className="font-medium">{t(`methods.${method}`)}</span>
-                      <span className="block text-sm text-muted-foreground">{t(`methodHints.${method}`)}</span>
+                      <span className="block text-sm text-muted-foreground">
+                        {t(`methodHints.${method}`)}
+                      </span>
                     </span>
                   </label>
                 ))}
               </fieldset>
             ) : null}
-            {waitlist ? <p className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">{t('waitlistNote')}</p> : null}
+            {waitlist ? (
+              <p className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+                {t('waitlistNote')}
+              </p>
+            ) : null}
             <p className="text-sm text-muted-foreground">
               {t('policyNote', { policy: tEvent(`policy.${event.cancellationPolicy}`) })}
             </p>

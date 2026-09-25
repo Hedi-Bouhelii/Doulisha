@@ -59,9 +59,18 @@ export default async function TicketsPage({ params }: PageProps<'/[locale]/ticke
               >
                 <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                   {order.event.coverUrl ? (
-                    <Image src={order.event.coverUrl} alt="" fill sizes="64px" className="object-cover" />
+                    <Image
+                      src={order.event.coverUrl}
+                      alt=""
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
                   ) : (
-                    <Ticket className="m-auto mt-5 size-6 text-muted-foreground" aria-hidden="true" />
+                    <Ticket
+                      className="m-auto mt-5 size-6 text-muted-foreground"
+                      aria-hidden="true"
+                    />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -90,7 +99,10 @@ export default async function TicketsPage({ params }: PageProps<'/[locale]/ticke
 }
 
 /** Order status → ticket status label. */
-const STATUS: Record<string, 'confirmed' | 'awaiting_payment' | 'waitlisted' | 'cancelled' | 'expired' | 'refunded'> = {
+const STATUS: Record<
+  string,
+  'confirmed' | 'awaiting_payment' | 'waitlisted' | 'cancelled' | 'expired' | 'refunded'
+> = {
   paid: 'confirmed',
   partially_paid: 'confirmed',
   awaiting_payment: 'awaiting_payment',

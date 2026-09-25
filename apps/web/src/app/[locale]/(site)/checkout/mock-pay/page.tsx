@@ -22,7 +22,10 @@ function one(value: string | string[] | undefined) {
  * signed webhook to /api/payments/mock/webhook exactly like Konnect or Flouci
  * would, so the real verification and processing path is exercised.
  */
-export default async function MockPayPage({ params, searchParams }: PageProps<'/[locale]/checkout/mock-pay'>) {
+export default async function MockPayPage({
+  params,
+  searchParams,
+}: PageProps<'/[locale]/checkout/mock-pay'>) {
   if (process.env.NODE_ENV === 'production') notFound();
   const locale = await resolveLocale(params);
   const sp = await searchParams;

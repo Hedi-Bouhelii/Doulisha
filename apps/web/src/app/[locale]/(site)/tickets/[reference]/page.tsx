@@ -29,7 +29,10 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
   const locale = await resolveLocale(params);
   const { reference } = await params;
   const order = await (await api()).booking.byReference({ reference }).catch((error: unknown) => {
-    if (error instanceof TRPCError && (error.code === 'NOT_FOUND' || error.code === 'UNAUTHORIZED' || error.code === 'BAD_REQUEST')) {
+    if (
+      error instanceof TRPCError &&
+      (error.code === 'NOT_FOUND' || error.code === 'UNAUTHORIZED' || error.code === 'BAD_REQUEST')
+    ) {
       notFound();
     }
     throw error;
@@ -60,10 +63,18 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground" data-testid="ticket-status">
+        <span
+          className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
+          data-testid="ticket-status"
+        >
           {t(`status.${status}`)}
         </span>
-        <span className={cn('rounded-full px-3 py-1 text-sm font-semibold', paymentClasses[order.payment])}>
+        <span
+          className={cn(
+            'rounded-full px-3 py-1 text-sm font-semibold',
+            paymentClasses[order.payment],
+          )}
+        >
           {t(`payment.${order.payment}`)}
         </span>
         {order.totalMillimes > 0 ? (
@@ -74,13 +85,17 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
       </div>
 
       <div className="mt-4 space-y-2 text-sm">
-        {order.holdExpiresAt ? <p>{t('holdUntil', { time: formatTime(order.holdExpiresAt, locale) })}</p> : null}
+        {order.holdExpiresAt ? (
+          <p>{t('holdUntil', { time: formatTime(order.holdExpiresAt, locale) })}</p>
+        ) : null}
         {order.offerExpiresAt ? (
           <p className="font-medium text-highlight">
             {t('offerUntil', { time: formatEventDateTime(order.offerExpiresAt, locale) })}
           </p>
         ) : null}
-        {order.waitlistPosition ? <p>{t('waitlistPosition', { position: order.waitlistPosition })}</p> : null}
+        {order.waitlistPosition ? (
+          <p>{t('waitlistPosition', { position: order.waitlistPosition })}</p>
+        ) : null}
         {order.balanceDueAt && order.dueMillimes > 0 && order.paidMillimes > 0 ? (
           <p>
             {t('balanceDue', {
@@ -90,43 +105,75 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
           </p>
         ) : null}
         {order.manualMethod && order.dueMillimes > 0 && status !== 'cancelled' ? (
-          <p>{t(`manual.${order.manualMethod as 'd17' | 'bank_transfer' | 'cash'}`, { amount: formatPrice(order.dueMillimes, locale) })}</p>
+          <p>
+            {t(`manual.${order.manualMethod as 'd17' | 'bank_transfer' | 'cash'}`, {
+              amount: formatPrice(order.dueMillimes, locale),
+            })}
+          </p>
         ) : null}
         {order.proofStatus ? <p>{t(`proof.${order.proofStatus}`)}</p> : null}
         {order.refund ? (
-          <p>{t(`refund.${order.refund.status}`, { amount: formatPrice(order.refund.amountMillimes, locale) })}</p>
+          <p>
+            {t(`refund.${order.refund.status}`, {
+              amount: formatPrice(order.refund.amountMillimes, locale),
+            })}
+          </p>
         ) : null}
       </div>
 
       <TicketActions
         reference={order.reference}
         dueMillimes={order.dueMillimes}
-        canPayOnline={['awaiting_payment', 'offered'].includes(status) || (status === 'confirmed' && order.dueMillimes > 0)}
-        canUploadProof={Boolean(order.manualMethod && order.manualMethod !== 'cash' && order.dueMillimes > 0 && order.proofStatus !== 'pending')}
+        canPayOnline={
+          ['awaiting_payment', 'offered'].includes(status) ||
+          (status === 'confirmed' && order.dueMillimes > 0)
+        }
+        canUploadProof={Boolean(
+          order.manualMethod &&
+          order.manualMethod !== 'cash' &&
+          order.dueMillimes > 0 &&
+          order.proofStatus !== 'pending',
+        )}
         canCancel={order.canCancel}
         refundIfCancelled={order.refundIfCancelled}
         calendar={{
           title: order.event.title,
           start: order.event.startsAt.toISOString(),
           end: order.event.endsAt?.toISOString() ?? null,
-          location: [order.event.venueName, order.event.address, order.event.city].filter(Boolean).join(', '),
+          location: [order.event.venueName, order.event.address, order.event.city]
+            .filter(Boolean)
+            .join(', '),
         }}
       />
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2">
         {order.tickets.map((ticket) => (
-          <li key={ticket.id} className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 text-center">
+          <li
+            key={ticket.id}
+            className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 text-center"
+          >
             <p className="font-semibold">{t('ticketFor', { name: ticket.fullName })}</p>
-            {ticket.ticketName ? <p className="-mt-2 text-sm text-muted-foreground">{ticket.ticketName}</p> : null}
+            {ticket.ticketName ? (
+              <p className="-mt-2 text-sm text-muted-foreground">{ticket.ticketName}</p>
+            ) : null}
             {ticket.ticketCode ? (
-              <TicketQR code={ticket.ticketCode} reference={ticket.ticketCode} label={t('qrLabel')} />
+              <TicketQR
+                code={ticket.ticketCode}
+                reference={ticket.ticketCode}
+                label={t('qrLabel')}
+              />
             ) : (
-              <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">{t('qrLater')}</p>
+              <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+                {t('qrLater')}
+              </p>
             )}
             {ticket.meetingPoint && ticket.meetAt ? (
               <p className="flex items-center gap-1.5 text-sm">
                 <MapPin className="size-4 text-primary" aria-hidden="true" />
-                {t('meetingPoint', { name: ticket.meetingPoint, time: formatTime(ticket.meetAt, locale) })}
+                {t('meetingPoint', {
+                  name: ticket.meetingPoint,
+                  time: formatTime(ticket.meetAt, locale),
+                })}
               </p>
             ) : null}
             {ticket.checkedInAt ? (
@@ -140,7 +187,10 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
       </ul>
 
       <p className="mt-8">
-        <Link href={`/events/${order.event.slug}`} className="text-sm font-semibold text-primary hover:underline">
+        <Link
+          href={`/events/${order.event.slug}`}
+          className="text-sm font-semibold text-primary hover:underline"
+        >
           {t('viewEvent')}
         </Link>
       </p>

@@ -1,6 +1,9 @@
 /** iCalendar date-time in UTC, e.g. 20261003T060000Z. */
 function icsDate(date: Date) {
-  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
 }
 
 /** Escapes text values as RFC 5545 requires (backslash, newline, comma, semicolon). */
