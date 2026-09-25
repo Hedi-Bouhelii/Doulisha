@@ -263,6 +263,7 @@ export function CheckoutFlow({
               <Button
                 className="min-h-11 rounded-full px-6"
                 disabled={places === 0}
+                data-testid="checkout-next-details"
                 onClick={() => {
                   syncPeople(places);
                   setStep(1);
@@ -402,6 +403,7 @@ export function CheckoutFlow({
                 className="min-h-11 rounded-full px-6"
                 disabled={!detailsValid}
                 onClick={() => setStep(2)}
+                data-testid="checkout-next-payment"
               >
                 {t('next')}
               </Button>

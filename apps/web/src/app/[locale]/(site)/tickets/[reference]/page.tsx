@@ -66,6 +66,7 @@ export default async function TicketPage({ params }: PageProps<'/[locale]/ticket
         <span
           className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
           data-testid="ticket-status"
+          data-status={status}
         >
           {t(`status.${status}`)}
         </span>
