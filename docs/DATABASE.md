@@ -49,9 +49,12 @@ pnpm --filter @doulisha/db exec drizzle-kit check   # CI: migrations consistent 
 - `0001_init.sql`: all MVP tables. drizzle-kit quotes custom column types, so `geography(Point, 4326)` was unquoted by hand in this file; do the same if a new migration adds a geography column.
 - `0002_event_audience.sql`: `events.audience` (`text[]`, "for whom" filter, DSC-02).
 - `0003_organizer_details.sql`: organizer contact phone and email, `payment_instructions` (D17 number, bank, RIB, account holder) and the `organizer_photos` gallery table.
+- `0004_payment_review.sql`: `orders.locale` (language of the buyer's messages) and `payment_proofs.rejection_reason` (ADR 0018). D17 and transfer reservations use the existing `bookings.hold_expires_at` as their deadline.
 - Never run `drizzle-kit push` against production.
 
-Stock changes (bookings, payments, cancellations) run in WebSocket `Pool` transactions that lock the event row first (ADR 0011). `pnpm --filter @doulisha/api test:integration` runs the 50-parallel-bookings test against the branch in `.env.local`.
+Stock changes (bookings, payments, cancellations) run in WebSocket `Pool` transactions that lock the event row first (ADR 0011). `pnpm --filter @doulisha/api test:integration` runs the 50-parallel-bookings test and the D17 reservation workflow (ADR 0018) against the branch in `.env.local`.
+
+Template definitions live in code (`packages/templates`). After changing one, `pnpm db:sync-templates` copies names and fields into the existing template rows of the branch and bumps their version, without touching events (it refuses production unless run with `--force` by the deploy).
 
 ## Seed
 

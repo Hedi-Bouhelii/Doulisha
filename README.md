@@ -51,6 +51,7 @@ Other variables are listed in [`.env.example`](.env.example). Development uses m
 ```sh
 pnpm db:migrate   # apply migrations (extensions + tables)
 pnpm db:seed      # demo data in Arabic, French and English (wipes the branch first)
+pnpm db:sync-templates  # after changing a template in packages/templates: update the rows
 ```
 
 ### 5. Run

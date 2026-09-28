@@ -4,6 +4,17 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: manual payments and event setup (2026-09-28)
+
+- **D17 and transfer bookings are reservations (ADR 0018):** no QR code or PDF until the organizer confirms the payment. The buyer has 48 hours to pay (never later than 12 hours before the event; OPEN_QUESTIONS Q25); sending a receipt pauses the clock; unpaid reservations expire and their places go to the waitlist. Payment instructions ask the buyer to write their booking reference in the payment message.
+- **Payments inbox** for organizers (`/organizer/payments`, and a "Payments" tab on each event): receipts to verify shown inline with the expected amount, confirm with a transaction number, refuse with a reason the buyer sees (24 hours to send another), one more day, cancel a reservation. Badge in the navigation and a banner on the dashboard.
+- **Buyer messages** (SMS, or email without a phone) when a payment is confirmed, a receipt refused or a reservation cancelled, in the language of the booking.
+- **"Mark as paid" no longer bypasses a receipt:** it is refused while a receipt waits for review, and the attendee list shows "Verify the receipt" instead. Marking a D17 or transfer as paid asks for confirmation of the amount.
+- **Cash at the door:** scanning an unpaid cash ticket shows the amount to collect, with one button "Collected, check in".
+- **Guest PDF tickets** now download once, as soon as the ticket exists (also after the organizer confirms a D17 payment).
+- **Tickets step of the wizard:** a new event starts with one ticket; only the price is needed. Other options (kind, quantity, people per ticket) are folded away; free events show no ticket editor.
+- **Template details on the event page:** distance, difficulty, line-up and other template fields now appear in the "About" tab. The concert field "Programmation" is renamed "Artistes / line-up" with a hint. New script `pnpm db:sync-templates` updates existing template rows.
+
 ### Added: PDF tickets (2026-09-28)
 
 - Guests who book without an account get their ticket as a PDF, downloaded automatically after booking or paying: logo, event, date, place, pick-up point, holder, payment status and one QR code per person, in the interface language (Arabic included). Everyone can download it again from the ticket page (ADR 0017).

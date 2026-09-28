@@ -61,13 +61,16 @@ Every data view has:
 - **Local methods first:** online payment, D17, bank transfer and cash are listed with a one-line explanation each.
 - **Dates:** `datetime-local` inputs, always read as Tunisia time.
 - **Guests:** booking and RSVP never require an account; a guest session is created on submit.
-- **Door check-in:** results are big and coloured (green OK, amber paid-later or already checked in, terracotta invalid) so they read at arm's length.
+- **Door check-in:** results are big and coloured (green OK, amber already checked in or cash to collect, terracotta invalid) so they read at arm's length. Cash to collect shows the amount and one button "Collected, check in".
 - **Print:** the header, footer and organizer navigation are `print:hidden`; the attendee list prints as a plain table.
 - **Accounts (ADR 0016):** sign-up asks one question first (join or organize), then one field (phone or email), then a code, then name and password on a separate screen. Sign-in shows the password first and "Receive a code instead" as a link.
 - **Never a silent disabled button:** "Continue" stays clickable and lists what is missing (red fields, short sentences) instead of greying out.
 - **Phones:** the main action sits in a bar fixed to the bottom, with the total; the order summary folds into a card at the top.
 - **After booking:** one "what to do now" card for the method the buyer chose (D17 number or RIB with a copy button, then the receipt upload). Other methods only behind "Pay differently".
 - **Tickets** look like tickets: a coloured stub with the person's name, a perforation, a large QR code.
+- **No QR code before the money (ADR 0018):** a D17 or transfer booking shows "Place reserved", the deadline, and a placeholder where the QR code will appear. A refused receipt shows the organizer's reason above the upload.
+- **Payments inbox:** one card per payment with everything needed to decide (buyer, phone, event, reference, expected amount, deadline) and the receipt inline; the main action states the amount ("Confirm: 30 DT received"). Refusing always asks for a reason the buyer will read.
+- **Defaults over forms:** the wizard's ticket step asks only for a price; rarely used options sit in a folded "More options".
 - **Mixed-language text** (a French title on an Arabic page) uses `dir="auto"` so it truncates and aligns on its own reading side.
 
 ## Motion

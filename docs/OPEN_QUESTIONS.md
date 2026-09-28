@@ -188,3 +188,10 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** Organizer profiles have links to Facebook, Instagram, TikTok and a website. The founder wants to discuss connecting social accounts (sign-in, importing content, publishing).
 - **Assumption:** Links only for now; the linking process is the next topic with the founder.
 - **Decision:**
+
+### Q25. How long to pay by D17 or transfer
+
+- **Asked:** 2026-09-28 (payment review)
+- **Context:** A D17 or transfer booking now reserves the places without a QR code until the organizer confirms the money (ADR 0018). The reservation needs a deadline so unpaid places go back to other people.
+- **Assumption:** 48 hours to pay, never later than 12 hours before the event and never less than 2 hours. Sending a receipt pauses the clock; a refused receipt gives 24 hours to send another; the organizer can add one day at a time. The values are constants in `packages/api/src/domain/payment-deadline.ts`.
+- **Decision:**

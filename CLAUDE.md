@@ -32,6 +32,7 @@ pnpm e2e              # Playwright E2E (desktop + mobile) against localhost:3000
 pnpm db:migrate       # apply migrations to the branch in .env.local
 pnpm db:seed          # reset the branch with demo data (refuses production)
 pnpm db:use-doulisha  # after `neon link`/`neon checkout`: point URLs at the Doulisha database
+pnpm db:sync-templates  # copy template definitions from code into the branch's template rows
 pnpm --filter @doulisha/web <script>     # run a script in one package
 ```
 
