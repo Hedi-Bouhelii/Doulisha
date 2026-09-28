@@ -223,7 +223,8 @@ export function CheckoutFlow({
   const stepLabels = [t('stepTickets'), t('stepDetails'), t('stepPayment')];
   const stepTitles = [t('titleTickets'), t('titleDetails'), t('titlePayment')];
 
-  const summary = (
+  /** The order summary, shown folded on phones and in the sidebar on desktop. */
+  const summary = (testId?: string) => (
     <div className="space-y-2 text-sm">
       {lines.length === 0 ? (
         <p className="text-muted-foreground">{t('chooseTickets')}</p>
@@ -243,7 +244,7 @@ export function CheckoutFlow({
       )}
       <div className="flex justify-between border-t border-border pt-2 font-semibold">
         <span>{t('total')}</span>
-        <span className="ltr-nums" data-testid="checkout-total">
+        <span className="ltr-nums" data-testid={testId}>
           {formatPrice(total, locale)}
         </span>
       </div>
@@ -290,7 +291,7 @@ export function CheckoutFlow({
               <ChevronDown className="chev size-4 transition-transform" aria-hidden="true" />
             </span>
           </summary>
-          <div className="pt-2">{summary}</div>
+          <div className="pt-2">{summary()}</div>
         </details>
       </div>
 
@@ -721,7 +722,7 @@ export function CheckoutFlow({
                   {event.city ? ` · ${event.city}` : ''}
                 </p>
               </div>
-              {summary}
+              {summary('checkout-total')}
             </div>
           </div>
         </aside>

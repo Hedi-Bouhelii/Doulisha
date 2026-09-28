@@ -53,7 +53,11 @@ export default async function MockPayPage({
       body,
     });
     if (!response.ok) throw new Error(`Webhook failed (${response.status})`);
-    redirect({ href: `/tickets/${reference}`, locale });
+    // After a successful payment the ticket page greets the buyer (and guests get their PDF).
+    redirect({
+      href: status === 'succeeded' ? `/tickets/${reference}?booked=1` : `/tickets/${reference}`,
+      locale,
+    });
   }
 
   async function pay() {

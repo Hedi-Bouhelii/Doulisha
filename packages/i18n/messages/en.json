@@ -432,7 +432,9 @@
     "past": "Past",
     "noPast": "No past events yet",
     "findEvents": "Find events",
-    "amountDue": "{amount} to pay"
+    "amountDue": "{amount} to pay",
+    "downloadPdf": "Download my ticket (PDF)",
+    "guestPdfHint": "No account: keep this PDF, it is your ticket. It has your QR code and everything you need for the day."
   },
   "Organizer": {
     "title": "Organizer space",
@@ -790,5 +792,23 @@
       "workshop_class": "Workshops and classes, one or several sessions.",
       "sports_session": "Matches, trainings and sports sessions by level."
     }
+  },
+  "TicketPdf": {
+    "title": "E-ticket",
+    "date": "Date",
+    "place": "Place",
+    "pickup": "Pick-up",
+    "holder": "Ticket holder",
+    "ticket": "Ticket",
+    "reference": "Reference",
+    "payment": "Payment",
+    "paid": "Paid",
+    "free": "Free",
+    "toPay": "{amount} still to pay",
+    "payAtDoor": "{amount} to pay in cash at the entrance",
+    "organizer": "Organized by {name}",
+    "showAtEntrance": "Show this QR code at the entrance, on your phone or printed.",
+    "onePerPerson": "One QR code per person. It can be scanned only once.",
+    "page": "Ticket {n} of {total}"
   }
 }

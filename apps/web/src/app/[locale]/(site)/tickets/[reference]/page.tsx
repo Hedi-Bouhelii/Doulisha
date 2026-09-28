@@ -25,6 +25,7 @@ import { TicketQR } from '@/components/doulisha/ticket-qr';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 
 import {
@@ -33,6 +34,7 @@ import {
   PayDifferently,
   PayOnlineButton,
   type PayTo,
+  PdfTicketButton,
 } from './ticket-actions';
 
 export const metadata: Metadata = { robots: { index: false } };
@@ -92,6 +94,9 @@ export default async function TicketPage({
   const closed = ['cancelled', 'expired', 'refunded'].includes(status);
   const manual = order.manualMethod as 'd17' | 'bank_transfer' | 'cash' | null;
   const place = [order.event.venueName, order.event.city].filter(Boolean).join(' · ');
+  const session = await getSession();
+  const isGuest = !session || session.user.isAnonymous === true;
+  const hasQr = !closed && order.tickets.some((ticket) => ticket.ticketCode);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
@@ -192,6 +197,14 @@ export default async function TicketPage({
         </p>
       ) : null}
 
+      {/* Guests have no account: the PDF is their ticket (Q23). */}
+      {hasQr && isGuest ? (
+        <section className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
+          <p className="max-w-md text-sm">{t('guestPdfHint')}</p>
+          <PdfTicketButton reference={order.reference} autoDownload={justBooked} prominent />
+        </section>
+      ) : null}
+
       {/* Tickets. */}
       {!closed ? (
         <section aria-labelledby="your-tickets" className="mt-6">
@@ -276,12 +289,17 @@ export default async function TicketPage({
               .join(', '),
           }}
           extra={
-            <Link
-              href={`/events/${order.event.slug}`}
-              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium hover:bg-accent"
-            >
-              {t('viewEvent')}
-            </Link>
+            <>
+              {hasQr && !isGuest ? (
+                <PdfTicketButton reference={order.reference} autoDownload={false} />
+              ) : null}
+              <Link
+                href={`/events/${order.event.slug}`}
+                className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium hover:bg-accent"
+              >
+                {t('viewEvent')}
+              </Link>
+            </>
           }
         />
       </section>

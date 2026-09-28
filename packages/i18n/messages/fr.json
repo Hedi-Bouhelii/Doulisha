@@ -432,7 +432,9 @@
     "past": "Passés",
     "noPast": "Pas encore d’événements passés",
     "findEvents": "Trouver des événements",
-    "amountDue": "{amount} à payer"
+    "amountDue": "{amount} à payer",
+    "downloadPdf": "Télécharger mon billet (PDF)",
+    "guestPdfHint": "Sans compte : gardez ce PDF, c’est votre billet. Il contient votre QR code et tout ce qu’il faut pour le jour J."
   },
   "Organizer": {
     "title": "Espace organisateur",
@@ -790,5 +792,23 @@
       "workshop_class": "Ateliers et cours, en une ou plusieurs séances.",
       "sports_session": "Matchs, entraînements et séances sportives par niveau."
     }
+  },
+  "TicketPdf": {
+    "title": "Billet électronique",
+    "date": "Date",
+    "place": "Lieu",
+    "pickup": "Point de rendez-vous",
+    "holder": "Titulaire",
+    "ticket": "Billet",
+    "reference": "Référence",
+    "payment": "Paiement",
+    "paid": "Payé",
+    "free": "Gratuit",
+    "toPay": "{amount} restant à payer",
+    "payAtDoor": "{amount} à payer en espèces à l’entrée",
+    "organizer": "Organisé par {name}",
+    "showAtEntrance": "Présentez ce QR code à l’entrée, sur votre téléphone ou imprimé.",
+    "onePerPerson": "Un QR code par personne. Il ne peut être scanné qu’une fois.",
+    "page": "Billet {n} sur {total}"
   }
 }

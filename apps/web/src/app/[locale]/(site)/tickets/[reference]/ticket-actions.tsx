@@ -8,6 +8,7 @@ import {
   Check,
   Copy,
   CreditCard,
+  FileDown,
   Landmark,
   Loader2,
   Smartphone,
@@ -16,7 +17,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -415,5 +416,47 @@ export function BookingActions({
       </div>
       <ErrorLine message={error} />
     </div>
+  );
+}
+
+/**
+ * The PDF ticket (TKT-04) in the interface language. Guests without an
+ * account get it automatically once, right after booking: it is their ticket.
+ */
+export function PdfTicketButton({
+  reference,
+  autoDownload,
+  prominent = false,
+}: {
+  reference: string;
+  autoDownload: boolean;
+  prominent?: boolean;
+}) {
+  const t = useTranslations('Tickets');
+  const locale = useLocale();
+  const href = `/api/tickets/${encodeURIComponent(reference)}/pdf?locale=${locale}`;
+
+  useEffect(() => {
+    if (!autoDownload) return;
+    const key = `doulisha.pdf.${reference}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      // Without storage the download still happens, possibly twice on reload.
+    }
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `doulisha-${reference}.pdf`;
+    link.click();
+  }, [autoDownload, href, reference]);
+
+  return (
+    <Button asChild variant={prominent ? 'default' : 'outline'} className="min-h-11 rounded-full">
+      <a href={href} download={`doulisha-${reference}.pdf`} data-testid="download-pdf">
+        <FileDown aria-hidden="true" />
+        {t('downloadPdf')}
+      </a>
+    </Button>
   );
 }
