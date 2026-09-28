@@ -245,8 +245,8 @@
     "passwordAlreadySet": "لهذا الحساب كلمة مرور بالفعل.",
     "tooManyPhotos": "يمكنك عرض {max} صورة كحدّ أقصى.",
     "paymentMethodNotAllowed": "هذه الفعالية لا تقبل طريقة الدفع هذه.",
-    "proofUnderReview": "إيصالك قيد المراجعة: انتظر المنظّم.",
-    "proofPending": "هناك إيصال في الانتظار: راجعه أولًا في «المدفوعات»."
+    "proofUnderReview": "وصلك قيد المراجعة: انتظر المنظّم.",
+    "proofPending": "هناك وصل في الانتظار: راجعه أولًا في «المدفوعات»."
   },
   "Dev": {
     "outboxTitle": "صندوق الرسائل التجريبي",
@@ -391,7 +391,7 @@
     "uploadProof": "حمّل الوصل",
     "uploading": "جارٍ الإرسال…",
     "proof": {
-      "pending": "تم إرسال الإيصال. يراجعه المنظّم ويؤكد مكانك، وستصلك رسالة.",
+      "pending": "تم إرسال الوصل. يراجعه المنظّم ويؤكد مكانك، وستصلك رسالة.",
       "approved": "تم قبول الوصل.",
       "rejected": "تم رفض الوصل. حمّل وصلًا آخر أو اتصل بالمنظّم."
     },
@@ -416,7 +416,7 @@
     "d17Number": "رقم D17",
     "rib": "الهوية البنكية (RIB)",
     "noPayTo": "سيرسل لك المنظّم معلومات الدفع.",
-    "thenUpload": "ثم ارفع الإيصال (صورة أو PDF).",
+    "thenUpload": "ثم ارفع الوصل (صورة أو PDF).",
     "payDifferently": "الدفع بطريقة أخرى",
     "payDifferentlyHint": "اختر طريقة أخرى لدفع هذا الحجز.",
     "bookedTitle": "تم الحجز!",
@@ -438,9 +438,9 @@
     "downloadPdf": "تنزيل تذكرتي (PDF)",
     "guestPdfHint": "بدون حساب: احتفظ بهذا الملف، فهو تذكرتك. يحتوي على رمز QR وكل ما تحتاجه يوم الفعالية.",
     "reservedTitle": "مكانك محجوز: ادفع لتأكيده",
-    "reviewTitle": "تم استلام الإيصال: المنظّم يراجعه",
+    "reviewTitle": "تم استلام الوصل: المنظّم يراجعه",
     "payBefore": "ادفع قبل {time}، وإلا يذهب المكان إلى الشخص التالي.",
-    "rejectedBecause": "رُفض إيصالك: {reason}.",
+    "rejectedBecause": "رُفض وصلك: {reason}.",
     "qrAfterPayment": "يظهر رمز QR هنا بمجرد أن يؤكد المنظّم دفعك.",
     "expiredHint": "انتهت صلاحية هذا الحجز: لم يصل الدفع في الوقت المحدد. يمكنك الحجز من جديد إذا بقيت أماكن.",
     "writeReference": "اكتب مرجعك {reference} في رسالة الدفع ليتعرّف عليه المنظّم."
@@ -542,7 +542,7 @@
     "keepEvent": "الإبقاء على الفعالية",
     "refunds": "الاستردادات",
     "collectFirst": "حصّل {amount} من {name}.",
-    "collectedCheckIn": "تم التحصيل، تسجيل الدخول"
+    "collectedCheckIn": "تم الاستلام، تأكيد الدخول"
   },
   "Wizard": {
     "newTitle": "ماذا تنظّم؟",
@@ -827,55 +827,55 @@
   },
   "Payments": {
     "title": "المدفوعات",
-    "intro": "راجع الإيصالات التي أرسلها المشترون وأكّد مدفوعات D17 والتحويل البنكي. تأكيد الدفع يرسل للمشتري تذكرته مع رمز QR.",
+    "intro": "راجع الوصولات التي أرسلها المشترون وأكّد مدفوعات D17 والتحويل البنكي. تأكيد الدفع يرسل للمشتري تذكرته مع رمز QR.",
     "tabs": {
       "toVerify": "للمراجعة",
       "awaiting": "في انتظار الدفع",
       "confirmed": "مؤكدة"
     },
-    "nothingToVerify": "لا يوجد إيصال للمراجعة",
-    "nothingToVerifyHint": "تظهر هنا الإيصالات التي يرسلها المشترون.",
+    "nothingToVerify": "لا يوجد وصل للمراجعة",
+    "nothingToVerifyHint": "تظهر هنا الوصولات التي يرسلها المشترون.",
     "nothingAwaiting": "لا توجد مدفوعات منتظرة",
     "nothingAwaitingHint": "تنتظر هنا الحجوزات المدفوعة عبر D17 أو التحويل حتى يصل المال.",
     "places": "{count, plural, one {مكان واحد} two {مكانان} few {# أماكن} many {# مكانًا} other {# مكان}}",
     "deadline": "محجوز حتى {time}",
     "reservedUntil": "محجوز حتى {time}",
     "openPdf": "فتح ملف PDF",
-    "enlarge": "تكبير الإيصال",
-    "receiptOf": "إيصال {name}",
+    "enlarge": "تكبير الوصل",
+    "receiptOf": "وصل {name}",
     "sentAt": "أُرسل في {time}",
     "checkHint": "تحقّق من وصول {amount} إلى حسابك في D17 أو البنك، ويفضَّل مع المرجع {reference}.",
     "transactionRef": "رقم العملية (اختياري)",
     "transactionShort": "رقم {ref}",
     "confirmReceived": "تأكيد: تم استلام {amount}",
     "reject": "رفض",
-    "rejectTitle": "رفض هذا الإيصال",
-    "rejectHint": "يرى المشتري السبب ولديه 24 ساعة لإرسال إيصال جديد.",
+    "rejectTitle": "رفض هذا الوصل",
+    "rejectHint": "يرى المشتري السبب ولديه 24 ساعة لإرسال وصل جديد.",
     "reason": "السبب",
     "reasons": {
       "wrong_amount": "المبلغ غير مطابق",
-      "unreadable": "الإيصال غير واضح",
+      "unreadable": "الوصل غير واضح",
       "not_received": "المال لم يصل",
       "other": "سبب آخر"
     },
     "noteToBuyer": "رسالة إلى المشتري (اختياري)",
     "back": "رجوع",
-    "waitingNewReceipt": "رُفض الإيصال: في انتظار إيصال جديد.",
+    "waitingNewReceipt": "رُفض الوصل: في انتظار وصل جديد.",
     "extend": "يوم إضافي",
     "cancelReservation": "إلغاء الحجز",
     "cancelReservationHint": "تعود أماكن {name} إلى قائمة الانتظار ويتم إعلامه.",
     "paymentReceived": "تم استلام الدفع",
     "markPaidQuestion": "هل استلمت {amount} عبر {method}؟ يحصل المشتري على تذكرته فورًا.",
     "yesReceived": "نعم، تم استلام {amount}",
-    "verifyReceipt": "مراجعة الإيصال",
-    "toVerifyBanner": "{count, plural, one {إيصال واحد للمراجعة} two {إيصالان للمراجعة} few {# إيصالات للمراجعة} many {# إيصالًا للمراجعة} other {# إيصال للمراجعة}}",
+    "verifyReceipt": "مراجعة الوصل",
+    "toVerifyBanner": "{count, plural, one {وصل واحد للمراجعة} two {وصلان للمراجعة} few {# وصولات للمراجعة} many {# وصلًا للمراجعة} other {# وصل للمراجعة}}",
     "verifyNow": "راجع الآن"
   },
   "Notify": {
     "payment_confirmed": "دوليشة: تم استلام الدفع لـ{event} ({reference}). تذكرتك ورمز QR: {url}",
     "payment_confirmedSubject": "تذكرتك لـ{event}",
-    "receipt_rejected": "دوليشة: رُفض إيصالك لـ{event} ({reference}): {reason}. {note} أرسل إيصالًا جديدًا خلال 24 ساعة: {url}",
-    "receipt_rejectedSubject": "رُفض الإيصال لـ{event}",
+    "receipt_rejected": "دوليشة: رُفض وصلك لـ{event} ({reference}): {reason}. {note} أرسل وصلًا جديدًا خلال 24 ساعة: {url}",
+    "receipt_rejectedSubject": "رُفض الوصل لـ{event}",
     "reservation_cancelled": "دوليشة: ألغى المنظّم حجزك {reference} لـ{event} (لم يصل الدفع). {url}",
     "reservation_cancelledSubject": "أُلغي الحجز لـ{event}"
   }

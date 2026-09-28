@@ -97,7 +97,7 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-24 (Phase 1)
 - **Context:** All Arabic interface text (`packages/i18n/messages/ar.json`), category and template names, and the Arabic seed event were written without a native speaker.
 - **Assumption:** Clear Modern Standard Arabic that reads naturally in Tunisia, marked `TODO(i18n-review)`. Needs a native review before launch.
-- **Decision:**
+- **Decision (2026-09-28, founder):** Use the recommended wording. Terms are kept consistent across the app (for example "وصل" for a payment receipt, as commonly said in Tunisia). A native read-through before launch is still recommended.
 
 ### Q12. Demo photos and brand assets
 
@@ -194,4 +194,4 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-28 (payment review)
 - **Context:** A D17 or transfer booking now reserves the places without a QR code until the organizer confirms the money (ADR 0018). The reservation needs a deadline so unpaid places go back to other people.
 - **Assumption:** 48 hours to pay, never later than 12 hours before the event and never less than 2 hours. Sending a receipt pauses the clock; a refused receipt gives 24 hours to send another; the organizer can add one day at a time. The values are constants in `packages/api/src/domain/payment-deadline.ts`.
-- **Decision:**
+- **Decision (2026-09-28, founder):** Keep the assumption (48 h, 12 h before the event at the latest, 2 h minimum, 24 h after a refused receipt).

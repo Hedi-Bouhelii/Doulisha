@@ -15,6 +15,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 - **Tickets step of the wizard:** a new event starts with one ticket; only the price is needed. Other options (kind, quantity, people per ticket) are folded away; free events show no ticket editor.
 - **Template details on the event page:** distance, difficulty, line-up and other template fields now appear in the "About" tab. The concert field "Programmation" is renamed "Artistes / line-up" with a hint. New script `pnpm db:sync-templates` updates existing template rows.
 - **Back office on phones:** the data explorer no longer overflows the screen; its table list scrolls sideways.
+- **Arabic wording:** "وصل" is used for every payment receipt (it mixed "وصل" and "إيصال"); the scanner button reads "تأكيد الدخول" instead of "تسجيل الدخول" (sign in).
 
 ### Added: PDF tickets (2026-09-28)
 
