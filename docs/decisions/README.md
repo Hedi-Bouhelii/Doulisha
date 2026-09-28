@@ -20,6 +20,7 @@ One file per important decision, numbered in order. An ADR is never edited after
 | 0014 | [Attendee exports: Excel with exceljs, PDF through the browser's print](0014-exports-excel-and-print.md)        | Accepted                  |
 | 0015 | [Event wizard: template-driven fields, auto-saved drafts, shared publish checks](0015-event-wizard.md)          | Accepted                  |
 | 0016 | [Passwords after a verified code, and participant or organizer at sign-up](0016-passwords-and-account-types.md) | Accepted                  |
+| 0017 | [PDF tickets drawn with next/og and assembled with pdf-lib](0017-pdf-tickets.md)                                | Accepted                  |
 
 ## Template
 

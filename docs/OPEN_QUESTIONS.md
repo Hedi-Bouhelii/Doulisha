@@ -173,14 +173,14 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-25 (Phase 2 review)
 - **Context:** The organizer profile is prefilled from the account, including the verified phone and email, and organizers want to be reachable.
 - **Assumption:** The contact phone and email appear on the public organizer page; the form says so and the organizer can clear them. Payment details (D17 number, RIB) are never public: buyers see them only on their own booking.
-- **Decision:**
+- **Decision (2026-09-28, founder):** Approved as proposed.
 
 ### Q23. "My tickets" for guests
 
 - **Asked:** 2026-09-25 (Phase 2 review)
 - **Context:** The founder asked to hide "My tickets" from people who are not signed in. Guests who book without an account have a guest session on their device.
 - **Assumption:** Hidden for visitors without a session; shown for members and for guests who booked on this device, so they can find their ticket again.
-- **Decision:**
+- **Decision (2026-09-28, founder):** Guests who book without an account get their ticket as a PDF (QR code, event details, logo) in the interface language, downloaded automatically after booking and available from the ticket page (ADR 0017).
 
 ### Q24. Linking social accounts
 

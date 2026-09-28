@@ -4,6 +4,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: PDF tickets (2026-09-28)
+
+- Guests who book without an account get their ticket as a PDF, downloaded automatically after booking or paying: logo, event, date, place, pick-up point, holder, payment status and one QR code per person, in the interface language (Arabic included). Everyone can download it again from the ticket page (ADR 0017).
+- The share-image code is shared with the PDF (`server/og-kit.tsx`).
+- The checkout order summary no longer repeats its test id on phones and desktop.
+
 ### Changed: Phase 2 founder review (2026-09-25)
 
 - **Accounts (ADR 0016):**
