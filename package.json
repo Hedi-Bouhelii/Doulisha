@@ -19,7 +19,8 @@
     "db:generate": "pnpm --filter @doulisha/db db:generate",
     "db:migrate": "pnpm --filter @doulisha/db db:migrate",
     "db:seed": "pnpm --filter @doulisha/db db:seed",
-    "e2e": "pnpm --filter @doulisha/web e2e"
+    "e2e": "pnpm --filter @doulisha/web e2e",
+    "db:sync-templates": "pnpm --filter @doulisha/db db:sync-templates"
   },
   "devDependencies": {
     "prettier": "catalog:",

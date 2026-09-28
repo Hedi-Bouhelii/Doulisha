@@ -1,7 +1,16 @@
 import type { EventDetailDto } from '@doulisha/api';
 import { formatDate, formatEventDateTime, formatTime, type Locale, locales } from '@doulisha/i18n';
 import { TRPCError } from '@trpc/server';
-import { ArrowLeft, CalendarDays, EyeOff, MapPin, Settings2, Ticket, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  CalendarDays,
+  Check,
+  EyeOff,
+  MapPin,
+  Settings2,
+  Ticket,
+  Users,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -230,6 +239,35 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
                 <p lang={event.language} className="text-base leading-relaxed whitespace-pre-line">
                   {event.description}
                 </p>
+              ) : null}
+              {event.facts.length > 0 ? (
+                <dl
+                  className="grid gap-x-6 gap-y-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2"
+                  data-testid="event-facts"
+                >
+                  {event.facts.map((fact) => (
+                    <div
+                      key={fact.key}
+                      className={fact.value && fact.value.length > 40 ? 'sm:col-span-2' : undefined}
+                    >
+                      <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {fact.value === null ? (
+                          <span className="flex items-center gap-1.5 text-sm tracking-normal text-foreground normal-case">
+                            <Check className="size-4 text-primary" aria-hidden="true" />
+                            {fact.label}
+                          </span>
+                        ) : (
+                          fact.label
+                        )}
+                      </dt>
+                      {fact.value !== null ? (
+                        <dd lang={event.language} className="mt-0.5 whitespace-pre-line">
+                          {fact.value}
+                        </dd>
+                      ) : null}
+                    </div>
+                  ))}
+                </dl>
               ) : null}
               <p className="text-xs text-muted-foreground">
                 {t('writtenIn', { language: tLang(event.language) })}
