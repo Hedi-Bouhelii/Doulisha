@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { signInWithPhone } from './helpers';
+import { createPublishedHike, signInWithPhone } from './helpers';
 
 /**
  * Phase 2 acceptance (BUILD_PROMPT section 8), in the three languages:
@@ -27,31 +27,7 @@ for (const locale of ['fr', 'ar', 'en'] as const) {
     // --- The organizer creates the hike from its template -----------------------
     await signInWithPhone(page, locale, ORGANIZER_PHONE);
     await expect(page.getByTestId('user-menu')).toBeVisible();
-    await page.goto(`/${locale}/organizer/events/new`);
-    await page.getByTestId('template-hiking_trip').click();
-    await page.waitForURL(/\/organizer\/events\/[0-9a-f-]+\/edit$/);
-    const eventId = /events\/([0-9a-f-]+)\/edit/.exec(page.url())![1]!;
-
-    await page.getByTestId('wizard-title').fill(title);
-    await page.getByTestId('wizard-next').click();
-    await page.getByTestId('wizard-city').fill('Zaghouan');
-    await page.getByTestId('wizard-next').click();
-    await page.locator('#detail-difficulty').fill('2');
-    await page.getByTestId('wizard-next').click();
-    await page.getByTestId('wizard-registration-paid').click();
-    await page.getByTestId('wizard-capacity').fill('20');
-    await page.getByTestId('add-ticket-type').click();
-    await page.getByTestId('ticket-name-0').fill('Standard');
-    await page.getByTestId('ticket-price-0').fill('30');
-
-    // --- Publish: nothing is missing -------------------------------------------
-    await page.getByTestId('wizard-step-publish').click();
-    await expect(page.getByTestId('publish-event')).toBeVisible();
-    await expect(page.getByTestId('publish-problems')).toHaveCount(0);
-    await page.getByTestId('publish-event').click();
-    await expect(page.getByTestId('wizard-published')).toBeVisible();
-    await page.getByTestId('view-published').click();
-    await page.waitForURL(new RegExp(`/${locale}/events/[^/]+$`));
+    const { eventId } = await createPublishedHike(page, locale, { title });
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(title);
     const eventUrl = page.url();
     const slug = eventUrl.split('/').pop()!;

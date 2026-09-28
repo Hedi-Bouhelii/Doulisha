@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { E2E_PASSWORD, enterCode, signInWithPhone } from './helpers';
+import { createPublishedHike, E2E_PASSWORD, enterCode, signInWithPhone } from './helpers';
 
 /**
  * Founder review of Phase 2: sign-up with a password and an account type,
@@ -66,7 +66,12 @@ test('a D17 booking shows only the D17 instructions', async ({ page, browser }, 
   // Saving returns to the profile preview.
   await expect(page.getByTestId('edit-profile')).toBeVisible();
 
-  // A guest books a Kroumirie Trekkers hike and chooses D17.
+  // Sami publishes a fresh hike, so the test never meets a full event.
+  const { eventUrl } = await createPublishedHike(page, 'fr', {
+    title: `E2E D17 ${Date.now().toString(36)}${info.project.name[0]}`,
+  });
+
+  // A guest (no account) books it and chooses D17.
   const { viewport, userAgent, isMobile, hasTouch, deviceScaleFactor } = info.project.use;
   const context = await browser.newContext({
     viewport,
@@ -74,21 +79,21 @@ test('a D17 booking shows only the D17 instructions', async ({ page, browser }, 
     isMobile,
     hasTouch,
     deviceScaleFactor,
+    acceptDownloads: true,
   });
   const guest = await context.newPage();
-  await guest.goto('http://localhost:3000/fr/events/randonnee-foret-ain-draham/book');
+  await guest.goto(`${eventUrl}/book`);
   await guest.getByTestId('checkout-next-details').click();
   // "Continue" explains what is missing instead of staying greyed out.
   await guest.getByTestId('checkout-next-payment').click();
   await expect(guest.getByTestId('checkout-missing')).toBeVisible();
   await guest.locator('#name-0').fill('Invité D17');
   await guest.locator('#phone-0').fill('55 123 456');
-  const question = guest.locator('select[id^="q-"]').first();
-  if (await question.count()) await question.selectOption({ index: 1 });
   await guest.getByTestId('checkout-next-payment').click();
   await guest.getByTestId('pay-method-d17').click();
+  // Guests get their PDF ticket automatically (Q23).
+  const download = guest.waitForEvent('download');
   await guest.getByTestId('confirm-booking').click();
-
   await guest.waitForURL(/\/fr\/tickets\/[^/?]+\?booked=1/);
   await expect(guest.getByTestId('booked-banner')).toBeVisible();
   await expect(guest.getByTestId('ticket-status')).toHaveAttribute(
@@ -101,5 +106,18 @@ test('a D17 booking shows only the D17 instructions', async ({ page, browser }, 
   await expect(guest.locator('[data-testid^="pay-method-"]')).toHaveCount(0);
   await expect(guest.getByTestId('pay-online')).toHaveCount(0);
   await expect(guest.getByTestId('pay-differently')).toBeVisible();
+
+  // The PDF ticket: downloaded once automatically, and on demand.
+  expect((await download).suggestedFilename()).toMatch(/^doulisha-DLS-.+\.pdf$/);
+  const reference = /tickets\/([^?]+)/.exec(guest.url())![1]!;
+  const pdf = await guest.request.get(`/api/tickets/${reference}/pdf?locale=fr`);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()['content-type']).toBe('application/pdf');
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
+  // Nobody else can download it.
+  const stranger = await browser.newContext();
+  const refused = await stranger.request.get(`http://localhost:3000/api/tickets/${reference}/pdf`);
+  expect(refused.status()).toBe(401);
+  await stranger.close();
   await context.close();
 });

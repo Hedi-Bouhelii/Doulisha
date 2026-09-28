@@ -77,3 +77,40 @@ export async function signInWithPhone(page: Page, locale: string, localPhone: st
   await enterCode(page, 'sms', e164, since);
   await completeSetupIfAsked(page);
 }
+
+/**
+ * Creates and publishes a paid hike with one "Standard" ticket at 30 DT, from
+ * the organizer space of the signed-in organizer. Returns the event id and the
+ * public page URL. Each test gets fresh places, whatever earlier runs booked.
+ */
+export async function createPublishedHike(
+  page: Page,
+  locale: string,
+  { title, capacity = 20 }: { title: string; capacity?: number },
+) {
+  await page.goto(`/${locale}/organizer/events/new`);
+  await page.getByTestId('template-hiking_trip').click();
+  await page.waitForURL(/\/organizer\/events\/[0-9a-f-]+\/edit$/);
+  const eventId = /events\/([0-9a-f-]+)\/edit/.exec(page.url())![1]!;
+
+  await page.getByTestId('wizard-title').fill(title);
+  await page.getByTestId('wizard-next').click();
+  await page.getByTestId('wizard-city').fill('Zaghouan');
+  await page.getByTestId('wizard-next').click();
+  await page.locator('#detail-difficulty').fill('2');
+  await page.getByTestId('wizard-next').click();
+  await page.getByTestId('wizard-registration-paid').click();
+  await page.getByTestId('wizard-capacity').fill(String(capacity));
+  await page.getByTestId('add-ticket-type').click();
+  await page.getByTestId('ticket-name-0').fill('Standard');
+  await page.getByTestId('ticket-price-0').fill('30');
+
+  await page.getByTestId('wizard-step-publish').click();
+  await expect(page.getByTestId('publish-event')).toBeVisible();
+  await expect(page.getByTestId('publish-problems')).toHaveCount(0);
+  await page.getByTestId('publish-event').click();
+  await expect(page.getByTestId('wizard-published')).toBeVisible();
+  await page.getByTestId('view-published').click();
+  await page.waitForURL(new RegExp(`/${locale}/events/[^/]+$`));
+  return { eventId, eventUrl: page.url() };
+}
