@@ -79,14 +79,19 @@ export async function signInWithPhone(page: Page, locale: string, localPhone: st
 }
 
 /**
- * Creates and publishes a paid hike with one "Standard" ticket at 30 DT, from
- * the organizer space of the signed-in organizer. Returns the event id and the
- * public page URL. Each test gets fresh places, whatever earlier runs booked.
+ * Creates and publishes a hike at 30 DT (paid online/D17/transfer, or paid at
+ * the door), from the organizer space of the signed-in organizer: only the
+ * price is filled, the default ticket does the rest. Returns the event id and
+ * the public page URL. Each test gets fresh places, whatever earlier runs booked.
  */
 export async function createPublishedHike(
   page: Page,
   locale: string,
-  { title, capacity = 20 }: { title: string; capacity?: number },
+  {
+    title,
+    capacity = 20,
+    registration = 'paid',
+  }: { title: string; capacity?: number; registration?: 'paid' | 'pay_at_door' },
 ) {
   await page.goto(`/${locale}/organizer/events/new`);
   await page.getByTestId('template-hiking_trip').click();
@@ -99,10 +104,15 @@ export async function createPublishedHike(
   await page.getByTestId('wizard-next').click();
   await page.locator('#detail-difficulty').fill('2');
   await page.getByTestId('wizard-next').click();
-  await page.getByTestId('wizard-registration-paid').click();
+  // Free events have no ticket editor at all.
+  await page.getByTestId('wizard-registration-free_rsvp').click();
+  await expect(page.getByTestId('free-no-tickets')).toBeVisible();
+  await expect(page.getByTestId('ticket-price-0')).toHaveCount(0);
+  await page.getByTestId(`wizard-registration-${registration}`).click();
   await page.getByTestId('wizard-capacity').fill(String(capacity));
-  await page.getByTestId('add-ticket-type').click();
-  await page.getByTestId('ticket-name-0').fill('Standard');
+  // A new event already has one ticket with a default name: only the price is needed.
+  await expect(page.getByTestId('ticket-name-0')).not.toHaveValue('');
+  await expect(page.getByTestId('remove-ticket-0')).toHaveCount(0);
   await page.getByTestId('ticket-price-0').fill('30');
 
   await page.getByTestId('wizard-step-publish').click();

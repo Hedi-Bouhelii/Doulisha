@@ -245,7 +245,8 @@
     "passwordAlreadySet": "لهذا الحساب كلمة مرور بالفعل.",
     "tooManyPhotos": "يمكنك عرض {max} صورة كحدّ أقصى.",
     "paymentMethodNotAllowed": "هذه الفعالية لا تقبل طريقة الدفع هذه.",
-    "proofUnderReview": "إيصالك قيد المراجعة: انتظر المنظّم."
+    "proofUnderReview": "إيصالك قيد المراجعة: انتظر المنظّم.",
+    "proofPending": "هناك إيصال في الانتظار: راجعه أولًا في «المدفوعات»."
   },
   "Dev": {
     "outboxTitle": "صندوق الرسائل التجريبي",
@@ -360,7 +361,8 @@
       "offered": "مكان في انتظارك",
       "cancelled": "ملغى",
       "expired": "منتهي الصلاحية",
-      "refunded": "مسترجَع"
+      "refunded": "مسترجَع",
+      "reserved": "مكان محجوز"
     },
     "payment": {
       "paid": "مدفوع",
@@ -389,7 +391,7 @@
     "uploadProof": "حمّل الوصل",
     "uploading": "جارٍ الإرسال…",
     "proof": {
-      "pending": "تم إرسال الوصل. سيؤكّده المنظّم.",
+      "pending": "تم إرسال الإيصال. يراجعه المنظّم ويؤكد مكانك، وستصلك رسالة.",
       "approved": "تم قبول الوصل.",
       "rejected": "تم رفض الوصل. حمّل وصلًا آخر أو اتصل بالمنظّم."
     },
@@ -434,7 +436,14 @@
     "findEvents": "اكتشف الفعاليات",
     "amountDue": "{amount} للدفع",
     "downloadPdf": "تنزيل تذكرتي (PDF)",
-    "guestPdfHint": "بدون حساب: احتفظ بهذا الملف، فهو تذكرتك. يحتوي على رمز QR وكل ما تحتاجه يوم الفعالية."
+    "guestPdfHint": "بدون حساب: احتفظ بهذا الملف، فهو تذكرتك. يحتوي على رمز QR وكل ما تحتاجه يوم الفعالية.",
+    "reservedTitle": "مكانك محجوز: ادفع لتأكيده",
+    "reviewTitle": "تم استلام الإيصال: المنظّم يراجعه",
+    "payBefore": "ادفع قبل {time}، وإلا يذهب المكان إلى الشخص التالي.",
+    "rejectedBecause": "رُفض إيصالك: {reason}.",
+    "qrAfterPayment": "يظهر رمز QR هنا بمجرد أن يؤكد المنظّم دفعك.",
+    "expiredHint": "انتهت صلاحية هذا الحجز: لم يصل الدفع في الوقت المحدد. يمكنك الحجز من جديد إذا بقيت أماكن.",
+    "writeReference": "اكتب مرجعك {reference} في رسالة الدفع ليتعرّف عليه المنظّم."
   },
   "Organizer": {
     "title": "فضاء المنظّم",
@@ -483,7 +492,6 @@
     "duplicate": "نسخ",
     "attendees": "المشاركون",
     "waitlist": "قائمة الانتظار",
-    "requests": "للمعالجة",
     "checkIn": "مراقبة الدخول",
     "export": "تصدير",
     "exportExcel": "Excel",
@@ -494,10 +502,8 @@
     "alreadyPaid": "مدفوع مسبقًا",
     "method": "طريقة الدفع",
     "add": "إضافة",
-    "markPaid": "تحديد كمدفوع",
     "approve": "قبول",
     "reject": "رفض",
-    "viewProof": "عرض الوصل",
     "refundRequest": "طلب استرجاع {amount}",
     "note": "ملاحظة",
     "noteSaved": "تم حفظ الملاحظة",
@@ -524,7 +530,6 @@
     "codeLabel": "أو اكتب رمز التذكرة",
     "checkInButton": "تأكيد الدخول",
     "checkInOk": "مرحبًا {name}!",
-    "checkInUnpaid": "تم الدخول. الدفع ما زال معلّقًا: قم بتحصيله.",
     "checkInAlready": "دخل مسبقًا على الساعة {time}.",
     "checkInInvalid": "تذكرة غير معروفة أو ملغاة.",
     "cameraUnavailable": "الماسح غير متاح على هذا المتصفح. اكتب الرمز.",
@@ -534,7 +539,10 @@
     "shareTitle": "شارك فعاليتك",
     "hostPrivate": "مناسباتي الخاصة",
     "copyInvite": "انسخ رابط الدعوة",
-    "keepEvent": "الإبقاء على الفعالية"
+    "keepEvent": "الإبقاء على الفعالية",
+    "refunds": "الاستردادات",
+    "collectFirst": "حصّل {amount} من {name}.",
+    "collectedCheckIn": "تم التحصيل، تسجيل الدخول"
   },
   "Wizard": {
     "newTitle": "ماذا تنظّم؟",
@@ -651,7 +659,13 @@
       "invalid": "بعض التفاصيل غير صالحة."
     },
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "freeNoTickets": "تسجيل مجاني: لا شيء لإعداده. يكتفي المشاركون بتأكيد مكانهم.",
+    "yourTicket": "تذكرتك",
+    "ticketsHint": "حدّد السعر للشخص الواحد. أضف أنواعًا أخرى فقط إذا اختلفت الأسعار (VIP، طالب، حجز مبكر…).",
+    "moreTicketOptions": "خيارات إضافية (النوع، الكمية، عدد الأشخاص لكل تذكرة)",
+    "quantityHint": "فارغ: حتى سعة الفعالية.",
+    "addAnotherTicket": "إضافة نوع تذكرة آخر"
   },
   "Host": {
     "newTitle": "ادعُ أصدقاءك",
@@ -810,5 +824,59 @@
     "showAtEntrance": "اعرض رمز QR هذا عند الدخول، على هاتفك أو مطبوعًا.",
     "onePerPerson": "رمز QR واحد لكل شخص، ولا يمكن مسحه إلا مرة واحدة.",
     "page": "التذكرة {n} من {total}"
+  },
+  "Payments": {
+    "title": "المدفوعات",
+    "intro": "راجع الإيصالات التي أرسلها المشترون وأكّد مدفوعات D17 والتحويل البنكي. تأكيد الدفع يرسل للمشتري تذكرته مع رمز QR.",
+    "tabs": {
+      "toVerify": "للمراجعة",
+      "awaiting": "في انتظار الدفع",
+      "confirmed": "مؤكدة"
+    },
+    "nothingToVerify": "لا يوجد إيصال للمراجعة",
+    "nothingToVerifyHint": "تظهر هنا الإيصالات التي يرسلها المشترون.",
+    "nothingAwaiting": "لا توجد مدفوعات منتظرة",
+    "nothingAwaitingHint": "تنتظر هنا الحجوزات المدفوعة عبر D17 أو التحويل حتى يصل المال.",
+    "places": "{count, plural, one {مكان واحد} two {مكانان} few {# أماكن} many {# مكانًا} other {# مكان}}",
+    "deadline": "محجوز حتى {time}",
+    "reservedUntil": "محجوز حتى {time}",
+    "openPdf": "فتح ملف PDF",
+    "enlarge": "تكبير الإيصال",
+    "receiptOf": "إيصال {name}",
+    "sentAt": "أُرسل في {time}",
+    "checkHint": "تحقّق من وصول {amount} إلى حسابك في D17 أو البنك، ويفضَّل مع المرجع {reference}.",
+    "transactionRef": "رقم العملية (اختياري)",
+    "transactionShort": "رقم {ref}",
+    "confirmReceived": "تأكيد: تم استلام {amount}",
+    "reject": "رفض",
+    "rejectTitle": "رفض هذا الإيصال",
+    "rejectHint": "يرى المشتري السبب ولديه 24 ساعة لإرسال إيصال جديد.",
+    "reason": "السبب",
+    "reasons": {
+      "wrong_amount": "المبلغ غير مطابق",
+      "unreadable": "الإيصال غير واضح",
+      "not_received": "المال لم يصل",
+      "other": "سبب آخر"
+    },
+    "noteToBuyer": "رسالة إلى المشتري (اختياري)",
+    "back": "رجوع",
+    "waitingNewReceipt": "رُفض الإيصال: في انتظار إيصال جديد.",
+    "extend": "يوم إضافي",
+    "cancelReservation": "إلغاء الحجز",
+    "cancelReservationHint": "تعود أماكن {name} إلى قائمة الانتظار ويتم إعلامه.",
+    "paymentReceived": "تم استلام الدفع",
+    "markPaidQuestion": "هل استلمت {amount} عبر {method}؟ يحصل المشتري على تذكرته فورًا.",
+    "yesReceived": "نعم، تم استلام {amount}",
+    "verifyReceipt": "مراجعة الإيصال",
+    "toVerifyBanner": "{count, plural, one {إيصال واحد للمراجعة} two {إيصالان للمراجعة} few {# إيصالات للمراجعة} many {# إيصالًا للمراجعة} other {# إيصال للمراجعة}}",
+    "verifyNow": "راجع الآن"
+  },
+  "Notify": {
+    "payment_confirmed": "دوليشة: تم استلام الدفع لـ{event} ({reference}). تذكرتك ورمز QR: {url}",
+    "payment_confirmedSubject": "تذكرتك لـ{event}",
+    "receipt_rejected": "دوليشة: رُفض إيصالك لـ{event} ({reference}): {reason}. {note} أرسل إيصالًا جديدًا خلال 24 ساعة: {url}",
+    "receipt_rejectedSubject": "رُفض الإيصال لـ{event}",
+    "reservation_cancelled": "دوليشة: ألغى المنظّم حجزك {reference} لـ{event} (لم يصل الدفع). {url}",
+    "reservation_cancelledSubject": "أُلغي الحجز لـ{event}"
   }
 }

@@ -543,113 +543,139 @@ export function TicketsStep({
         onChange={(v) => patchForm({ waitlistEnabled: v })}
       />
 
-      <fieldset className="space-y-3">
-        <legend className="mb-1 text-sm font-medium">{t('ticketTypes')}</legend>
-        {tickets.map((ticket, index) => (
-          <div
-            key={ticket.id ?? `new-${index}`}
-            className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-6"
-          >
-            <Field id={`t-name-${index}`} label={t('ticketName')} className="sm:col-span-2">
-              <Input
-                id={`t-name-${index}`}
-                value={ticket.name}
-                maxLength={80}
-                onChange={(e) => edit(index, { name: e.target.value })}
-                className={inputClass}
-                data-testid={`ticket-name-${index}`}
-              />
-            </Field>
-            <Field id={`t-kind-${index}`} label={t('ticketKind')}>
-              <NativeSelect
-                id={`t-kind-${index}`}
-                value={ticket.kind}
-                onChange={(e) => edit(index, { kind: e.target.value as TicketForm['kind'] })}
-              >
-                {KINDS.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {t(`kinds.${kind}`)}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-            {!free ? (
-              <Field id={`t-price-${index}`} label={t('price')}>
-                <Input
-                  id={`t-price-${index}`}
-                  inputMode="decimal"
-                  value={ticket.price}
-                  onChange={(e) => edit(index, { price: e.target.value })}
-                  className={inputClass}
-                  data-testid={`ticket-price-${index}`}
-                />
-              </Field>
-            ) : null}
-            {deposit ? (
-              <Field id={`t-deposit-${index}`} label={t('deposit')}>
-                <Input
-                  id={`t-deposit-${index}`}
-                  inputMode="decimal"
-                  value={ticket.deposit}
-                  onChange={(e) => edit(index, { deposit: e.target.value })}
-                  className={inputClass}
-                />
-              </Field>
-            ) : null}
-            <Field id={`t-qty-${index}`} label={t('quantity')}>
-              <Input
-                id={`t-qty-${index}`}
-                type="number"
-                inputMode="numeric"
-                min={1}
-                value={ticket.quantity}
-                onChange={(e) => edit(index, { quantity: e.target.value })}
-                className={inputClass}
-              />
-            </Field>
-            <div className="flex items-end gap-2 sm:col-span-6 sm:justify-between">
-              <Field id={`t-seats-${index}`} label={t('seats')} className="max-w-32">
-                <Input
-                  id={`t-seats-${index}`}
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={20}
-                  value={ticket.seats}
-                  onChange={(e) => edit(index, { seats: e.target.value })}
-                  className={inputClass}
-                />
-              </Field>
-              <Button
-                type="button"
-                variant="ghost"
-                className="min-h-11 text-destructive"
-                onClick={() => setTickets(tickets.filter((_, i) => i !== index))}
-              >
-                <Trash2 aria-hidden="true" />
-                {t('removeTicket')}
-              </Button>
+      {free ? (
+        <p
+          className="rounded-xl bg-muted p-4 text-sm text-muted-foreground"
+          data-testid="free-no-tickets"
+        >
+          {t('freeNoTickets')}
+        </p>
+      ) : (
+        <fieldset className="space-y-3">
+          <legend className="mb-1 text-sm font-medium">
+            {tickets.length > 1 ? t('ticketTypes') : t('yourTicket')}
+          </legend>
+          <p className="text-xs text-muted-foreground">{t('ticketsHint')}</p>
+          {tickets.map((ticket, index) => (
+            <div
+              key={ticket.id ?? `new-${index}`}
+              className="space-y-3 rounded-xl border border-border p-4"
+            >
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Field id={`t-price-${index}`} label={t('price')}>
+                  <Input
+                    id={`t-price-${index}`}
+                    inputMode="decimal"
+                    value={ticket.price}
+                    onChange={(e) => edit(index, { price: e.target.value })}
+                    className={`${inputClass} text-lg font-semibold`}
+                    placeholder="0"
+                    data-testid={`ticket-price-${index}`}
+                  />
+                </Field>
+                {deposit ? (
+                  <Field id={`t-deposit-${index}`} label={t('deposit')}>
+                    <Input
+                      id={`t-deposit-${index}`}
+                      inputMode="decimal"
+                      value={ticket.deposit}
+                      onChange={(e) => edit(index, { deposit: e.target.value })}
+                      className={inputClass}
+                    />
+                  </Field>
+                ) : null}
+                <Field
+                  id={`t-name-${index}`}
+                  label={t('ticketName')}
+                  className={deposit ? undefined : 'sm:col-span-2'}
+                >
+                  <Input
+                    id={`t-name-${index}`}
+                    value={ticket.name}
+                    maxLength={80}
+                    onChange={(e) => edit(index, { name: e.target.value })}
+                    className={inputClass}
+                    data-testid={`ticket-name-${index}`}
+                  />
+                </Field>
+              </div>
+              {/* Kind, quantity and people per ticket: rarely needed, folded away. */}
+              <details className="group">
+                <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary">
+                  {t('moreTicketOptions')}
+                </summary>
+                <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                  <Field id={`t-kind-${index}`} label={t('ticketKind')}>
+                    <NativeSelect
+                      id={`t-kind-${index}`}
+                      value={ticket.kind}
+                      onChange={(e) => edit(index, { kind: e.target.value as TicketForm['kind'] })}
+                    >
+                      {KINDS.map((kind) => (
+                        <option key={kind} value={kind}>
+                          {t(`kinds.${kind}`)}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                  <Field id={`t-qty-${index}`} label={t('quantity')} hint={t('quantityHint')}>
+                    <Input
+                      id={`t-qty-${index}`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={ticket.quantity}
+                      onChange={(e) => edit(index, { quantity: e.target.value })}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field id={`t-seats-${index}`} label={t('seats')}>
+                    <Input
+                      id={`t-seats-${index}`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={20}
+                      value={ticket.seats}
+                      onChange={(e) => edit(index, { seats: e.target.value })}
+                      className={inputClass}
+                    />
+                  </Field>
+                </div>
+              </details>
+              {tickets.length > 1 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="min-h-11 text-destructive"
+                  onClick={() => setTickets(tickets.filter((_, i) => i !== index))}
+                  data-testid={`remove-ticket-${index}`}
+                >
+                  <Trash2 aria-hidden="true" />
+                  {t('removeTicket')}
+                </Button>
+              ) : null}
             </div>
-          </div>
-        ))}
-        {tickets.length < 10 ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11 rounded-full"
-            onClick={() =>
-              setTickets([
-                ...tickets,
-                { kind: 'standard', name: '', price: '', deposit: '', quantity: '', seats: '1' },
-              ])
-            }
-            data-testid="add-ticket-type"
-          >
-            <Plus aria-hidden="true" />
-            {t('addTicket')}
-          </Button>
-        ) : null}
-      </fieldset>
+          ))}
+          {tickets.length < 10 ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 rounded-full"
+              onClick={() =>
+                setTickets([
+                  ...tickets,
+                  { kind: 'standard', name: '', price: '', deposit: '', quantity: '', seats: '1' },
+                ])
+              }
+              data-testid="add-ticket-type"
+            >
+              <Plus aria-hidden="true" />
+              {tickets.length === 0 ? t('addTicket') : t('addAnotherTicket')}
+            </Button>
+          ) : null}
+        </fieldset>
+      )}
     </div>
   );
 }

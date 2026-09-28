@@ -107,7 +107,21 @@ export async function createDraft(
       brief: localizeBrief(def.defaultBrief, input.language),
     })
     .returning({ id: schema.events.id });
+  // One ticket type is ready from the start: the organizer only sets its price.
+  // Free events keep it at 0 DT; more types (VIP, student…) are optional.
+  if (def.modules.includes('tickets')) {
+    await db.insert(schema.ticketTypes).values({
+      eventId: event!.id,
+      name: defaultTicketName(input.language),
+      priceMillimes: 0,
+    });
+  }
   return event!;
+}
+
+/** Name of the ticket type every new event starts with. */
+export function defaultTicketName(language: Locale) {
+  return language === 'ar' ? 'تذكرة عادية' : language === 'fr' ? 'Entrée' : 'Standard';
 }
 
 /** Everything the wizard shows for one event. */
@@ -363,7 +377,7 @@ export async function publishEvent(
   if (event.model !== 'private' && data.tickets.filter((t) => t.isActive).length === 0) {
     await db.insert(schema.ticketTypes).values({
       eventId,
-      name: event.language === 'ar' ? 'دخول' : event.language === 'fr' ? 'Entrée' : 'Entry',
+      name: defaultTicketName(event.language),
       priceMillimes: 0,
       quantity: event.capacity,
     });

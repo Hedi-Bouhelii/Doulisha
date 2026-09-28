@@ -54,7 +54,7 @@ for (const locale of ['fr', 'ar', 'en'] as const) {
     await guest.goto(`${eventUrl}?utm_source=whatsapp&utm_medium=share`);
     await guest.getByTestId('book-cta').click();
     // A single ticket type is preselected with one place.
-    await expect(guest.getByTestId('add-ticket-Standard')).toBeVisible();
+    await expect(guest.locator('[data-testid^="add-ticket-"]')).toHaveCount(1);
     await guest.getByTestId('checkout-next-details').click();
     await guest.locator('#name-0').fill(guestName);
     await guest.locator('#phone-0').fill('55123456');

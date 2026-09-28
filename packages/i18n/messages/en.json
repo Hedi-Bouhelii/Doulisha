@@ -245,7 +245,8 @@
     "passwordAlreadySet": "This account already has a password.",
     "tooManyPhotos": "You can show up to {max} photos.",
     "paymentMethodNotAllowed": "This event does not accept this payment method.",
-    "proofUnderReview": "Your receipt is being checked: wait for the organizer."
+    "proofUnderReview": "Your receipt is being checked: wait for the organizer.",
+    "proofPending": "A receipt is waiting: check it in \"Payments\" first."
   },
   "Dev": {
     "outboxTitle": "Dev outbox",
@@ -360,7 +361,8 @@
       "offered": "A place is waiting for you",
       "cancelled": "Cancelled",
       "expired": "Expired",
-      "refunded": "Refunded"
+      "refunded": "Refunded",
+      "reserved": "Place reserved"
     },
     "payment": {
       "paid": "Paid",
@@ -389,7 +391,7 @@
     "uploadProof": "Upload the receipt",
     "uploading": "Uploading…",
     "proof": {
-      "pending": "Receipt sent. The organizer will confirm it.",
+      "pending": "Receipt sent. The organizer checks it and confirms your place; you will get a message.",
       "approved": "Receipt approved.",
       "rejected": "The receipt was refused. Upload another one or contact the organizer."
     },
@@ -434,7 +436,14 @@
     "findEvents": "Find events",
     "amountDue": "{amount} to pay",
     "downloadPdf": "Download my ticket (PDF)",
-    "guestPdfHint": "No account: keep this PDF, it is your ticket. It has your QR code and everything you need for the day."
+    "guestPdfHint": "No account: keep this PDF, it is your ticket. It has your QR code and everything you need for the day.",
+    "reservedTitle": "Your place is reserved: pay to confirm it",
+    "reviewTitle": "Receipt received: the organizer is checking it",
+    "payBefore": "Pay before {time}, or the place goes to the next person.",
+    "rejectedBecause": "Your receipt was refused: {reason}.",
+    "qrAfterPayment": "Your QR code appears here as soon as the organizer confirms your payment.",
+    "expiredHint": "This reservation expired: the payment did not arrive before the deadline. You can book again if places are left.",
+    "writeReference": "Write your reference {reference} in the payment message, so the organizer can find it."
   },
   "Organizer": {
     "title": "Organizer space",
@@ -483,7 +492,6 @@
     "duplicate": "Duplicate",
     "attendees": "Attendees",
     "waitlist": "Waitlist",
-    "requests": "To review",
     "checkIn": "Check-in",
     "export": "Export",
     "exportExcel": "Excel",
@@ -494,10 +502,8 @@
     "alreadyPaid": "Already paid",
     "method": "Method",
     "add": "Add",
-    "markPaid": "Mark as paid",
     "approve": "Approve",
     "reject": "Reject",
-    "viewProof": "View receipt",
     "refundRequest": "Refund of {amount} requested",
     "note": "Note",
     "noteSaved": "Note saved",
@@ -524,7 +530,6 @@
     "codeLabel": "Or type the ticket code",
     "checkInButton": "Check in",
     "checkInOk": "Welcome {name}!",
-    "checkInUnpaid": "Checked in. Payment still pending: collect it.",
     "checkInAlready": "Already checked in at {time}.",
     "checkInInvalid": "Unknown or cancelled ticket.",
     "cameraUnavailable": "The camera scanner is not available on this browser. Type the code instead.",
@@ -534,7 +539,10 @@
     "shareTitle": "Share your event",
     "hostPrivate": "My private events",
     "copyInvite": "Copy the invitation link",
-    "keepEvent": "Keep the event"
+    "keepEvent": "Keep the event",
+    "refunds": "Refunds",
+    "collectFirst": "Collect {amount} from {name}.",
+    "collectedCheckIn": "Collected, check in"
   },
   "Wizard": {
     "newTitle": "What are you organizing?",
@@ -651,7 +659,13 @@
       "invalid": "Some details are invalid."
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "freeNoTickets": "Free registration: nothing to set up. People just confirm their place.",
+    "yourTicket": "Your ticket",
+    "ticketsHint": "Set the price per person. Add other types only if prices differ (VIP, student, early bird…).",
+    "moreTicketOptions": "More options (type, quantity, people per ticket)",
+    "quantityHint": "Empty: up to the event capacity.",
+    "addAnotherTicket": "Add another ticket type"
   },
   "Host": {
     "newTitle": "Invite your friends",
@@ -810,5 +824,59 @@
     "showAtEntrance": "Show this QR code at the entrance, on your phone or printed.",
     "onePerPerson": "One QR code per person. It can be scanned only once.",
     "page": "Ticket {n} of {total}"
+  },
+  "Payments": {
+    "title": "Payments",
+    "intro": "Check the receipts buyers sent and confirm D17 and bank transfer payments. Confirming a payment sends the buyer their ticket with its QR code.",
+    "tabs": {
+      "toVerify": "To verify",
+      "awaiting": "Awaiting payment",
+      "confirmed": "Confirmed"
+    },
+    "nothingToVerify": "No receipt to check",
+    "nothingToVerifyHint": "Receipts sent by buyers appear here.",
+    "nothingAwaiting": "No payment awaited",
+    "nothingAwaitingHint": "Reservations paid by D17 or transfer wait here until the money arrives.",
+    "places": "{count, plural, one {# place} other {# places}}",
+    "deadline": "Reserved until {time}",
+    "reservedUntil": "Reserved until {time}",
+    "openPdf": "Open the PDF",
+    "enlarge": "Enlarge the receipt",
+    "receiptOf": "Receipt from {name}",
+    "sentAt": "Sent {time}",
+    "checkHint": "Check that {amount} arrived on your D17 or bank account, ideally with the reference {reference}.",
+    "transactionRef": "Transaction number (optional)",
+    "transactionShort": "No. {ref}",
+    "confirmReceived": "Confirm: {amount} received",
+    "reject": "Refuse",
+    "rejectTitle": "Refuse this receipt",
+    "rejectHint": "The buyer sees the reason and has 24 hours to send a new receipt.",
+    "reason": "Reason",
+    "reasons": {
+      "wrong_amount": "the amount does not match",
+      "unreadable": "the receipt is not readable",
+      "not_received": "the money has not arrived",
+      "other": "another reason"
+    },
+    "noteToBuyer": "Message to the buyer (optional)",
+    "back": "Back",
+    "waitingNewReceipt": "Receipt refused: waiting for a new one.",
+    "extend": "One more day",
+    "cancelReservation": "Cancel the reservation",
+    "cancelReservationHint": "The places of {name} go back to the waitlist and they are told.",
+    "paymentReceived": "Payment received",
+    "markPaidQuestion": "Did you receive {amount} by {method}? The buyer gets their ticket at once.",
+    "yesReceived": "Yes, {amount} received",
+    "verifyReceipt": "Verify the receipt",
+    "toVerifyBanner": "{count, plural, one {# receipt to verify} other {# receipts to verify}}",
+    "verifyNow": "Verify now"
+  },
+  "Notify": {
+    "payment_confirmed": "Doulisha: payment received for {event} ({reference}). Your ticket and QR code: {url}",
+    "payment_confirmedSubject": "Your ticket for {event}",
+    "receipt_rejected": "Doulisha: your receipt for {event} ({reference}) was refused: {reason}. {note} Send a new one within 24 hours: {url}",
+    "receipt_rejectedSubject": "Receipt refused for {event}",
+    "reservation_cancelled": "Doulisha: your reservation {reference} for {event} was cancelled by the organizer (payment not received). {url}",
+    "reservation_cancelledSubject": "Reservation cancelled for {event}"
   }
 }

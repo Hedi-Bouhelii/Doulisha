@@ -245,7 +245,8 @@
     "passwordAlreadySet": "Ce compte a déjà un mot de passe.",
     "tooManyPhotos": "Vous pouvez montrer jusqu’à {max} photos.",
     "paymentMethodNotAllowed": "Cet événement n’accepte pas ce moyen de paiement.",
-    "proofUnderReview": "Votre reçu est en cours de vérification : attendez l’organisateur."
+    "proofUnderReview": "Votre reçu est en cours de vérification : attendez l’organisateur.",
+    "proofPending": "Un reçu attend : vérifiez-le d’abord dans « Paiements »."
   },
   "Dev": {
     "outboxTitle": "Boîte d’envoi (développement)",
@@ -360,7 +361,8 @@
       "offered": "Une place vous attend",
       "cancelled": "Annulé",
       "expired": "Expiré",
-      "refunded": "Remboursé"
+      "refunded": "Remboursé",
+      "reserved": "Place réservée"
     },
     "payment": {
       "paid": "Payé",
@@ -389,7 +391,7 @@
     "uploadProof": "Déposer le reçu",
     "uploading": "Envoi…",
     "proof": {
-      "pending": "Reçu envoyé. L’organisateur va le confirmer.",
+      "pending": "Reçu envoyé. L’organisateur le vérifie et confirme votre place ; vous recevrez un message.",
       "approved": "Reçu validé.",
       "rejected": "Le reçu a été refusé. Déposez-en un autre ou contactez l’organisateur."
     },
@@ -434,7 +436,14 @@
     "findEvents": "Trouver des événements",
     "amountDue": "{amount} à payer",
     "downloadPdf": "Télécharger mon billet (PDF)",
-    "guestPdfHint": "Sans compte : gardez ce PDF, c’est votre billet. Il contient votre QR code et tout ce qu’il faut pour le jour J."
+    "guestPdfHint": "Sans compte : gardez ce PDF, c’est votre billet. Il contient votre QR code et tout ce qu’il faut pour le jour J.",
+    "reservedTitle": "Votre place est réservée : payez pour la confirmer",
+    "reviewTitle": "Reçu envoyé : l’organisateur le vérifie",
+    "payBefore": "Payez avant le {time}, sinon la place revient à la personne suivante.",
+    "rejectedBecause": "Votre reçu a été refusé : {reason}.",
+    "qrAfterPayment": "Votre QR code apparaît ici dès que l’organisateur confirme votre paiement.",
+    "expiredHint": "Cette réservation a expiré : le paiement n’est pas arrivé à temps. Vous pouvez réserver à nouveau s’il reste des places.",
+    "writeReference": "Indiquez votre référence {reference} dans le message du paiement, pour que l’organisateur le retrouve."
   },
   "Organizer": {
     "title": "Espace organisateur",
@@ -483,7 +492,6 @@
     "duplicate": "Dupliquer",
     "attendees": "Participants",
     "waitlist": "Liste d’attente",
-    "requests": "À traiter",
     "checkIn": "Contrôle d’entrée",
     "export": "Exporter",
     "exportExcel": "Excel",
@@ -494,10 +502,8 @@
     "alreadyPaid": "Déjà payé",
     "method": "Moyen",
     "add": "Ajouter",
-    "markPaid": "Marquer payé",
     "approve": "Valider",
     "reject": "Refuser",
-    "viewProof": "Voir le reçu",
     "refundRequest": "Remboursement de {amount} demandé",
     "note": "Note",
     "noteSaved": "Note enregistrée",
@@ -524,7 +530,6 @@
     "codeLabel": "Ou saisissez le code du billet",
     "checkInButton": "Valider l’entrée",
     "checkInOk": "Bienvenue {name} !",
-    "checkInUnpaid": "Entrée validée. Paiement encore dû : à encaisser.",
     "checkInAlready": "Déjà entré à {time}.",
     "checkInInvalid": "Billet inconnu ou annulé.",
     "cameraUnavailable": "Le scanner n’est pas disponible sur ce navigateur. Saisissez le code.",
@@ -534,7 +539,10 @@
     "shareTitle": "Partagez votre événement",
     "hostPrivate": "Mes événements privés",
     "copyInvite": "Copier le lien d’invitation",
-    "keepEvent": "Garder l’événement"
+    "keepEvent": "Garder l’événement",
+    "refunds": "Remboursements",
+    "collectFirst": "Encaissez {amount} auprès de {name}.",
+    "collectedCheckIn": "Encaissé, valider l’entrée"
   },
   "Wizard": {
     "newTitle": "Qu’organisez-vous ?",
@@ -651,7 +659,13 @@
       "invalid": "Certains détails ne sont pas valides."
     },
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "freeNoTickets": "Inscription gratuite : rien à configurer. Les participants confirment simplement leur place.",
+    "yourTicket": "Votre billet",
+    "ticketsHint": "Indiquez le prix par personne. Ajoutez d’autres types seulement si les prix diffèrent (VIP, étudiant, prévente…).",
+    "moreTicketOptions": "Plus d’options (type, quantité, personnes par billet)",
+    "quantityHint": "Vide : jusqu’à la capacité de l’événement.",
+    "addAnotherTicket": "Ajouter un autre type de billet"
   },
   "Host": {
     "newTitle": "Invitez vos amis",
@@ -810,5 +824,59 @@
     "showAtEntrance": "Présentez ce QR code à l’entrée, sur votre téléphone ou imprimé.",
     "onePerPerson": "Un QR code par personne. Il ne peut être scanné qu’une fois.",
     "page": "Billet {n} sur {total}"
+  },
+  "Payments": {
+    "title": "Paiements",
+    "intro": "Vérifiez les reçus envoyés par les acheteurs et confirmez les paiements D17 et par virement. Confirmer un paiement envoie à l’acheteur son billet avec son QR code.",
+    "tabs": {
+      "toVerify": "À vérifier",
+      "awaiting": "En attente de paiement",
+      "confirmed": "Confirmés"
+    },
+    "nothingToVerify": "Aucun reçu à vérifier",
+    "nothingToVerifyHint": "Les reçus envoyés par les acheteurs apparaissent ici.",
+    "nothingAwaiting": "Aucun paiement en attente",
+    "nothingAwaitingHint": "Les réservations payées par D17 ou virement attendent ici l’arrivée de l’argent.",
+    "places": "{count, plural, one {# place} other {# places}}",
+    "deadline": "Réservé jusqu’au {time}",
+    "reservedUntil": "Réservé jusqu’au {time}",
+    "openPdf": "Ouvrir le PDF",
+    "enlarge": "Agrandir le reçu",
+    "receiptOf": "Reçu de {name}",
+    "sentAt": "Envoyé le {time}",
+    "checkHint": "Vérifiez que {amount} est arrivé sur votre compte D17 ou bancaire, idéalement avec la référence {reference}.",
+    "transactionRef": "Numéro de transaction (facultatif)",
+    "transactionShort": "N° {ref}",
+    "confirmReceived": "Confirmer : {amount} reçu",
+    "reject": "Refuser",
+    "rejectTitle": "Refuser ce reçu",
+    "rejectHint": "L’acheteur voit le motif et dispose de 24 heures pour envoyer un nouveau reçu.",
+    "reason": "Motif",
+    "reasons": {
+      "wrong_amount": "le montant ne correspond pas",
+      "unreadable": "le reçu est illisible",
+      "not_received": "l’argent n’est pas arrivé",
+      "other": "une autre raison"
+    },
+    "noteToBuyer": "Message à l’acheteur (facultatif)",
+    "back": "Retour",
+    "waitingNewReceipt": "Reçu refusé : en attente d’un nouveau reçu.",
+    "extend": "Un jour de plus",
+    "cancelReservation": "Annuler la réservation",
+    "cancelReservationHint": "Les places de {name} retournent à la liste d’attente et la personne est prévenue.",
+    "paymentReceived": "Paiement reçu",
+    "markPaidQuestion": "Avez-vous reçu {amount} par {method} ? L’acheteur reçoit son billet aussitôt.",
+    "yesReceived": "Oui, {amount} reçu",
+    "verifyReceipt": "Vérifier le reçu",
+    "toVerifyBanner": "{count, plural, one {# reçu à vérifier} other {# reçus à vérifier}}",
+    "verifyNow": "Vérifier maintenant"
+  },
+  "Notify": {
+    "payment_confirmed": "Doulisha : paiement reçu pour {event} ({reference}). Votre billet et son QR code : {url}",
+    "payment_confirmedSubject": "Votre billet pour {event}",
+    "receipt_rejected": "Doulisha : votre reçu pour {event} ({reference}) a été refusé : {reason}. {note} Envoyez-en un nouveau sous 24 heures : {url}",
+    "receipt_rejectedSubject": "Reçu refusé pour {event}",
+    "reservation_cancelled": "Doulisha : votre réservation {reference} pour {event} a été annulée par l’organisateur (paiement non reçu). {url}",
+    "reservation_cancelledSubject": "Réservation annulée pour {event}"
   }
 }
