@@ -42,9 +42,11 @@ test('the seeded admin sees seed data in the admin table', async ({ page }) => {
 
   await page.goto('/fr/admin');
   await expect(page.getByTestId('admin-tables')).toContainText('events');
+  // Categories: seeded only, so E2E runs on the dev branch never push them off the first page.
+  await page.getByTestId('admin-tables').getByRole('button', { name: /^categories/ }).click();
   const rows = page.getByTestId('admin-rows');
-  await expect(rows).toContainText('randonnee-foret-ain-draham');
-  await expect(rows).toContainText('live-music-night-la-marsa');
+  await expect(rows).toContainText('outdoor');
+  await expect(rows).toContainText('entertainment');
 });
 
 test('switching to Arabic flips the layout to right-to-left', async ({ page }) => {
