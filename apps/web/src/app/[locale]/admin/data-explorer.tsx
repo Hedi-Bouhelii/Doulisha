@@ -39,7 +39,7 @@ export function DataExplorer() {
 
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr]">
-      <nav aria-label={t('tables')} className="rounded-xl border border-border bg-card p-2">
+      <nav aria-label={t('tables')} className="min-w-0 rounded-xl border border-border bg-card p-2">
         <p className="px-2 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {t('tables')}
         </p>
@@ -52,7 +52,8 @@ export function DataExplorer() {
         ) : (
           <ul className="flex gap-1 overflow-x-auto lg:flex-col" data-testid="admin-tables">
             {tables.data?.map((entry) => (
-              <li key={entry.table}>
+              // On phones the list scrolls sideways: items keep their width instead of overlapping.
+              <li key={entry.table} className="shrink-0 lg:shrink">
                 <button
                   type="button"
                   onClick={() => setTable(entry.table)}

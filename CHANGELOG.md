@@ -14,6 +14,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 - **Guest PDF tickets** now download once, as soon as the ticket exists (also after the organizer confirms a D17 payment).
 - **Tickets step of the wizard:** a new event starts with one ticket; only the price is needed. Other options (kind, quantity, people per ticket) are folded away; free events show no ticket editor.
 - **Template details on the event page:** distance, difficulty, line-up and other template fields now appear in the "About" tab. The concert field "Programmation" is renamed "Artistes / line-up" with a hint. New script `pnpm db:sync-templates` updates existing template rows.
+- **Back office on phones:** the data explorer no longer overflows the screen; its table list scrolls sideways.
 
 ### Added: PDF tickets (2026-09-28)
 
