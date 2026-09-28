@@ -41,6 +41,7 @@ export const metadata: Metadata = { robots: { index: false } };
 
 type Status =
   | 'confirmed'
+  | 'reserved'
   | 'awaiting_payment'
   | 'waitlisted'
   | 'offered'
@@ -50,6 +51,7 @@ type Status =
 
 const statusTone: Record<Status, string> = {
   confirmed: 'bg-cat-outdoor-bg text-cat-outdoor-fg',
+  reserved: 'bg-cat-sports-bg text-cat-sports-fg',
   awaiting_payment: 'bg-highlight-soft text-highlight',
   waitlisted: 'bg-secondary text-secondary-foreground',
   offered: 'bg-cat-sports-bg text-cat-sports-fg',
@@ -79,20 +81,25 @@ export default async function TicketPage({
     throw error;
   });
   const t = await getTranslations('Tickets');
-  const status: Status =
-    order.bookingStatus === 'offered'
-      ? 'offered'
-      : order.bookingStatus === 'waitlisted'
-        ? 'waitlisted'
-        : order.orderStatus === 'refunded'
-          ? 'refunded'
-          : ['cancelled', 'expired'].includes(order.orderStatus)
-            ? (order.orderStatus as 'cancelled' | 'expired')
-            : order.dueMillimes > 0 && order.payment === 'pending'
-              ? 'awaiting_payment'
-              : 'confirmed';
-  const closed = ['cancelled', 'expired', 'refunded'].includes(status);
+  const tReasons = await getTranslations('Payments.reasons');
   const manual = order.manualMethod as 'd17' | 'bank_transfer' | 'cash' | null;
+  const status: Status =
+    order.bookingStatus === 'expired'
+      ? 'expired'
+      : order.bookingStatus === 'held' && (manual === 'd17' || manual === 'bank_transfer')
+        ? 'reserved'
+        : order.bookingStatus === 'offered'
+          ? 'offered'
+          : order.bookingStatus === 'waitlisted'
+            ? 'waitlisted'
+            : order.orderStatus === 'refunded'
+              ? 'refunded'
+              : ['cancelled', 'expired'].includes(order.orderStatus)
+                ? (order.orderStatus as 'cancelled' | 'expired')
+                : order.dueMillimes > 0 && order.payment === 'pending'
+                  ? 'awaiting_payment'
+                  : 'confirmed';
+  const closed = ['cancelled', 'expired', 'refunded'].includes(status);
   const place = [order.event.venueName, order.event.city].filter(Boolean).join(' · ');
   const session = await getSession();
   const isGuest = !session || session.user.isAnonymous === true;
@@ -168,7 +175,7 @@ export default async function TicketPage({
           className="mt-4 space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5"
         >
           <h2 id="next-step" className="font-sans text-lg font-semibold">
-            {nextTitle(t, status, manual, order.dueMillimes)}
+            {nextTitle(t, status, manual, order.dueMillimes, order.proofStatus)}
           </h2>
           <NextStepBody
             status={status}
@@ -177,10 +184,10 @@ export default async function TicketPage({
             payTo={order.payTo as PayTo}
             locale={locale}
             t={t}
+            tReasons={tReasons}
           />
-          {status === 'awaiting_payment' &&
+          {(status === 'reserved' || status === 'awaiting_payment') &&
           manual &&
-          manual !== 'cash' &&
           order.proofStatus !== 'pending' ? (
             <PayDifferently
               reference={order.reference}
@@ -189,6 +196,10 @@ export default async function TicketPage({
             />
           ) : null}
         </section>
+      ) : status === 'expired' ? (
+        <p className="mt-4 rounded-xl bg-muted p-4 text-sm" data-testid="expired-hint">
+          {t('expiredHint')}
+        </p>
       ) : order.refund ? (
         <p className="mt-4 rounded-xl bg-muted p-4 text-sm">
           {t(`refund.${order.refund.status}`, {
@@ -197,11 +208,13 @@ export default async function TicketPage({
         </p>
       ) : null}
 
-      {/* Guests have no account: the PDF is their ticket (Q23). */}
+      {/* Guests have no account: the PDF is their ticket (Q23). It downloads once,
+          as soon as the places are confirmed (at booking, or when the organizer
+          confirms a D17 or transfer payment). */}
       {hasQr && isGuest ? (
         <section className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
           <p className="max-w-md text-sm">{t('guestPdfHint')}</p>
-          <PdfTicketButton reference={order.reference} autoDownload={justBooked} prominent />
+          <PdfTicketButton reference={order.reference} autoDownload prominent />
         </section>
       ) : null}
 
@@ -240,8 +253,11 @@ export default async function TicketPage({
                       label={t('qrLabel')}
                     />
                   ) : (
-                    <p className="flex min-h-40 items-center rounded-xl bg-muted p-4 text-sm text-muted-foreground">
-                      {t('qrLater')}
+                    <p
+                      className="flex min-h-40 items-center rounded-xl bg-muted p-4 text-sm text-muted-foreground"
+                      data-testid="qr-pending"
+                    >
+                      {status === 'reserved' ? t('qrAfterPayment') : t('qrLater')}
                     </p>
                   )}
                   {ticket.meetingPoint && ticket.meetAt ? (
@@ -310,7 +326,15 @@ export default async function TicketPage({
 type Translate = Awaited<ReturnType<typeof getTranslations<'Tickets'>>>;
 type Order = Awaited<ReturnType<Awaited<ReturnType<typeof api>>['booking']['byReference']>>;
 
-function nextTitle(t: Translate, status: Status, manual: string | null, due: number): string {
+function nextTitle(
+  t: Translate,
+  status: Status,
+  manual: string | null,
+  due: number,
+  proofStatus: string | null,
+): string {
+  if (status === 'reserved')
+    return proofStatus === 'pending' ? t('reviewTitle') : t('reservedTitle');
   if (status === 'waitlisted') return t('waitlistTitle');
   if (status === 'offered') return t('offerTitle');
   if (status === 'awaiting_payment') return manual === 'cash' ? t('cashTitle') : t('payTitle');
@@ -325,6 +349,7 @@ function NextStepBody({
   payTo,
   locale,
   t,
+  tReasons,
 }: {
   status: Status;
   manual: 'd17' | 'bank_transfer' | 'cash' | null;
@@ -332,6 +357,7 @@ function NextStepBody({
   payTo: PayTo;
   locale: Locale;
   t: Translate;
+  tReasons: Awaited<ReturnType<typeof getTranslations<'Payments.reasons'>>>;
 }): ReactNode {
   const due = formatPrice(order.dueMillimes, locale);
   if (status === 'waitlisted') {
@@ -351,16 +377,40 @@ function NextStepBody({
       </>
     );
   }
-  if (status === 'awaiting_payment' && (manual === 'd17' || manual === 'bank_transfer')) {
+  if (status === 'reserved' && (manual === 'd17' || manual === 'bank_transfer')) {
     return (
-      <ManualPaymentSteps
-        reference={order.reference}
-        method={manual}
-        amount={order.dueMillimes}
-        payTo={payTo}
-        organizerName={order.organizer?.name ?? null}
-        proofStatus={order.proofStatus as 'pending' | 'approved' | 'rejected' | null}
-      />
+      <>
+        {order.paymentDeadline ? (
+          <p className="flex items-center gap-2 text-sm font-medium" data-testid="payment-deadline">
+            <Clock className="size-4 shrink-0 text-primary" aria-hidden="true" />
+            {t('payBefore', { time: formatEventDateTime(order.paymentDeadline, locale) })}
+          </p>
+        ) : null}
+        {order.proofRejection ? (
+          <div
+            role="alert"
+            className="rounded-xl border border-highlight/30 bg-highlight-soft p-3 text-sm text-highlight"
+            data-testid="proof-rejected"
+          >
+            <p className="font-semibold">
+              {t('rejectedBecause', {
+                reason: tReasons((order.proofRejection.reason ?? 'other') as 'other'),
+              })}
+            </p>
+            {order.proofRejection.note ? (
+              <p className="mt-1">« {order.proofRejection.note} »</p>
+            ) : null}
+          </div>
+        ) : null}
+        <ManualPaymentSteps
+          reference={order.reference}
+          method={manual}
+          amount={order.dueMillimes}
+          payTo={payTo}
+          organizerName={order.organizer?.name ?? null}
+          proofStatus={order.proofStatus as 'pending' | 'approved' | 'rejected' | null}
+        />
+      </>
     );
   }
   if (status === 'awaiting_payment' && manual === 'cash') {

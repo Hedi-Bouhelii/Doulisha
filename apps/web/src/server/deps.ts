@@ -2,7 +2,10 @@ import 'server-only';
 
 import { createHmac } from 'node:crypto';
 
-import type { ServiceDeps } from '@doulisha/api';
+import type { BuyerNotice, ServiceDeps } from '@doulisha/api';
+import { formatPrice } from '@doulisha/i18n';
+import { mockEmailSender, mockSmsSender } from '@doulisha/notifications';
+import { getTranslations } from 'next-intl/server';
 import { withTransaction } from '@doulisha/db';
 import { createMockProvider, manualProvider } from '@doulisha/payments';
 import { createLocalProvider } from '@doulisha/storage';
@@ -36,8 +39,36 @@ export function getServiceDeps(): ServiceDeps {
     },
     storage: createLocalProvider({ secret: derivedSecret('uploads') }),
     appUrl,
+    notify: (notice) => sendBuyerNotice(notice, appUrl),
   };
   return deps;
+}
+
+/**
+ * Buyer messages (ADR 0018) in the language of the booking: SMS when the buyer
+ * gave a phone, email otherwise. Mock senders until Phase 6 (dev outbox).
+ */
+async function sendBuyerNotice(notice: BuyerNotice, appUrl: string) {
+  const t = await getTranslations({ locale: notice.locale, namespace: 'Notify' });
+  const tReasons = await getTranslations({ locale: notice.locale, namespace: 'Payments.reasons' });
+  const values = {
+    reference: notice.reference,
+    event: notice.eventTitle,
+    amount: formatPrice(notice.amountMillimes ?? 0, notice.locale),
+    reason: notice.reason ? tReasons(notice.reason as 'other') : '',
+    note: notice.note ?? '',
+    url: `${appUrl}/${notice.locale}/tickets/${notice.reference}`,
+  };
+  const text = t(notice.kind, values);
+  if (notice.to.phone) {
+    await mockSmsSender.send({ to: notice.to.phone, body: text });
+  } else if (notice.to.email) {
+    await mockEmailSender.send({
+      to: notice.to.email,
+      subject: t(`${notice.kind}Subject`, values),
+      text,
+    });
+  }
 }
 
 /** The mock provider with its webhook builder (for the simulated gateway page). */

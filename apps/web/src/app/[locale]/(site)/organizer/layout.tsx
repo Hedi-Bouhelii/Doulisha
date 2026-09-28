@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from '@/i18n/navigation';
 import { resolveLocale } from '@/i18n/locale';
 import { getSession } from '@/server/auth';
+import { api } from '@/trpc/server';
 
 import { OrganizerNav } from './organizer-nav';
 
@@ -23,12 +24,15 @@ export default async function OrganizerLayout({
     redirect({ href: '/sign-in?next=/organizer', locale });
   }
   const t = await getTranslations('Organizer');
+  const tPayments = await getTranslations('Payments');
+  const toVerify = await (await api()).organizer.receiptsToVerify();
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
       <p className="text-sm font-semibold text-primary print:hidden">{t('title')}</p>
       <OrganizerNav
         links={[
           { href: '/organizer', label: t('dashboard') },
+          { href: '/organizer/payments', label: tPayments('title'), badge: toVerify },
           { href: '/organizer/events/new', label: t('createEvent') },
           { href: '/organizer/profile', label: t('profile') },
           { href: '/host', label: t('hostPrivate') },

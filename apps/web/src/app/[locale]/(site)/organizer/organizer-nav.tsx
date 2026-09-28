@@ -6,7 +6,11 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 /** Tabs of the organizer space; scrolls sideways on small screens. */
-export function OrganizerNav({ links }: { links: { href: string; label: string }[] }) {
+export function OrganizerNav({
+  links,
+}: {
+  links: { href: string; label: string; badge?: number }[];
+}) {
   const pathname = usePathname();
   const t = useTranslations('Organizer');
   return (
@@ -28,6 +32,14 @@ export function OrganizerNav({ links }: { links: { href: string; label: string }
                 )}
               >
                 {link.label}
+                {link.badge ? (
+                  <span
+                    className="ltr-nums ms-1.5 rounded-full bg-highlight px-1.5 text-xs text-white"
+                    data-testid="payments-badge"
+                  >
+                    {link.badge}
+                  </span>
+                ) : null}
               </Link>
             </li>
           );

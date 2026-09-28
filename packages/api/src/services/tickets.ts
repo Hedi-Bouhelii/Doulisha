@@ -75,7 +75,11 @@ export async function getMyOrder(
     .orderBy(desc(schema.payments.createdAt));
   const proofs = payments.length
     ? await db
-        .select({ status: schema.paymentProofs.status })
+        .select({
+          status: schema.paymentProofs.status,
+          rejectionReason: schema.paymentProofs.rejectionReason,
+          note: schema.paymentProofs.note,
+        })
         .from(schema.paymentProofs)
         .where(
           inArray(
@@ -83,6 +87,7 @@ export async function getMyOrder(
             payments.map((p) => p.id),
           ),
         )
+        .orderBy(asc(schema.paymentProofs.createdAt))
     : [];
   const [refund] = await db
     .select()
@@ -102,15 +107,23 @@ export async function getMyOrder(
         .where(eq(schema.organizerProfiles.id, event.organizerProfileId))
     : [];
 
-  const status = bookings[0]?.booking.status ?? 'cancelled';
+  const rawStatus = bookings[0]?.booking.status ?? 'cancelled';
+  // A reservation past its payment deadline counts as expired, even before
+  // the next booking on the event releases its places (ADR 0018).
+  const heldDeadlines = bookings
+    .filter((b) => b.booking.status === 'held' && b.booking.holdExpiresAt)
+    .map((b) => b.booking.holdExpiresAt!);
+  const lapsed = heldDeadlines.some((d) => d <= now);
+  const status = lapsed ? 'expired' : rawStatus;
+  const lastProof = proofs.at(-1);
   const pendingManual = payments.find((p) => p.status === 'pending' && p.provider === 'manual');
   const canCancel =
+    !lapsed &&
     ['pending', 'awaiting_payment', 'partially_paid', 'paid'].includes(order.status) &&
     event.startsAt > now;
 
   return {
     reference: order.reference,
-    orderStatus: order.status,
     bookingStatus: status,
     payment: attendeePayment(order, status),
     totalMillimes: order.totalMillimes,
@@ -131,7 +144,17 @@ export async function getMyOrder(
     /** Methods the event accepts, for "Pay differently". */
     paymentMethods: allowedPayments(event.registrationType),
     organizer: organizer ? { name: organizer.name, slug: organizer.slug } : null,
-    proofStatus: proofs.at(-1)?.status ?? null,
+    proofStatus: lastProof?.status ?? null,
+    /** The organizer's reason when the latest receipt was rejected. */
+    proofRejection:
+      lastProof?.status === 'rejected'
+        ? { reason: lastProof.rejectionReason, note: lastProof.note }
+        : null,
+    /** When an unpaid D17 or transfer reservation lapses; null while a receipt is reviewed. */
+    paymentDeadline: lapsed
+      ? null
+      : heldDeadlines.reduce<Date | null>((min, d) => (!min || d < min ? d : min), null),
+    orderStatus: lapsed ? 'expired' : order.status,
     refund: refund ? { status: refund.status, amountMillimes: refund.amountMillimes } : null,
     canCancel,
     refundIfCancelled: canCancel

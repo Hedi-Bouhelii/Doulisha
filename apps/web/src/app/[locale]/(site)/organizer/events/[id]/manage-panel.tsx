@@ -1,13 +1,14 @@
 'use client';
 
-import { formatPrice, formatTime, type Locale } from '@doulisha/i18n';
+import { formatEventDateTime, formatPrice, formatTime, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
-import { CheckCircle2, FileText, Plus, Search, StickyNote } from 'lucide-react';
+import { CheckCircle2, FileSearch, Plus, Search, StickyNote } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { Field, NativeSelect } from '@/components/doulisha/form-field';
+import { MarkPaidDialog, PaymentsInbox, ReceiptReview } from '@/components/doulisha/payments-inbox';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -27,6 +28,7 @@ import { useTRPC } from '@/trpc/client';
 import type { RouterOutputs } from '@/trpc/types';
 
 type Attendee = RouterOutputs['organizer']['attendees'][number];
+type Inbox = RouterOutputs['organizer']['payments'];
 type Method = 'cash' | 'bank_transfer' | 'd17';
 
 const paymentTone: Record<string, string> = {
@@ -45,6 +47,7 @@ export function ManagePanel({
   tickets,
   questions,
   locked,
+  inbox,
 }: {
   eventId: string;
   attendees: Attendee[];
@@ -52,22 +55,26 @@ export function ManagePanel({
   /** Booking questions, to show answers with their label. */
   questions: Record<string, string>;
   locked: boolean;
+  /** This event's payments inbox (ADR 0018). */
+  inbox: Inbox;
 }) {
   const t = useTranslations('Organizer');
+  const tPayments = useTranslations('Payments');
   const [query, setQuery] = useState('');
 
   const booked = attendees.filter((a) => a.payment !== 'waitlisted');
   const waitlist = attendees
     .filter((a) => a.payment === 'waitlisted')
     .sort((a, b) => (a.waitlistPosition ?? 0) - (b.waitlistPosition ?? 0));
-  const toReview = useMemo(() => {
+  const refunds = useMemo(() => {
     const seen = new Set<string>();
     return attendees.filter((a) => {
       if (seen.has(a.orderId)) return false;
       seen.add(a.orderId);
-      return a.proofs.some((p) => p.status === 'pending') || a.refundRequests.length > 0;
+      return a.refundRequests.length > 0;
     });
   }, [attendees]);
+  const openPayments = inbox.toVerify.length + inbox.awaiting.length;
 
   const needle = query.trim().toLowerCase();
   const visible = needle
@@ -82,12 +89,25 @@ export function ManagePanel({
         <TabsTrigger value="attendees" className="min-h-9 px-3">
           {t('attendees')} ({booked.length})
         </TabsTrigger>
+        <TabsTrigger value="payments" className="min-h-9 gap-1.5 px-3" data-testid="tab-payments">
+          {tPayments('title')}
+          <span
+            className={cn(
+              'ltr-nums rounded-full px-1.5 text-xs',
+              inbox.toVerify.length > 0 ? 'bg-highlight text-white' : 'bg-muted',
+            )}
+          >
+            {openPayments}
+          </span>
+        </TabsTrigger>
         <TabsTrigger value="waitlist" className="min-h-9 px-3">
           {t('waitlist')} ({waitlist.length})
         </TabsTrigger>
-        <TabsTrigger value="review" className="min-h-9 px-3" data-testid="tab-review">
-          {t('requests')} ({toReview.length})
-        </TabsTrigger>
+        {refunds.length > 0 ? (
+          <TabsTrigger value="refunds" className="min-h-9 px-3">
+            {t('refunds')} ({refunds.length})
+          </TabsTrigger>
+        ) : null}
       </TabsList>
 
       <TabsContent value="attendees" className="mt-4 space-y-3">
@@ -113,7 +133,7 @@ export function ManagePanel({
         {booked.length === 0 ? (
           <EmptyState title={t('noAttendees')} hint={t('noAttendeesHint')} />
         ) : (
-          <AttendeeList attendees={visible} questions={questions} locked={locked} />
+          <AttendeeList attendees={visible} questions={questions} locked={locked} inbox={inbox} />
         )}
       </TabsContent>
 
@@ -140,16 +160,16 @@ export function ManagePanel({
         )}
       </TabsContent>
 
-      <TabsContent value="review" className="mt-4">
-        {toReview.length === 0 ? (
-          <p className="text-sm text-muted-foreground">–</p>
-        ) : (
-          <ul className="space-y-3">
-            {toReview.map((a) => (
-              <ReviewItem key={a.orderId} eventId={eventId} attendee={a} />
-            ))}
-          </ul>
-        )}
+      <TabsContent value="payments" className="mt-4">
+        <PaymentsInbox inbox={inbox} showEvent={false} />
+      </TabsContent>
+
+      <TabsContent value="refunds" className="mt-4">
+        <ul className="space-y-3">
+          {refunds.map((a) => (
+            <RefundItem key={a.orderId} eventId={eventId} attendee={a} />
+          ))}
+        </ul>
       </TabsContent>
     </Tabs>
   );
@@ -160,11 +180,14 @@ function AttendeeList({
   attendees,
   questions,
   locked,
+  inbox,
 }: {
   attendees: Attendee[];
   questions: Record<string, string>;
   locked: boolean;
+  inbox: Inbox;
 }) {
+  const tPayments = useTranslations('Payments');
   const t = useTranslations('Organizer');
   const tTickets = useTranslations('Tickets');
   const locale = useLocale() as Locale;
@@ -204,6 +227,13 @@ function AttendeeList({
                 {a.utmSource ? ` · ${a.utmSource}` : ''}
                 {a.checkedInAt ? ` · ${formatTime(a.checkedInAt, locale)}` : ''}
               </p>
+              {a.paymentDeadline ? (
+                <p className="text-xs font-medium text-highlight">
+                  {tPayments('reservedUntil', {
+                    time: formatEventDateTime(a.paymentDeadline, locale),
+                  })}
+                </p>
+              ) : null}
               {Object.keys(a.answers).length > 0 ? (
                 <p className="mt-1 text-xs">
                   {Object.entries(a.answers)
@@ -228,7 +258,11 @@ function AttendeeList({
               due > 0 &&
               (a.payment === 'pending' || a.payment === 'deposit') &&
               !locked ? (
-                <MarkPaid orderId={a.orderId} amount={formatPrice(due, locale)} />
+                <OrderPaymentAction
+                  orderId={a.orderId}
+                  amount={formatPrice(due, locale)}
+                  inbox={inbox}
+                />
               ) : null}
             </div>
           </li>
@@ -238,57 +272,46 @@ function AttendeeList({
   );
 }
 
-function MarkPaid({ orderId, amount }: { orderId: string; amount: string }) {
-  const t = useTranslations('Organizer');
-  const tCheckout = useTranslations('Checkout');
-  const trpc = useTRPC();
-  const router = useRouter();
-  const errorMessage = useErrorMessage();
-  const [method, setMethod] = useState<Method>('cash');
-  const [error, setError] = useState<string | null>(null);
-  const markPaid = useMutation(trpc.organizer.markPaid.mutationOptions());
-
-  async function submit() {
-    setError(null);
-    try {
-      await markPaid.mutateAsync({ orderId, method });
-      router.refresh();
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+/**
+ * A receipt waiting for review must be verified (ADR 0018): "Verify the
+ * receipt" opens it. Otherwise "Payment received" confirms cash, or a D17 or
+ * transfer the organizer checked, after asking.
+ */
+function OrderPaymentAction({
+  orderId,
+  amount,
+  inbox,
+}: {
+  orderId: string;
+  amount: string;
+  inbox: Inbox;
+}) {
+  const t = useTranslations('Payments');
+  const toVerify = inbox.toVerify.find((item) => item.orderId === orderId);
+  if (toVerify) {
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            size="sm"
+            className="min-h-11 rounded-full"
+            data-testid="verify-receipt"
+          >
+            <FileSearch aria-hidden="true" />
+            {t('verifyReceipt')}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogTitle>{t('verifyReceipt')}</DialogTitle>
+          <DialogDescription className="sr-only">{toVerify.reference}</DialogDescription>
+          <ReceiptReview item={toVerify} />
+        </DialogContent>
+      </Dialog>
+    );
   }
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <NativeSelect
-        value={method}
-        onChange={(e) => setMethod(e.target.value as Method)}
-        aria-label={t('method')}
-        className="h-11 w-auto"
-      >
-        {(['cash', 'bank_transfer', 'd17'] as const).map((m) => (
-          <option key={m} value={m}>
-            {tCheckout(`methods.${m}`)}
-          </option>
-        ))}
-      </NativeSelect>
-      <Button
-        type="button"
-        size="sm"
-        className="min-h-11"
-        onClick={() => void submit()}
-        disabled={markPaid.isPending}
-        data-testid="mark-paid"
-      >
-        {t('markPaid')} ({amount})
-      </Button>
-      {error ? (
-        <p role="alert" className="w-full text-xs text-highlight">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
+  const method = inbox.awaiting.find((item) => item.orderId === orderId)?.method ?? 'cash';
+  return <MarkPaidDialog orderId={orderId} method={method} amount={amount} compact />;
 }
 
 function NoteEditor({
@@ -351,17 +374,14 @@ function NoteEditor({
   );
 }
 
-function ReviewItem({ eventId, attendee }: { eventId: string; attendee: Attendee }) {
+function RefundItem({ eventId, attendee }: { eventId: string; attendee: Attendee }) {
   const t = useTranslations('Organizer');
-  const tCheckout = useTranslations('Checkout');
   const locale = useLocale() as Locale;
   const trpc = useTRPC();
   const router = useRouter();
   const errorMessage = useErrorMessage();
   const [error, setError] = useState<string | null>(null);
-  const reviewProof = useMutation(trpc.organizer.reviewProof.mutationOptions());
   const decideRefund = useMutation(trpc.organizer.decideRefund.mutationOptions());
-  const busy = reviewProof.isPending || decideRefund.isPending;
 
   async function run(action: () => Promise<unknown>) {
     setError(null);
@@ -379,55 +399,13 @@ function ReviewItem({ eventId, attendee }: { eventId: string; attendee: Attendee
         {attendee.fullName} ·{' '}
         <span className="ltr-nums text-sm text-muted-foreground">{attendee.reference}</span>
       </p>
-      {attendee.proofs
-        .filter((proof) => proof.status === 'pending')
-        .map((proof) => (
-          <div key={proof.id} className="flex flex-wrap items-center gap-2 text-sm">
-            <span>
-              {tCheckout(`methods.${proof.method as Method}`)} ·{' '}
-              {formatPrice(proof.amountMillimes, locale)}
-            </span>
-            <Button asChild variant="link" size="sm" className="min-h-11">
-              <a href={`/api/proofs/${proof.id}`} target="_blank" rel="noopener noreferrer">
-                <FileText aria-hidden="true" />
-                {t('viewProof')}
-              </a>
-            </Button>
-            <Button
-              size="sm"
-              className="min-h-11"
-              disabled={busy}
-              onClick={() =>
-                void run(() =>
-                  reviewProof.mutateAsync({ eventId, proofId: proof.id, approve: true }),
-                )
-              }
-              data-testid="approve-proof"
-            >
-              {t('approve')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="min-h-11"
-              disabled={busy}
-              onClick={() =>
-                void run(() =>
-                  reviewProof.mutateAsync({ eventId, proofId: proof.id, approve: false }),
-                )
-              }
-            >
-              {t('reject')}
-            </Button>
-          </div>
-        ))}
       {attendee.refundRequests.map((refund) => (
         <div key={refund.id} className="flex flex-wrap items-center gap-2 text-sm">
           <span>{t('refundRequest', { amount: formatPrice(refund.amountMillimes, locale) })}</span>
           <Button
             size="sm"
             className="min-h-11"
-            disabled={busy}
+            disabled={decideRefund.isPending}
             onClick={() =>
               void run(() =>
                 decideRefund.mutateAsync({ eventId, refundId: refund.id, approve: true }),
@@ -440,7 +418,7 @@ function ReviewItem({ eventId, attendee }: { eventId: string; attendee: Attendee
             size="sm"
             variant="outline"
             className="min-h-11"
-            disabled={busy}
+            disabled={decideRefund.isPending}
             onClick={() =>
               void run(() =>
                 decideRefund.mutateAsync({ eventId, refundId: refund.id, approve: false }),

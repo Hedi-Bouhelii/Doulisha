@@ -1,5 +1,5 @@
 import { formatEventDateTime, formatPercent, formatPrice } from '@doulisha/i18n';
-import { CalendarDays, CalendarPlus, Ticket } from 'lucide-react';
+import { CalendarDays, CalendarPlus, FileSearch, Ticket } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
@@ -17,10 +17,12 @@ export default async function OrganizerDashboardPage({ params }: PageProps<'/[lo
   const locale = await resolveLocale(params);
   const t = await getTranslations('Organizer');
   const caller = await api();
-  const [dashboard, events] = await Promise.all([
+  const [dashboard, events, toVerify] = await Promise.all([
     caller.organizer.dashboard(),
     caller.editor.myEvents(),
+    caller.organizer.receiptsToVerify(),
   ]);
+  const tPayments = await getTranslations('Payments');
   const revenue = new Map(dashboard.events.map((e) => [e.id, e]));
   const totalSources = dashboard.sources.reduce((sum, s) => sum + s.orders, 0);
 
@@ -35,6 +37,20 @@ export default async function OrganizerDashboardPage({ params }: PageProps<'/[lo
           </Link>
         </Button>
       </div>
+
+      {toVerify > 0 ? (
+        <Link
+          href="/organizer/payments"
+          className="flex items-center justify-between gap-3 rounded-2xl border border-highlight/30 bg-highlight-soft p-4 text-highlight hover:shadow-sm"
+          data-testid="receipts-banner"
+        >
+          <span className="flex items-center gap-2 font-semibold">
+            <FileSearch className="size-5 shrink-0" aria-hidden="true" />
+            {tPayments('toVerifyBanner', { count: toVerify })}
+          </span>
+          <span className="text-sm font-medium underline">{tPayments('verifyNow')}</span>
+        </Link>
+      ) : null}
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label={t('kpi.upcoming')} value={String(dashboard.totals.upcomingEvents)} />

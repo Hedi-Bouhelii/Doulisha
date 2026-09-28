@@ -190,6 +190,9 @@ export function ManualPaymentSteps({
           ) : (
             <p className="rounded-xl bg-background p-3 text-muted-foreground">{t('noPayTo')}</p>
           )}
+          <p className="text-xs text-muted-foreground" data-testid="write-reference">
+            {t('writeReference', { reference })}
+          </p>
         </li>
         <li className="space-y-2">
           <p>
@@ -421,7 +424,8 @@ export function BookingActions({
 
 /**
  * The PDF ticket (TKT-04) in the interface language. Guests without an
- * account get it automatically once, right after booking: it is their ticket.
+ * account get it automatically once per browser, as soon as it exists: it is
+ * their ticket.
  */
 export function PdfTicketButton({
   reference,
@@ -440,10 +444,10 @@ export function PdfTicketButton({
     if (!autoDownload) return;
     const key = `doulisha.pdf.${reference}`;
     try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, '1');
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
     } catch {
-      // Without storage the download still happens, possibly twice on reload.
+      // Without storage the download still happens, possibly again on reload.
     }
     const link = document.createElement('a');
     link.href = href;

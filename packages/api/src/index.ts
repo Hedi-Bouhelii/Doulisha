@@ -3,7 +3,7 @@
  * Layering: UI → router → service → Drizzle (docs/ARCHITECTURE.md).
  */
 export { createContext, type Context } from './context';
-export type { ServiceDeps } from './deps';
+export type { BuyerNotice, ServiceDeps } from './deps';
 export { publishProblems, type PublishProblem } from './domain/publish';
 export { quoteOrder } from './domain/pricing';
 export { handlePaymentEvent } from './services/payments';

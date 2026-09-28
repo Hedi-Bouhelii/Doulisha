@@ -1,8 +1,8 @@
 'use client';
 
-import { formatTime, type Locale } from '@doulisha/i18n';
+import { formatPrice, formatTime, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
-import { AlertTriangle, Camera, CameraOff, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, Banknote, Camera, CameraOff, CheckCircle2, XCircle } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -19,7 +19,10 @@ interface BarcodeDetectorLike {
 }
 type BarcodeDetectorConstructor = new (options: { formats: string[] }) => BarcodeDetectorLike;
 
-type Result = { tone: 'ok' | 'warn'; text: string } | { tone: 'error'; text: string };
+type Result =
+  | { tone: 'ok' | 'warn' | 'error'; text: string }
+  /** Money still due: collect it, then check in (ADR 0018). */
+  | { tone: 'collect'; text: string; code: string };
 
 /**
  * Door check-in: the camera reads the QR (BarcodeDetector, Chrome on Android)
@@ -49,21 +52,26 @@ export function Scanner({
   const [result, setResult] = useState<Result | null>(null);
   const [cameraError, setCameraError] = useState(false);
 
-  async function submit(value: string) {
+  async function submit(value: string, collect = false) {
     const normalized = value.trim().toUpperCase();
     if (normalized.length < 6) return;
     try {
-      const outcome = await checkIn.mutateAsync({ eventId, code: normalized });
+      const outcome = await checkIn.mutateAsync({ eventId, code: normalized, collect });
+      if (outcome.status === 'payment_due') {
+        setResult({
+          tone: 'collect',
+          code: normalized,
+          text: t('collectFirst', {
+            name: outcome.fullName,
+            amount: formatPrice(outcome.dueMillimes, locale),
+          }),
+        });
+        setCode('');
+        return;
+      }
       if (outcome.status === 'checked_in') {
         setPresent((n) => n + 1);
-        setResult(
-          outcome.payment === 'paid'
-            ? { tone: 'ok', text: t('checkInOk', { name: outcome.fullName }) }
-            : {
-                tone: 'warn',
-                text: `${t('checkInOk', { name: outcome.fullName })} ${t('checkInUnpaid')}`,
-              },
-        );
+        setResult({ tone: 'ok', text: t('checkInOk', { name: outcome.fullName }) });
       } else if (outcome.status === 'already') {
         setResult({
           tone: 'warn',
@@ -129,7 +137,13 @@ export function Scanner({
   useEffect(() => stop, []);
 
   const Icon =
-    result?.tone === 'ok' ? CheckCircle2 : result?.tone === 'warn' ? AlertTriangle : XCircle;
+    result?.tone === 'ok'
+      ? CheckCircle2
+      : result?.tone === 'collect'
+        ? Banknote
+        : result?.tone === 'warn'
+          ? AlertTriangle
+          : XCircle;
 
   return (
     <div className="space-y-4">
@@ -191,12 +205,27 @@ export function Scanner({
           className={cn(
             'flex items-center gap-3 rounded-xl p-4 text-lg font-semibold',
             result.tone === 'ok' && 'bg-cat-outdoor-bg text-cat-outdoor-fg',
-            result.tone === 'warn' && 'bg-cat-sports-bg text-cat-sports-fg',
+            (result.tone === 'warn' || result.tone === 'collect') &&
+              'bg-cat-sports-bg text-cat-sports-fg',
             result.tone === 'error' && 'bg-highlight-soft text-highlight',
           )}
         >
           <Icon className="size-7 shrink-0" aria-hidden="true" />
-          {result.text}
+          <div className="flex-1 space-y-3">
+            <p>{result.text}</p>
+            {result.tone === 'collect' ? (
+              <Button
+                type="button"
+                className="min-h-12 w-full rounded-full text-base"
+                disabled={checkIn.isPending}
+                onClick={() => void submit(result.code, true)}
+                data-testid="collect-and-check-in"
+              >
+                <Banknote aria-hidden="true" />
+                {t('collectedCheckIn')}
+              </Button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>

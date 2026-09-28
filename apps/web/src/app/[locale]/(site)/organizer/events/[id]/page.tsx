@@ -32,6 +32,8 @@ export default async function ManageEventPage({
     }
     throw error;
   });
+  // The inbox releases reservations past their deadline first, so the lists below are current.
+  const inbox = await caller.organizer.payments({ eventId: id });
   const [attendees, sources] = await Promise.all([
     caller.organizer.attendees({ eventId: id }),
     caller.organizer.sources({ eventId: id }),
@@ -114,6 +116,7 @@ export default async function ManageEventPage({
             .map((ticket) => ({ id: ticket.id, name: ticket.name }))}
           questions={Object.fromEntries(data.questions.map((q) => [q.id, q.label]))}
           locked={locked}
+          inbox={inbox}
         />
         <aside className="space-y-6">
           <section

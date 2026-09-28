@@ -15,6 +15,7 @@ import { createdAt, id, timestamps } from './columns';
 import {
   bookingStatus,
   discountKind,
+  locale,
   ledgerDirection,
   orderKind,
   orderSource,
@@ -64,6 +65,8 @@ export const orders = pgTable(
     /** Client-supplied key so retried checkouts never create two orders. */
     idempotencyKey: text().unique(),
     utm: jsonb().$type<Utm>().notNull().default({}),
+    /** Interface language at booking time, for messages to the buyer. */
+    locale: locale().notNull().default('fr'),
     ...timestamps(),
   },
   (t) => [
@@ -185,7 +188,10 @@ export const paymentProofs = pgTable(
     status: reviewStatus().notNull().default('pending'),
     reviewedById: uuid().references(() => users.id, { onDelete: 'set null' }),
     reviewedAt: timestamp({ withTimezone: true }),
+    /** Organizer's note to the buyer when rejecting. */
     note: text(),
+    /** Why a receipt was rejected: wrong_amount, unreadable, not_received or other. */
+    rejectionReason: text(),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.paymentId), index().on(t.uploadedById), index().on(t.reviewedById)],

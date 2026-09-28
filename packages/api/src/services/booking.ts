@@ -7,6 +7,7 @@ import type { CreateBookingInput } from '@doulisha/validators';
 import { and, asc, eq, max } from 'drizzle-orm';
 
 import { checkAvailability } from '../domain/availability';
+import { manualPaymentDeadline } from '../domain/payment-deadline';
 import { PricingError, quoteOrder } from '../domain/pricing';
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
@@ -91,7 +92,7 @@ export async function createBooking(
     return { reference: existing.reference, status: summarizeStatus(existing.status) };
   }
 
-  const created = await deps.transaction((tx) => bookInTransaction(tx, actor, input, now));
+  const created = await deps.transaction((tx) => bookInTransaction(tx, actor, input, locale, now));
 
   if (created.paymentToStart) {
     const redirectUrl = await startPayment(db, deps, {
@@ -113,7 +114,13 @@ function summarizeStatus(orderStatus: string): BookingResult['status'] {
   return 'confirmed';
 }
 
-async function bookInTransaction(tx: Tx, actor: Actor, input: CreateBookingInput, now: Date) {
+async function bookInTransaction(
+  tx: Tx,
+  actor: Actor,
+  input: CreateBookingInput,
+  locale: Locale,
+  now: Date,
+) {
   const stock = await lockEventStock(tx, input.eventId);
   if (!stock) throw new AppError('NOT_FOUND', 'errors.notFound');
   const { event } = stock;
@@ -191,8 +198,19 @@ async function bookInTransaction(tx: Tx, actor: Actor, input: CreateBookingInput
   }
 
   const online = payment === 'online';
+  // D17 and transfer reserve the places until the organizer confirms the
+  // payment (ADR 0018); the QR code comes with the confirmation. Cash at the
+  // door keeps a confirmed place: the ticket is needed at the entrance.
+  const reserved = payment === 'd17' || payment === 'bank_transfer';
   const orderStatus = waitlisted ? 'pending' : due === 0 ? 'paid' : 'awaiting_payment';
-  const bookingStatus = waitlisted ? 'waitlisted' : online ? 'held' : 'confirmed';
+  const bookingStatus = waitlisted ? 'waitlisted' : online || reserved ? 'held' : 'confirmed';
+  const holdExpiresAt = waitlisted
+    ? null
+    : online
+      ? new Date(now.getTime() + HOLD_MINUTES * 60_000)
+      : reserved
+        ? manualPaymentDeadline(now, event.startsAt)
+        : null;
   const reference = `DLS-${randomCode(6)}`;
 
   const [order] = await tx
@@ -209,6 +227,7 @@ async function bookInTransaction(tx: Tx, actor: Actor, input: CreateBookingInput
         : null,
       idempotencyKey: input.idempotencyKey,
       utm: input.utm,
+      locale,
     })
     .returning();
   if (!order) throw new Error('Order insert failed');
@@ -225,8 +244,7 @@ async function bookInTransaction(tx: Tx, actor: Actor, input: CreateBookingInput
         quantity: line.quantity,
         places: line.places,
         status: bookingStatus,
-        holdExpiresAt:
-          online && !waitlisted ? new Date(now.getTime() + HOLD_MINUTES * 60_000) : null,
+        holdExpiresAt,
         waitlistPosition,
       })
       .returning();

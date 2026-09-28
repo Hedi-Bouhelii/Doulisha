@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { createPublishedHike, E2E_PASSWORD, enterCode, signInWithPhone } from './helpers';
+import { E2E_PASSWORD, enterCode } from './helpers';
 
 /**
  * Founder review of Phase 2: sign-up with a password and an account type,
- * organizer onboarding prefilled from the account, D17 bookings that show
- * only the D17 instructions.
+ * organizer onboarding prefilled from the account. D17 bookings are covered
+ * by payments.spec.ts.
  */
 
 test.describe.configure({ mode: 'serial' });
@@ -51,73 +51,4 @@ test('an organizer signs up, finds the profile prefilled and completes it', asyn
     'href',
     'https://instagram.com/club.e2e',
   );
-});
-
-test('a D17 booking shows only the D17 instructions', async ({ page, browser }, info) => {
-  test.setTimeout(240_000);
-
-  // The organizer (seeded Sami) gives a D17 number.
-  await signInWithPhone(page, 'fr', '22000001');
-  await page.goto('/fr/organizer/profile');
-  await page.getByTestId('edit-profile').click();
-  await page.getByTestId('profile-section-payment').click();
-  await page.getByTestId('org-d17').fill('20 000 111');
-  await page.getByTestId('profile-save').click();
-  // Saving returns to the profile preview.
-  await expect(page.getByTestId('edit-profile')).toBeVisible();
-
-  // Sami publishes a fresh hike, so the test never meets a full event.
-  const { eventUrl } = await createPublishedHike(page, 'fr', {
-    title: `E2E D17 ${Date.now().toString(36)}${info.project.name[0]}`,
-  });
-
-  // A guest (no account) books it and chooses D17.
-  const { viewport, userAgent, isMobile, hasTouch, deviceScaleFactor } = info.project.use;
-  const context = await browser.newContext({
-    viewport,
-    userAgent,
-    isMobile,
-    hasTouch,
-    deviceScaleFactor,
-    acceptDownloads: true,
-  });
-  const guest = await context.newPage();
-  await guest.goto(`${eventUrl}/book`);
-  await guest.getByTestId('checkout-next-details').click();
-  // "Continue" explains what is missing instead of staying greyed out.
-  await guest.getByTestId('checkout-next-payment').click();
-  await expect(guest.getByTestId('checkout-missing')).toBeVisible();
-  await guest.locator('#name-0').fill('Invité D17');
-  await guest.locator('#phone-0').fill('55 123 456');
-  await guest.getByTestId('checkout-next-payment').click();
-  await guest.getByTestId('pay-method-d17').click();
-  // Guests get their PDF ticket automatically (Q23).
-  const download = guest.waitForEvent('download');
-  await guest.getByTestId('confirm-booking').click();
-  await guest.waitForURL(/\/fr\/tickets\/[^/?]+\?booked=1/);
-  await expect(guest.getByTestId('booked-banner')).toBeVisible();
-  await expect(guest.getByTestId('ticket-status')).toHaveAttribute(
-    'data-status',
-    'awaiting_payment',
-  );
-  await expect(guest.getByTestId('pay-to-d17')).toHaveText('20 000 111');
-  await expect(guest.getByTestId('upload-proof')).toBeVisible();
-  // No second choice of method on the page; only a discreet "Pay differently".
-  await expect(guest.locator('[data-testid^="pay-method-"]')).toHaveCount(0);
-  await expect(guest.getByTestId('pay-online')).toHaveCount(0);
-  await expect(guest.getByTestId('pay-differently')).toBeVisible();
-
-  // The PDF ticket: downloaded once automatically, and on demand.
-  expect((await download).suggestedFilename()).toMatch(/^doulisha-DLS-.+\.pdf$/);
-  const reference = /tickets\/([^?]+)/.exec(guest.url())![1]!;
-  const pdf = await guest.request.get(`/api/tickets/${reference}/pdf?locale=fr`);
-  expect(pdf.status()).toBe(200);
-  expect(pdf.headers()['content-type']).toBe('application/pdf');
-  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
-  // Nobody else can download it.
-  const stranger = await browser.newContext();
-  const refused = await stranger.request.get(`http://localhost:3000/api/tickets/${reference}/pdf`);
-  expect(refused.status()).toBe(401);
-  await stranger.close();
-  await context.close();
 });

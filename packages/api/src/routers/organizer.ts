@@ -19,7 +19,14 @@ import {
   removePhoto,
   updateProfile,
 } from '../services/organizers';
-import { recordManualPayment, reviewProof } from '../services/payments';
+import { paymentsInbox, receiptsToVerify } from '../services/payment-review';
+import {
+  cancelReservation,
+  extendReservation,
+  recordManualPayment,
+  REJECTION_REASONS,
+  reviewProof,
+} from '../services/payments';
 import { cancelEvent, decideRefund } from '../services/refunds';
 import { protectedProcedure, router } from '../trpc';
 import { schema } from '@doulisha/db';
@@ -85,26 +92,89 @@ export const organizerRouter = router({
       setAttendeeNote(ctx.db, ctx.actor, input.attendeeId, input.notes),
     ),
 
-  /** PRT-03: marks cash, transfer or D17 as received for an order. */
+  /** PRT-03 payments inbox: receipts to verify, reservations awaiting payment, confirmed. */
+  payments: protectedProcedure
+    .input(z.object({ eventId: z.uuid().optional() }))
+    .query(({ ctx, input }) => paymentsInbox(ctx.db, ctx.deps, ctx.actor, input.eventId)),
+
+  /** Receipts waiting for review on all the member's events (badge). */
+  receiptsToVerify: protectedProcedure.query(({ ctx }) => receiptsToVerify(ctx.db, ctx.actor)),
+
+  /**
+   * PRT-03: the organizer confirms a payment received without a receipt
+   * (cash, or a D17 or transfer they checked). Refused while a receipt awaits
+   * review: that receipt must be approved or rejected instead.
+   */
   markPaid: protectedProcedure
-    .input(z.object({ orderId: z.uuid(), method: z.enum(['cash', 'bank_transfer', 'd17']) }))
+    .input(
+      z.object({
+        orderId: z.uuid(),
+        method: z.enum(['cash', 'bank_transfer', 'd17']),
+        transactionRef: z.string().trim().max(60).nullish(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const [order] = await ctx.db
-        .select({ eventId: schema.orders.eventId })
-        .from(schema.orders)
-        .where(eq(schema.orders.id, input.orderId));
-      if (!order?.eventId) throw new AppError('NOT_FOUND', 'errors.notFound');
-      await loadManagedEvent(ctx.db, ctx.actor, order.eventId);
-      await recordManualPayment(ctx.deps, ctx.actor.userId, input.orderId, input.method);
+      await loadManagedOrder(ctx.db, ctx.actor, input.orderId);
+      await recordManualPayment(
+        ctx.deps,
+        ctx.actor.userId,
+        input.orderId,
+        input.method,
+        new Date(),
+        {
+          transactionRef: input.transactionRef ?? null,
+          notifyDb: ctx.db,
+        },
+      );
     }),
 
-  /** PRT-03: approves or rejects an uploaded payment proof. */
+  /** PRT-03: approves a receipt (payment recorded, QR codes issued) or rejects it with a reason. */
   reviewProof: protectedProcedure
-    .input(z.object({ eventId: z.uuid(), proofId: z.uuid(), approve: z.boolean() }))
+    .input(
+      z.discriminatedUnion('approve', [
+        z.object({
+          eventId: z.uuid(),
+          proofId: z.uuid(),
+          approve: z.literal(true),
+          transactionRef: z.string().trim().max(60).nullish(),
+        }),
+        z.object({
+          eventId: z.uuid(),
+          proofId: z.uuid(),
+          approve: z.literal(false),
+          reason: z.enum(REJECTION_REASONS),
+          note: z.string().trim().max(300).nullish(),
+        }),
+      ]),
+    )
     .mutation(async ({ ctx, input }) => {
       await loadManagedEvent(ctx.db, ctx.actor, input.eventId);
       await assertBelongsToEvent(ctx.db, 'proof', input.proofId, input.eventId);
-      await reviewProof(ctx.deps, ctx.actor.userId, input.proofId, input.approve);
+      await reviewProof(
+        ctx.deps,
+        ctx.db,
+        ctx.actor.userId,
+        input.proofId,
+        input.approve
+          ? { approve: true, transactionRef: input.transactionRef ?? null }
+          : { approve: false, reason: input.reason, note: input.note ?? null },
+      );
+    }),
+
+  /** Gives a buyer one more day to pay a reservation. */
+  extendReservation: protectedProcedure
+    .input(z.object({ orderId: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await loadManagedOrder(ctx.db, ctx.actor, input.orderId);
+      return extendReservation(ctx.db, input.orderId);
+    }),
+
+  /** Cancels an unpaid reservation; the places go back to the waitlist. */
+  cancelReservation: protectedProcedure
+    .input(z.object({ orderId: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await loadManagedOrder(ctx.db, ctx.actor, input.orderId);
+      await cancelReservation(ctx.deps, ctx.db, input.orderId);
     }),
 
   /** PAY-04: approves or rejects a refund request. */
@@ -116,10 +186,19 @@ export const organizerRouter = router({
       await decideRefund(ctx.deps, ctx.actor.userId, input.refundId, input.approve);
     }),
 
-  /** TKT-05: checks a ticket in by its code (from the QR). */
+  /**
+   * TKT-05: checks a ticket in by its code (from the QR). With money still
+   * due, answers `payment_due`; `collect: true` records the cash and checks in.
+   */
   checkIn: protectedProcedure
-    .input(eventId.extend({ code: z.string().trim().min(6).max(20) }))
-    .mutation(({ ctx, input }) => checkIn(ctx.db, ctx.actor, input.eventId, input.code)),
+    .input(
+      eventId.extend({ code: z.string().trim().min(6).max(20), collect: z.boolean().optional() }),
+    )
+    .mutation(({ ctx, input }) =>
+      checkIn(ctx.db, ctx.deps, ctx.actor, input.eventId, input.code, {
+        collect: input.collect ?? false,
+      }),
+    ),
 
   /** Cancels the whole event and refunds everyone in full. */
   cancelEvent: protectedProcedure.input(eventId).mutation(async ({ ctx, input }) => {
@@ -127,6 +206,21 @@ export const organizerRouter = router({
     return cancelEvent(ctx.deps, ctx.actor.userId, input.eventId);
   }),
 });
+
+/** The event of an order the actor manages; NOT_FOUND otherwise. */
+async function loadManagedOrder(
+  db: Parameters<typeof loadManagedEvent>[0],
+  actor: Parameters<typeof loadManagedEvent>[1],
+  orderId: string,
+) {
+  const [order] = await db
+    .select({ eventId: schema.orders.eventId })
+    .from(schema.orders)
+    .where(eq(schema.orders.id, orderId));
+  if (!order?.eventId) throw new AppError('NOT_FOUND', 'errors.notFound');
+  await loadManagedEvent(db, actor, order.eventId);
+  return order.eventId;
+}
 
 /** Refuses ids that belong to another event (defence against id guessing). */
 async function assertBelongsToEvent(

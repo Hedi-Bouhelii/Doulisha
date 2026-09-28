@@ -101,6 +101,8 @@ export async function listAttendees(db: Executor, actor: Actor, eventId: string)
     paidMillimes: order.paidMillimes,
     waitlistPosition: booking.waitlistPosition,
     bookingStatus: booking.status,
+    /** Payment deadline of a D17 or transfer reservation (null while a receipt is reviewed). */
+    paymentDeadline: booking.status === 'held' ? booking.holdExpiresAt : null,
     payment: attendeePayment(order, booking.status),
     proofs: proofs.filter((p) => p.orderId === order.id),
     refundRequests: refunds
@@ -192,40 +194,46 @@ export async function setAttendeeNote(
 
 export type CheckInResult =
   | { status: 'checked_in'; fullName: string; ticketName: string | null; payment: AttendeePayment }
+  | { status: 'payment_due'; fullName: string; ticketName: string | null; dueMillimes: number }
   | { status: 'already'; fullName: string; checkedInAt: Date }
   | { status: 'invalid' };
 
 /**
  * TKT-05 check-in by ticket code (QR). Only confirmed bookings of this event
- * are accepted; unpaid tickets are admitted but flagged so the organizer can
- * collect the payment at the door.
+ * are accepted. When money is still due (cash at the door, or the balance of
+ * a deposit), the scanner first asks the organizer to collect it: with
+ * `collect`, the cash payment is recorded and the person checked in.
  */
 export async function checkIn(
   db: Executor,
+  deps: ServiceDeps,
   actor: Actor,
   eventId: string,
   code: string,
+  options: { collect?: boolean } = {},
   now = new Date(),
 ): Promise<CheckInResult> {
   await loadManagedEvent(db, actor, eventId);
-  const [row] = await db
-    .select({
-      attendee: schema.attendees,
-      booking: schema.bookings,
-      order: schema.orders,
-      ticketName: schema.ticketTypes.name,
-    })
-    .from(schema.attendees)
-    .innerJoin(schema.bookings, eq(schema.bookings.id, schema.attendees.bookingId))
-    .innerJoin(schema.orders, eq(schema.orders.id, schema.bookings.orderId))
-    .leftJoin(schema.ticketTypes, eq(schema.ticketTypes.id, schema.bookings.ticketTypeId))
-    .where(
-      and(
-        eq(schema.attendees.eventId, eventId),
-        eq(schema.attendees.ticketCode, code.trim().toUpperCase()),
-      ),
-    )
-    .limit(1);
+  const find = () =>
+    db
+      .select({
+        attendee: schema.attendees,
+        booking: schema.bookings,
+        order: schema.orders,
+        ticketName: schema.ticketTypes.name,
+      })
+      .from(schema.attendees)
+      .innerJoin(schema.bookings, eq(schema.bookings.id, schema.attendees.bookingId))
+      .innerJoin(schema.orders, eq(schema.orders.id, schema.bookings.orderId))
+      .leftJoin(schema.ticketTypes, eq(schema.ticketTypes.id, schema.bookings.ticketTypeId))
+      .where(
+        and(
+          eq(schema.attendees.eventId, eventId),
+          eq(schema.attendees.ticketCode, code.trim().toUpperCase()),
+        ),
+      )
+      .limit(1);
+  let [row] = await find();
   if (!row || row.booking.status !== 'confirmed') return { status: 'invalid' };
   if (row.attendee.checkedInAt) {
     return {
@@ -233,6 +241,20 @@ export async function checkIn(
       fullName: row.attendee.fullName,
       checkedInAt: row.attendee.checkedInAt,
     };
+  }
+  const due = row.order.totalMillimes - row.order.paidMillimes;
+  if (due > 0 && ['awaiting_payment', 'partially_paid'].includes(row.order.status)) {
+    if (!options.collect) {
+      return {
+        status: 'payment_due',
+        fullName: row.attendee.fullName,
+        ticketName: row.ticketName,
+        dueMillimes: due,
+      };
+    }
+    await recordManualPayment(deps, actor.userId, row.order.id, 'cash', now, { notifyDb: db });
+    [row] = await find();
+    if (!row) return { status: 'invalid' };
   }
   await db
     .update(schema.attendees)
