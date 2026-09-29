@@ -4,6 +4,16 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Phase 4b, event wall and safety (2026-09-29)
+
+- **Event wall** (SOC-04, SOC-05) on public and unlisted events: posts with up to 4 photos, comments and reactions (👍 ❤️ 🔥 👏 😂); authors and organizers can delete. Visitors read it; members take part.
+- **Report** (TRS-03): events, posts, comments, members, organizers and chat messages, with a reason; stored for the moderation queue of Phase 5.
+- **Block** (TRS-03): from a post, comment, chat message or member page. You no longer see that person's posts, comments and messages, and they can no longer write to you. "Mon compte" lists blocked people.
+- **Member pages** (`/members/{id}`), linked from wall and chat names, and **privacy settings** in "Mon compte" (ACC-06): profile public or private; events attended visible to everyone or only to you.
+- Private events proven absent from listings, search, feed and sitemap (TRS-06).
+- No age restrictions beyond the minimum age an organizer states (OPEN_QUESTIONS Q28).
+- Posting a message or a wall post while an earlier load was still running no longer shows the old list.
+
 ### Added: Phase 4a, following and chat (2026-09-29)
 
 - **Follow organizers** (SOC-01): Follow button and follower count on organizer pages, which now also list the events they organized.

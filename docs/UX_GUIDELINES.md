@@ -72,6 +72,7 @@ Every data view has:
 - **Payments inbox:** one card per payment with everything needed to decide (buyer, phone, event, reference, expected amount, deadline) and the receipt inline; the main action states the amount ("Confirm: 30 DT received"). Refusing always asks for a reason the buyer will read.
 - **Social sign-in (ADR 0019):** Google and Facebook buttons sit below the code form, with their brand marks, under "or continue with". Failures come back as a sentence that says what to do next, never an error code.
 - **Sharing images:** on phones the main action is "Share" (the share sheet); where files cannot be shared, "Download" also copies the link, and the dialog says so.
+- **Wall and chat menus:** actions on someone else's content (report, block) and on your own (delete) sit in one "⋯" menu per item; blocking always asks for confirmation and says the person is not told.
 - **Defaults over forms:** the wizard's ticket step asks only for a price; rarely used options sit in a folded "More options".
 - **Mixed-language text** (a French title on an Arabic page) uses `dir="auto"` so it truncates and aligns on its own reading side.
 

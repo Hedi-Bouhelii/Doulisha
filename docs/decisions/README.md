@@ -25,6 +25,7 @@ One file per important decision, numbered in order. An ADR is never edited after
 | 0019 | [Social sign-in, explicit account linking, story sharing and draft legal pages](0019-social-sign-in-and-linking.md)            | Accepted                           |
 | 0020 | [The production database migrates itself on each production deploy](0020-production-database-on-deploy.md)                     | Accepted                           |
 | 0021 | [Event chat by polling, following organizers, and no friend requests for now](0021-event-chat-and-following.md)                | Accepted                           |
+| 0022 | [Event wall, report and block, member pages and privacy settings](0022-event-wall-and-safety.md)                               | Accepted                           |
 
 ## Template
 

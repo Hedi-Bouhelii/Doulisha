@@ -209,3 +209,10 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** The build prompt's Phase 4 starts with friend requests, a friends' feed and "friends going" on every event.
 - **Assumption:** —
 - **Decision (2026-09-29, founder):** No friend requests for now: they would rebuild Facebook without adding much; a community-based version may come later. Instead: follow organizers and see what they organized, a chat with the organizer from the event page, and a group chat for private events (ADR 0021). "Friends going" and finding friends from contacts wait with SOC-02.
+
+### Q28. Age rules and "who can invite me" (TRS-05, ACC-06)
+
+- **Asked:** 2026-09-29 (Phase 4b)
+- **Context:** The spec lists age-gated events (18+ nightlife), no public profile for minors, and a "who can invite me" setting.
+- **Assumption:** —
+- **Decision (2026-09-29, founder):** No age restrictions. An organizer can state a minimum age on the event (it shows on the event page); nothing blocks a booking. "Who can invite me" is not shown: invitations go by shared link only, so the setting would do nothing yet.
