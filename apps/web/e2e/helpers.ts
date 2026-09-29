@@ -79,6 +79,26 @@ export async function signInWithPhone(page: Page, locale: string, localPhone: st
 }
 
 /**
+ * Signs up a brand-new participant with a random phone number and returns its
+ * name. For tests that post: rate limits (10 posts an hour) would otherwise
+ * trip on the seeded accounts over repeated runs.
+ */
+export async function signUpFresh(page: Page, name: string) {
+  const phone = `9${Math.floor(1_000_000 + Math.random() * 8_999_999)}`;
+  await page.goto('/fr/sign-up');
+  await page.locator('#phone').fill(phone);
+  const since = Date.now() - 1000;
+  await page.getByTestId('send-code').click();
+  await enterCode(page, 'sms', `+216${phone}`, since);
+  await page.waitForURL(/\/account\/setup/);
+  await page.getByTestId('setup-name').fill(name);
+  await page.locator('#new-password').fill(E2E_PASSWORD);
+  await page.getByTestId('setup-submit').click();
+  await page.waitForURL((url) => !/\/account\/setup/.test(url.pathname));
+  return name;
+}
+
+/**
  * Creates and publishes a hike at 30 DT (paid online/D17/transfer, or paid at
  * the door), from the organizer space of the signed-in organizer: only the
  * price is filled, the default ticket does the rest. Returns the event id and

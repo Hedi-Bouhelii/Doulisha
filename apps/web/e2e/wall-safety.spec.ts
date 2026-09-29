@@ -1,6 +1,6 @@
 import { type Browser, expect, type Page, test, type TestInfo } from '@playwright/test';
 
-import { signInWithPhone } from './helpers';
+import { signInWithPhone, signUpFresh } from './helpers';
 
 /**
  * Phase 4b (ADR 0022): the event wall with photos, comments and reactions;
@@ -64,7 +64,7 @@ test('members post with a photo; the organizer comments and reacts', async ({
 }, info) => {
   test.setTimeout(240_000);
   const stamp = stampOf(info);
-  await signInWithPhone(page, 'fr', YASMINE);
+  await signUpFresh(page, `Randonneuse ${stamp}`);
   await page.goto(EVENT);
   await page.getByTestId('wall-photos').setInputFiles(photo);
   await postOnWall(page, `Qui covoiture depuis Tunis ? ${stamp}`);
@@ -100,13 +100,13 @@ test('members post with a photo; the organizer comments and reacts', async ({
 test('a member reports an event and blocks someone', async ({ page, browser }, info) => {
   test.setTimeout(240_000);
   const stamp = stampOf(info);
-  // Leila posts on the wall.
-  const leila = await newPage(browser, info);
-  await signInWithPhone(leila, 'fr', '22000002');
-  await leila.goto(EVENT);
-  await postOnWall(leila, `Promo sur mes randonnées ${stamp}`);
-  await expect(leila.getByTestId('wall-post').filter({ hasText: stamp })).toBeVisible();
-  await leila.context().close();
+  // A new member posts an advert on the wall.
+  const poster = await newPage(browser, info);
+  const posterName = await signUpFresh(poster, `Vendeur ${stamp}`);
+  await poster.goto(EVENT);
+  await postOnWall(poster, `Promo sur mes randonnées ${stamp}`);
+  await expect(poster.getByTestId('wall-post').filter({ hasText: stamp })).toBeVisible();
+  await poster.context().close();
 
   await signInWithPhone(page, 'fr', YASMINE);
   await page.goto(EVENT);
@@ -126,24 +126,24 @@ test('a member reports an event and blocks someone', async ({ page, browser }, i
   // "My account" lists her; unblocking brings her posts back.
   await page.goto('/fr/account');
   const blocked = page.getByTestId('blocked-list');
-  await expect(blocked).toContainText('Leila');
-  await blocked.getByTestId('unblock').first().click();
-  await expect(blocked).not.toContainText('Leila');
+  const row = blocked.getByRole('listitem').filter({ hasText: posterName });
+  await expect(row).toBeVisible();
+  await row.getByTestId('unblock').click();
+  await expect(blocked).not.toContainText(posterName);
   await page.goto(EVENT);
   await expect(page.getByTestId('wall-post').filter({ hasText: stamp })).toBeVisible();
 });
 
 test('a private profile shows only the name and photo', async ({ page, browser }, info) => {
   test.setTimeout(240_000);
-  const stamp = stampOf(info);
   await signInWithPhone(page, 'fr', YASMINE);
-  await page.goto(EVENT);
-  await postOnWall(page, `Bonjour ${stamp}`);
-  const post = page.getByTestId('wall-post').filter({ hasText: stamp });
-  const profileUrl = await post.getByRole('link').first().getAttribute('href');
+  await page.goto('/fr/account');
+  const profileUrl = await page
+    .getByTestId('privacy-settings')
+    .getByRole('link', { name: 'Voir ma page' })
+    .getAttribute('href');
   expect(profileUrl).toMatch(/\/fr\/members\/[0-9a-f-]+$/);
 
-  await page.goto('/fr/account');
   await page.getByTestId('profile-private').click();
   await page.getByTestId('privacy-save').click();
   await expect(page.getByTestId('privacy-saved')).toBeVisible();
