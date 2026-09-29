@@ -1,6 +1,7 @@
 import { accountRouter } from './routers/account';
 import { adminRouter } from './routers/admin';
 import { bookingRouter } from './routers/booking';
+import { chatRouter } from './routers/chat';
 import { editorRouter } from './routers/editor';
 import { invitationsRouter } from './routers/invitations';
 import { organizerRouter } from './routers/organizer';
@@ -24,6 +25,7 @@ export const appRouter = router({
   organizer: organizerRouter,
   organizers: organizersRouter,
   invitations: invitationsRouter,
+  chat: chatRouter,
   uploads: uploadsRouter,
   admin: adminRouter,
 });

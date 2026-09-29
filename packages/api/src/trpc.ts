@@ -55,6 +55,14 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   return next({ ctx: { ...ctx, actor: ctx.actor } });
 });
 
+/** Anyone with a session, including guests (anonymous sessions from RSVP or booking). */
+export const sessionProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (!ctx.actor) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'errors.signInRequired' });
+  }
+  return next({ ctx: { ...ctx, actor: ctx.actor } });
+});
+
 /** Members holding one of the roles (admins always pass). */
 export function roleProcedure(...roles: UserRole[]) {
   return protectedProcedure.use(({ ctx, next }) => {
