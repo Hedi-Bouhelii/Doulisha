@@ -43,6 +43,13 @@
       "when": 1790699108028,
       "tag": "0005_event_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790709119981,
+      "tag": "0006_report_messages",
+      "breakpoints": true
     }
   ]
 }

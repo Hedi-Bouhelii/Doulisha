@@ -30,6 +30,12 @@ export const uploadPolicies = {
     maxBytes: 5 * 1024 * 1024,
     contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
+  /** Photos in event wall posts (SOC-04). */
+  'post-photo': {
+    bucket: 'public',
+    maxBytes: 5 * 1024 * 1024,
+    contentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  },
   'payment-proof': {
     bucket: 'private',
     maxBytes: 8 * 1024 * 1024,

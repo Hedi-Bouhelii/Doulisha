@@ -59,6 +59,7 @@ export const reportTarget = pgEnum('report_target', [
   'user',
   'organizer',
   'provider',
+  'message',
 ]);
 export const reportStatus = pgEnum('report_status', ['open', 'reviewing', 'actioned', 'dismissed']);
 
