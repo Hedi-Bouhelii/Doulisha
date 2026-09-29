@@ -23,6 +23,7 @@ One file per important decision, numbered in order. An ADR is never edited after
 | 0017 | [PDF tickets drawn with next/og and assembled with pdf-lib](0017-pdf-tickets.md)                                               | Accepted, amended by 0018          |
 | 0018 | [Manual payments: reservations with a deadline, a payments inbox, cash collected at the door](0018-manual-payment-workflow.md) | Accepted                           |
 | 0019 | [Social sign-in, explicit account linking, story sharing and draft legal pages](0019-social-sign-in-and-linking.md)            | Accepted                           |
+| 0020 | [The production database migrates itself on each production deploy](0020-production-database-on-deploy.md)                     | Accepted                           |
 
 ## Template
 

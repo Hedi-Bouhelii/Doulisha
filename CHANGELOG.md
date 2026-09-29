@@ -4,6 +4,11 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: production database (2026-09-29)
+
+- Production deployments apply the database migrations and add missing categories and templates by themselves (`db:deploy`, ADR 0020); the live site moves from the `dev` database to `production` (OPEN_QUESTIONS Q26).
+- `ADMIN_EMAILS` gives the admin role to those verified addresses when they sign in.
+
 ### Added: social sign-in and sharing (2026-09-29)
 
 - **Google and Facebook sign-in and sign-up** (ADR 0019). New accounts finish setup without a password (city, participant or organizer). Facebook accounts without an email get a placeholder address.

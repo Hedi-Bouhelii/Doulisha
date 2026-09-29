@@ -23,8 +23,9 @@ With these set, `.github/workflows/ci.yml` creates a Neon branch per pull reques
 ## Current deployment (2026-09-29)
 
 - `main` deploys to `https://doulisha.vercel.app` (free Vercel plan). Every merge into `main` redeploys.
-- Variables set on Vercel: `NEXT_PUBLIC_APP_URL=https://doulisha.vercel.app`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `BETTER_AUTH_SECRET`, and the Google and Facebook keys. `NEXT_PUBLIC_APP_URL` is baked in at build time: redeploy after changing it.
-- The live site uses the Neon `dev` database for now; `production` is still empty (OPEN_QUESTIONS Q26).
+- Variables set on Vercel: `NEXT_PUBLIC_APP_URL=https://doulisha.vercel.app`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `BETTER_AUTH_SECRET`, `ADMIN_EMAILS`, and the Google and Facebook keys. `NEXT_PUBLIC_APP_URL` is baked in at build time: redeploy after changing it.
+- **Database (ADR 0020):** the **Production** variables point at the Neon `production` branch (database `Doulisha`, `NEON_BRANCH=production`); **Preview** variables keep `dev`. Each production build runs `db:deploy` first: migrations, then missing categories and templates. No demo data in production.
+- **First admin:** `ADMIN_EMAILS=bouhelii.hedi@gmail.com` makes that account an admin at its next sign-in with Google or an email code.
 - Google and Facebook sign-in (ADR 0019): the redirect addresses are `https://doulisha.vercel.app/api/auth/callback/google` and `…/callback/facebook`, never with a language prefix. How the founder set up both apps: [SOCIAL_SIGN_IN_SETUP.md](SOCIAL_SIGN_IN_SETUP.md).
 - Not working on the live site yet, by design until Phase 6: SMS and email codes (mock senders; the dev outbox returns 404 in production), uploads (local disk), and online card payment (mock page returns 404).
 

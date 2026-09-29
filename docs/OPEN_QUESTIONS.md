@@ -201,4 +201,4 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-29 (first Vercel deployment)
 - **Context:** The founder deployed `main` to `https://doulisha.vercel.app` to get an `https` address for Google and Facebook. The Neon `production` branch has no tables yet: migrations were only ever applied to `dev`, and the project rule is never to migrate `production` by hand.
 - **Assumption:** For now the live site points at the `dev` database (demo data, E2E events, and accounts created on the live site all live there; `pnpm db:seed` would erase them). Before real users, the live site moves to `production`, with migrations applied automatically on each production deploy and no demo data.
-- **Decision:**
+- **Decision (2026-09-29, founder):** Move the live site to `production`, migrated automatically on each production deploy, with categories and templates added and no demo data; the first admin comes from `ADMIN_EMAILS` (ADR 0020).
