@@ -13,7 +13,7 @@ export async function SiteFooter() {
         <Logo tone="light" />
         <p className="font-display text-xl italic">{t('tagline')}</p>
         <div className="flex flex-col items-center gap-1 text-sm text-primary-foreground/70 sm:items-end">
-          <nav aria-label={tFooter('legal')} className="flex gap-4">
+          <nav aria-label={tFooter('legal')} className="flex flex-wrap justify-center gap-x-4">
             <Link
               href="/terms"
               className="inline-flex min-h-11 items-center hover:text-primary-foreground hover:underline"
@@ -25,6 +25,12 @@ export async function SiteFooter() {
               className="inline-flex min-h-11 items-center hover:text-primary-foreground hover:underline"
             >
               {tFooter('privacy')}
+            </Link>
+            <Link
+              href="/data-deletion"
+              className="inline-flex min-h-11 items-center hover:text-primary-foreground hover:underline"
+            >
+              {tFooter('dataDeletion')}
             </Link>
           </nav>
           <p>

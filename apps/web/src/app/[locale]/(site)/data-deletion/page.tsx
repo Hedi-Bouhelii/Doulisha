@@ -6,13 +6,14 @@ import { resolveLocale } from '@/i18n/locale';
 
 export async function generateMetadata({
   params,
-}: PageProps<'/[locale]/terms'>): Promise<Metadata> {
+}: PageProps<'/[locale]/data-deletion'>): Promise<Metadata> {
   const locale = await resolveLocale(params);
   const t = await getTranslations({ locale, namespace: 'Legal' });
-  return { title: t('terms') };
+  return { title: t('dataDeletion') };
 }
 
-export default async function TermsPage({ params }: PageProps<'/[locale]/terms'>) {
+/** How to have an account and its data deleted (asked by Meta for Facebook sign-in, ADR 0019). */
+export default async function DataDeletionPage({ params }: PageProps<'/[locale]/data-deletion'>) {
   const locale = await resolveLocale(params);
-  return <LegalPage kind="terms" locale={locale} />;
+  return <LegalPage kind="dataDeletion" locale={locale} />;
 }

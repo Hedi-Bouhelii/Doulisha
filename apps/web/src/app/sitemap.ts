@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import { absoluteUrl } from '@/lib/site';
 import { apiForLocale } from '@/trpc/server';
 
-const pages = ['', '/explore', '/terms', '/privacy'];
+const pages = ['', '/explore', '/terms', '/privacy', '/data-deletion'];
 
 function entry(path: string, lastModified?: Date): MetadataRoute.Sitemap[number] {
   return {
