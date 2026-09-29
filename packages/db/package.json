@@ -18,7 +18,8 @@
     "db:seed": "tsx src/seed/index.ts",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
-    "db:sync-templates": "tsx src/sync-templates.ts"
+    "db:sync-templates": "tsx src/sync-templates.ts",
+    "db:deploy": "tsx src/deploy.ts"
   },
   "dependencies": {
     "@doulisha/templates": "workspace:*",

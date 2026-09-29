@@ -33,6 +33,8 @@ const schema = z
     FACEBOOK_CLIENT_SECRET: optional,
     APPLE_CLIENT_ID: optional,
     APPLE_CLIENT_SECRET: optional,
+    /** Comma-separated verified emails that become admins on sign-in (ADR 0020). */
+    ADMIN_EMAILS: optional,
   })
   .transform((env) => ({
     ...env,

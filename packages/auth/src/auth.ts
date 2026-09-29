@@ -7,6 +7,8 @@ import { nextCookies } from 'better-auth/next-js';
 import { anonymous, emailOTP, phoneNumber } from 'better-auth/plugins';
 import { and, eq, inArray } from 'drizzle-orm';
 
+import { grantRole } from './roles';
+
 /** Placeholder address for phone-only accounts; `.invalid` can never receive mail. */
 export const phoneEmailDomain = 'phone.doulisha.invalid';
 export const guestEmailDomain = 'guest.doulisha.invalid';
@@ -30,6 +32,11 @@ export interface CreateAuthOptions {
   social?: { google?: OAuthCredentials; facebook?: OAuthCredentials; apple?: OAuthCredentials };
   /** Rate limits on auth endpoints; on in production, off for local runs and E2E tests. */
   rateLimit?: boolean;
+  /**
+   * Verified emails that become admins when they sign in (ADR 0020), so the
+   * production database gets its first admin without editing it by hand.
+   */
+  adminEmails?: string[];
 }
 
 /** Password length rules, shared with the sign-up form. */
@@ -50,7 +57,9 @@ export function createAuth({
   email,
   social = {},
   rateLimit = true,
+  adminEmails = [],
 }: CreateAuthOptions) {
+  const admins = new Set(adminEmails.map((e) => e.trim().toLowerCase()).filter(Boolean));
   return betterAuth({
     appName: 'Doulisha',
     secret,
@@ -133,6 +142,21 @@ export function createAuth({
           // ACC-02: every account gets a profile row with default privacy settings.
           after: async (user) => {
             await db.insert(schema.profiles).values({ userId: user.id }).onConflictDoNothing();
+          },
+        },
+      },
+      session: {
+        create: {
+          // ADR 0020: listed, verified emails get the admin role on sign-in.
+          after: async (session) => {
+            if (admins.size === 0) return;
+            const [user] = await db
+              .select({ email: schema.users.email, verified: schema.users.emailVerified })
+              .from(schema.users)
+              .where(eq(schema.users.id, session.userId));
+            if (user?.verified && admins.has(user.email.toLowerCase())) {
+              await grantRole(db, session.userId, 'admin');
+            }
           },
         },
       },

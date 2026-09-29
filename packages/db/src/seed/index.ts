@@ -8,11 +8,11 @@
  *
  * Arabic content needs review by a native speaker. TODO(i18n-review)
  */
-import { categories as categoryDefs, templateDefinitions } from '@doulisha/templates';
 import { getTableName, isTable, sql } from 'drizzle-orm';
 
 import { createPoolDb, type PoolDb } from '../client';
 import { loadRootEnv, requireEnv } from '../load-env';
+import { ensureReferenceData } from '../reference-data';
 import * as s from '../schema';
 import { dt, nextWeekday, orderReference, ticketCode, tunisDate } from './helpers';
 
@@ -37,26 +37,11 @@ async function wipe(tx: Tx) {
 }
 
 async function seed(tx: Tx) {
-  // --- Categories and templates (EVT-09) ---------------------------------------
-  const categoryRows = await tx
-    .insert(s.categories)
-    .values(categoryDefs.map((c) => ({ ...c })))
-    .returning();
+  // --- Categories and templates (EVT-09), the same way deployments add them ---
+  await ensureReferenceData(tx);
+  const categoryRows = await tx.select().from(s.categories);
   const categoryId = (slug: string) => categoryRows.find((c) => c.slug === slug)!.id;
-
-  const templateRows = await tx
-    .insert(s.templates)
-    .values(
-      templateDefinitions.map((t) => ({
-        key: t.key,
-        categoryId: categoryId(t.categorySlug),
-        model: t.model,
-        name: t.name,
-        definition: t.definition,
-        isActive: t.isActive,
-      })),
-    )
-    .returning();
+  const templateRows = await tx.select().from(s.templates);
   const template = (key: string) => templateRows.find((t) => t.key === key)!;
 
   // --- Members -------------------------------------------------------------------
