@@ -67,6 +67,7 @@ flowchart TD
 | `apps/web`               | Public site, event pages (SSR), guest RSVP, organizer dashboard, `/admin`, tRPC server, webhooks |
 | `packages/db`            | Drizzle schema, SQL migrations, seed, query helpers                                              |
 | `packages/api`           | tRPC routers (thin), services (business rules), permissions                                      |
+| `packages/api-types`     | The API types (`AppRouter`) bundled into one committed file for the mobile app (ADR 0024)        |
 | `packages/auth`          | Better Auth server configuration (the future mobile app signs in through this API)               |
 | `packages/validators`    | Zod schemas used on client and server                                                            |
 | `packages/i18n`          | `ar` / `fr` / `en` messages, locale helpers, TND and date formatters                             |

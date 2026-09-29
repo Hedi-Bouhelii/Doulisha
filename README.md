@@ -91,6 +91,7 @@ packages/
   config/     shared tsconfig and ESLint presets
   db/         Drizzle schema, migrations, seed
   api/        tRPC routers, services, permissions
+  api-types/  the API types bundled into one file for the mobile app (pnpm --filter @doulisha/api-types build)
   auth/       Better Auth configuration
   i18n/       ar/fr/en messages, TND and date formatters
   ui-tokens/  design tokens (colours, fonts, radii) and tokens.css

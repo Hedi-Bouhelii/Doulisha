@@ -6,6 +6,8 @@ node_modules/
 .next/
 out/
 dist/
+# The API types bundle is committed for the mobile app (ADR 0024).
+!packages/api-types/dist/
 build/
 coverage/
 *.tsbuildinfo
