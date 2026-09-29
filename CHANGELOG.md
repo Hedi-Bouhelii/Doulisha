@@ -4,6 +4,10 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Fixed: Vercel build (2026-09-29)
+
+- The Vercel build failed with "Invalid environment variables": Turborepo's strict mode hid the project variables from `next build`. They are now declared in `turbo.json`.
+
 ### Changed: manual payments and event setup (2026-09-28)
 
 - **D17 and transfer bookings are reservations (ADR 0018):** no QR code or PDF until the organizer confirms the payment. The buyer has 48 hours to pay (never later than 12 hours before the event; OPEN_QUESTIONS Q25); sending a receipt pauses the clock; unpaid reservations expire and their places go to the waitlist. Payment instructions ask the buyer to write their booking reference in the payment message.

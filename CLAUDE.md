@@ -42,7 +42,7 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
   - `strict` mode plus `noUncheckedIndexedAccess`.
   - No `any`. A lint rule enforces it; a disable comment must say why (`// eslint-disable-next-line @typescript-eslint/no-explicit-any -- reason`).
 - **Layering:** UI → tRPC router → service → Drizzle. Routers stay thin. Business rules and permission checks live in services, with unit tests.
-- **Validation:** Zod schemas live in `packages/validators` and are shared by client and server. Environment variables are validated in each app's `env.ts`; keep `.env.example` in sync.
+- **Validation:** Zod schemas live in `packages/validators` and are shared by client and server. Environment variables are validated in each app's `env.ts`; keep `.env.example` and the `build` task's `env` list in `turbo.json` in sync.
 - **Data types:**
   - Money is integer **millimes** (`*_millimes`).
   - Times are `timestamptz`, displayed in `Africa/Tunis`.

@@ -6,6 +6,25 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": [
+        "NEXT_PUBLIC_APP_URL",
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "NEON_BRANCH",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "SMS_PROVIDER",
+        "EMAIL_PROVIDER",
+        "PAYMENT_PROVIDER",
+        "STORAGE_PROVIDER",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "FACEBOOK_CLIENT_ID",
+        "FACEBOOK_CLIENT_SECRET",
+        "APPLE_CLIENT_ID",
+        "APPLE_CLIENT_SECRET",
+        "SKIP_ENV_VALIDATION"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
