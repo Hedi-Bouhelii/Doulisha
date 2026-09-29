@@ -4,6 +4,11 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: mobile app sign-in (2026-09-29)
+
+- The auth endpoints accept the mobile app (Better Auth's Expo plugin, ADR 0023): sessions for the app, and Google or Facebook sign-in that returns to the app through `doulisha://`.
+- Better Auth 1.7.6.
+
 ### Added: Phase 4b, event wall and safety (2026-09-29)
 
 - **Event wall** (SOC-04, SOC-05) on public and unlisted events: posts with up to 4 photos, comments and reactions (👍 ❤️ 🔥 👏 😂); authors and organizers can delete. Visitors read it; members take part.

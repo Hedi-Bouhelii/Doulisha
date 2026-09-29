@@ -1,4 +1,5 @@
 import type { HttpDb } from '@doulisha/db';
+import { expo } from '@better-auth/expo';
 import { schema } from '@doulisha/db';
 import type { EmailSender, SmsSender } from '@doulisha/notifications';
 import { betterAuth } from 'better-auth';
@@ -37,7 +38,18 @@ export interface CreateAuthOptions {
    * production database gets its first admin without editing it by hand.
    */
   adminEmails?: string[];
+  /**
+   * Origins allowed besides the site itself: the mobile app's `doulisha://`
+   * scheme, and Expo development URLs outside production.
+   */
+  trustedOrigins?: string[];
 }
+
+/** The mobile app's deep-link scheme (ADR 0006, OPEN_QUESTIONS Q2). */
+export const MOBILE_APP_ORIGIN = 'doulisha://';
+
+/** Origins Expo development builds use; never trusted in production. */
+export const EXPO_DEV_ORIGINS = ['exp://', 'exp://**'];
 
 /** Password length rules, shared with the sign-up form. */
 export const PASSWORD_MIN_LENGTH = 8;
@@ -58,12 +70,14 @@ export function createAuth({
   social = {},
   rateLimit = true,
   adminEmails = [],
+  trustedOrigins = [MOBILE_APP_ORIGIN],
 }: CreateAuthOptions) {
   const admins = new Set(adminEmails.map((e) => e.trim().toLowerCase()).filter(Boolean));
   return betterAuth({
     appName: 'Doulisha',
     secret,
     baseURL,
+    trustedOrigins,
     database: drizzleAdapter(db, {
       provider: 'pg',
       schema: {
@@ -219,6 +233,9 @@ export function createAuth({
             .where(eq(schema.rsvps.userId, guestId));
         },
       }),
+      // Mobile app (ADR 0023): sessions for the Expo client and deep-link
+      // redirects after Google or Facebook sign-in.
+      expo(),
       // Must stay last: lets server actions set auth cookies in Next.js.
       nextCookies(),
     ],
