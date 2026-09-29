@@ -24,6 +24,7 @@ With these set, `.github/workflows/ci.yml` creates a Neon branch per pull reques
 
 - Function region `cle1` (Cleveland), next to the Neon database (OPEN_QUESTIONS Q9).
 - Environment variables: see `.env.example`. `SMS_PROVIDER`, `EMAIL_PROVIDER` and `PAYMENT_PROVIDER` stay `mock` until real providers are added.
+- Turborepo runs in strict mode: a variable reaches `next build` only if it is listed in the `env` of the `build` task in `turbo.json`. When you add a variable to `env.ts` and `.env.example`, add it there too, or the Vercel build fails with "Invalid environment variables".
 - **Before the first deployment:** add the R2 storage provider. The local disk provider (`STORAGE_PROVIDER=local`) does not survive serverless deployments (OPEN_QUESTIONS Q19).
 - `NEXT_PUBLIC_APP_URL` must be the public origin: it builds share links, `sitemap.xml`, canonical URLs and share-image URLs.
 - The mock payment page (`/checkout/mock-pay`) returns 404 in production.
