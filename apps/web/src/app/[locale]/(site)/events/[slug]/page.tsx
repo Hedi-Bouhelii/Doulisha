@@ -21,9 +21,11 @@ import { accentOf, CategoryIcon } from '@/components/doulisha/category-icon';
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { FriendsGoing } from '@/components/doulisha/friends-going';
 import { AskOrganizerButton } from '@/components/doulisha/chat';
+import { EventWall } from '@/components/doulisha/event-wall';
 import { OrganizerCard } from '@/components/doulisha/organizer-card';
 import { PlacesLeft } from '@/components/doulisha/places-left';
 import { PriceTag } from '@/components/doulisha/price-tag';
+import { ReportButton } from '@/components/doulisha/safety';
 import { ShareBar } from '@/components/doulisha/share-bar';
 import { StickyCTA } from '@/components/doulisha/sticky-cta';
 import { Button } from '@/components/ui/button';
@@ -352,6 +354,21 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               imageBase={shareImage(event.slug, locale)}
             />
           </div>
+
+          {/* SOC-04: questions, news and photos about the event. */}
+          <div className="mt-8 border-t border-border pt-6">
+            <EventWall
+              eventId={event.id}
+              viewerId={signedIn ? session!.user.id : null}
+              signInPath={`/events/${event.slug}`}
+            />
+          </div>
+
+          {signedIn && !event.canManage ? (
+            <div className="mt-6 flex justify-end">
+              <ReportButton target={{ type: 'event', id: event.id }} />
+            </div>
+          ) : null}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">

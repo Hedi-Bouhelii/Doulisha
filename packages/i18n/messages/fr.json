@@ -245,7 +245,7 @@
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
     "passwordRequired": "Choisissez un mot de passe pour terminer.",
     "passwordAlreadySet": "Ce compte a déjà un mot de passe.",
-    "tooManyPhotos": "Vous pouvez montrer jusqu’à {max} photos.",
+    "tooManyPhotos": "{max} photos au plus par publication.",
     "paymentMethodNotAllowed": "Cet événement n’accepte pas ce moyen de paiement.",
     "proofUnderReview": "Votre reçu est en cours de vérification : attendez l’organisateur.",
     "proofPending": "Un reçu attend : vérifiez-le d’abord dans « Paiements ».",
@@ -257,7 +257,15 @@
     "chatOwnEvent": "C’est votre événement : les participants vous écrivent depuis sa page.",
     "messageLength": "Le message doit faire entre 1 et 2000 caractères.",
     "tooManyMessages": "Trop de messages d’un coup. Patientez une minute.",
-    "cannotFollowSelf": "Vous ne pouvez pas suivre votre propre profil."
+    "cannotFollowSelf": "Vous ne pouvez pas suivre votre propre profil.",
+    "cannotBlockSelf": "Vous ne pouvez pas vous bloquer vous-même.",
+    "cannotMessage": "Vous ne pouvez pas écrire à cette personne.",
+    "cannotInteract": "Vous ne pouvez pas répondre à cette publication.",
+    "postLength": "Écrivez un texte (2000 caractères au plus) ou ajoutez une photo.",
+    "tooManyPosts": "Trop de publications d’un coup. Réessayez dans une heure.",
+    "commentLength": "Le commentaire doit faire entre 1 et 1000 caractères.",
+    "tooManyComments": "Trop de commentaires d’un coup. Réessayez plus tard.",
+    "tooManyReports": "Trop de signalements aujourd’hui. Réessayez demain."
   },
   "Dev": {
     "outboxTitle": "Boîte d’envoi (développement)",
@@ -898,7 +906,7 @@
   },
   "Account": {
     "title": "Mon compte",
-    "intro": "Choisissez comment vous connecter à Doulisha.",
+    "intro": "Vos moyens de connexion, votre confidentialité et les personnes bloquées.",
     "signInMethods": "Moyens de connexion",
     "signInHint": "Reliez Google ou Facebook pour vous connecter en un geste. Gardez toujours au moins un moyen de connexion.",
     "phone": "Téléphone",
@@ -937,7 +945,8 @@
     "groupOf": "Discussion des invités · {event}",
     "about": "À propos de {event}",
     "noMessagesYet": "Pas encore de message",
-    "privateHint": "Seuls vous et l’équipe de l’organisateur voyez cette discussion."
+    "privateHint": "Seuls vous et l’équipe de l’organisateur voyez cette discussion.",
+    "messageMenu": "Options du message"
   },
   "Follow": {
     "follow": "Suivre",
@@ -955,5 +964,88 @@
     "explore": "Explorer les événements",
     "suggestions": "Organisateurs à suivre",
     "upcomingCount": "{count, plural, one {# événement à venir} other {# événements à venir}}"
+  },
+  "Wall": {
+    "title": "Mur de l’événement",
+    "organizer": "Organisateur",
+    "reactions": "Réactions",
+    "reaction": {
+      "like": "J’aime",
+      "love": "J’adore",
+      "fire": "Génial",
+      "clap": "Bravo",
+      "haha": "Drôle"
+    },
+    "placeholder": "Une question, une info, des photos à partager ?",
+    "addPhotos": "Photos (max {max})",
+    "removePhoto": "Retirer la photo",
+    "publish": "Publier",
+    "commentPlaceholder": "Répondre…",
+    "reply": "Répondre",
+    "comments": "Commentaires",
+    "postMenu": "Options de la publication",
+    "commentMenu": "Options du commentaire",
+    "signInToPost": "Connectez-vous pour publier, commenter et réagir",
+    "empty": "Aucune publication pour l’instant. Posez la première question !",
+    "retry": "Réessayer",
+    "more": "Voir plus"
+  },
+  "Safety": {
+    "report": "Signaler",
+    "reportTitle": {
+      "event": "Signaler cet événement",
+      "post": "Signaler cette publication",
+      "comment": "Signaler ce commentaire",
+      "user": "Signaler ce membre",
+      "organizer": "Signaler cet organisateur",
+      "message": "Signaler ce message"
+    },
+    "reportHint": "Votre signalement reste confidentiel. L’équipe Doulisha l’examine.",
+    "reasons": {
+      "spam": "Spam ou publicité",
+      "harassment": "Harcèlement ou insultes",
+      "inappropriate": "Contenu choquant ou inapproprié",
+      "scam": "Arnaque ou fausse information",
+      "other": "Autre"
+    },
+    "details": "Détails (facultatif)",
+    "send": "Envoyer le signalement",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "reportSent": "Merci pour votre signalement",
+    "reportSentHint": "Notre équipe va l’examiner.",
+    "remove": "Supprimer",
+    "block": "Bloquer",
+    "blockName": "Bloquer {name}",
+    "blockTitle": "Bloquer {name} ?",
+    "blockHint": "Vous ne verrez plus ses publications, commentaires et messages, et cette personne ne pourra plus vous écrire. Elle n’est pas prévenue.",
+    "unblock": "Débloquer",
+    "blockedTitle": "Personnes bloquées",
+    "blockedNone": "Vous n’avez bloqué personne.",
+    "blockedSince": "Bloqué le {date}"
+  },
+  "Member": {
+    "memberSince": "Membre depuis le {date}",
+    "editPrivacy": "Modifier ma confidentialité",
+    "private": "Ce profil est privé.",
+    "organizes": "Organise avec",
+    "attending": "Événements à venir",
+    "attendingHidden": "Ce membre ne montre pas les événements auxquels il participe.",
+    "attendingNone": "Aucun événement public à venir.",
+    "attendingSelfHint": "Vous seul voyez cette liste. Vous pouvez la rendre visible dans « Mon compte »."
+  },
+  "Privacy": {
+    "title": "Confidentialité",
+    "profile": "Mon profil",
+    "profileHint": "Votre page de membre : ville, présentation, événements.",
+    "profilePublic": "Visible par tous",
+    "profilePrivate": "Privé : seuls mon nom et ma photo apparaissent",
+    "attendance": "Les événements auxquels je participe",
+    "attendanceHint": "Les événements publics réservés, affichés sur votre page.",
+    "attendancePublic": "Visibles par tous",
+    "attendancePrivate": "Visibles par moi seul",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "seeMyPage": "Voir ma page"
   }
 }

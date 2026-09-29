@@ -245,7 +245,7 @@
     "passwordTooShort": "The password needs at least 8 characters.",
     "passwordRequired": "Choose a password to finish.",
     "passwordAlreadySet": "This account already has a password.",
-    "tooManyPhotos": "You can show up to {max} photos.",
+    "tooManyPhotos": "At most {max} photos per post.",
     "paymentMethodNotAllowed": "This event does not accept this payment method.",
     "proofUnderReview": "Your receipt is being checked: wait for the organizer.",
     "proofPending": "A receipt is waiting: check it in \"Payments\" first.",
@@ -257,7 +257,15 @@
     "chatOwnEvent": "This is your event: participants write to you from its page.",
     "messageLength": "A message must be between 1 and 2000 characters.",
     "tooManyMessages": "Too many messages at once. Please wait a minute.",
-    "cannotFollowSelf": "You cannot follow your own profile."
+    "cannotFollowSelf": "You cannot follow your own profile.",
+    "cannotBlockSelf": "You cannot block yourself.",
+    "cannotMessage": "You cannot write to this person.",
+    "cannotInteract": "You cannot reply to this post.",
+    "postLength": "Write some text (2000 characters at most) or add a photo.",
+    "tooManyPosts": "Too many posts at once. Try again in an hour.",
+    "commentLength": "A comment must be between 1 and 1000 characters.",
+    "tooManyComments": "Too many comments at once. Try again later.",
+    "tooManyReports": "Too many reports today. Try again tomorrow."
   },
   "Dev": {
     "outboxTitle": "Dev outbox",
@@ -898,7 +906,7 @@
   },
   "Account": {
     "title": "My account",
-    "intro": "Choose how you sign in to Doulisha.",
+    "intro": "Your sign-in methods, your privacy and the people you blocked.",
     "signInMethods": "Sign-in methods",
     "signInHint": "Connect Google or Facebook to sign in with one tap. Always keep at least one way to sign in.",
     "phone": "Phone",
@@ -937,7 +945,8 @@
     "groupOf": "Guests’ chat · {event}",
     "about": "About {event}",
     "noMessagesYet": "No messages yet",
-    "privateHint": "Only you and the organizer’s team see this conversation."
+    "privateHint": "Only you and the organizer’s team see this conversation.",
+    "messageMenu": "Message options"
   },
   "Follow": {
     "follow": "Follow",
@@ -955,5 +964,88 @@
     "explore": "Explore events",
     "suggestions": "Organizers to follow",
     "upcomingCount": "{count, plural, one {# upcoming event} other {# upcoming events}}"
+  },
+  "Wall": {
+    "title": "Event wall",
+    "organizer": "Organizer",
+    "reactions": "Reactions",
+    "reaction": {
+      "like": "Like",
+      "love": "Love",
+      "fire": "Great",
+      "clap": "Bravo",
+      "haha": "Funny"
+    },
+    "placeholder": "A question, some news, photos to share?",
+    "addPhotos": "Photos (max {max})",
+    "removePhoto": "Remove the photo",
+    "publish": "Post",
+    "commentPlaceholder": "Reply…",
+    "reply": "Reply",
+    "comments": "Comments",
+    "postMenu": "Post options",
+    "commentMenu": "Comment options",
+    "signInToPost": "Sign in to post, comment and react",
+    "empty": "No posts yet. Ask the first question!",
+    "retry": "Try again",
+    "more": "Show more"
+  },
+  "Safety": {
+    "report": "Report",
+    "reportTitle": {
+      "event": "Report this event",
+      "post": "Report this post",
+      "comment": "Report this comment",
+      "user": "Report this member",
+      "organizer": "Report this organizer",
+      "message": "Report this message"
+    },
+    "reportHint": "Your report stays confidential. The Doulisha team reviews it.",
+    "reasons": {
+      "spam": "Spam or advertising",
+      "harassment": "Harassment or insults",
+      "inappropriate": "Shocking or inappropriate content",
+      "scam": "Scam or false information",
+      "other": "Something else"
+    },
+    "details": "Details (optional)",
+    "send": "Send the report",
+    "cancel": "Cancel",
+    "close": "Close",
+    "reportSent": "Thank you for your report",
+    "reportSentHint": "Our team will review it.",
+    "remove": "Delete",
+    "block": "Block",
+    "blockName": "Block {name}",
+    "blockTitle": "Block {name}?",
+    "blockHint": "You will no longer see their posts, comments and messages, and they will no longer be able to write to you. They are not told.",
+    "unblock": "Unblock",
+    "blockedTitle": "Blocked people",
+    "blockedNone": "You have not blocked anyone.",
+    "blockedSince": "Blocked on {date}"
+  },
+  "Member": {
+    "memberSince": "Member since {date}",
+    "editPrivacy": "Edit my privacy",
+    "private": "This profile is private.",
+    "organizes": "Organizes with",
+    "attending": "Upcoming events",
+    "attendingHidden": "This member does not show the events they attend.",
+    "attendingNone": "No upcoming public events.",
+    "attendingSelfHint": "Only you see this list. You can make it visible in “My account”."
+  },
+  "Privacy": {
+    "title": "Privacy",
+    "profile": "My profile",
+    "profileHint": "Your member page: city, description, events.",
+    "profilePublic": "Visible to everyone",
+    "profilePrivate": "Private: only my name and photo show",
+    "attendance": "Events I attend",
+    "attendanceHint": "Public events you booked, shown on your page.",
+    "attendancePublic": "Visible to everyone",
+    "attendancePrivate": "Visible only to me",
+    "save": "Save",
+    "saved": "Saved",
+    "seeMyPage": "See my page"
   }
 }

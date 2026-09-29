@@ -9,6 +9,7 @@ import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 
 import { ConnectedAccounts } from './connected-accounts';
+import { BlockedList, PrivacySettings } from './privacy-settings';
 
 export async function generateMetadata({
   params,
@@ -29,7 +30,12 @@ export default async function AccountPage({
   if (!session || session.user.isAnonymous) {
     redirect({ href: `/sign-in?next=${encodeURIComponent('/account')}`, locale });
   }
-  const methods = await (await api()).account.signInMethods();
+  const caller = await api();
+  const [methods, privacy, blocked] = await Promise.all([
+    caller.account.signInMethods(),
+    caller.account.privacy(),
+    caller.safety.blocked(),
+  ]);
   const configured = socialProviderList(getServerEnv());
   // Connected providers stay listed even if their keys were removed since.
   const providers = [
@@ -57,6 +63,8 @@ export default async function AccountPage({
         error={typeof sp.error === 'string' ? sp.error : undefined}
         linked={typeof sp.linked === 'string' ? sp.linked : undefined}
       />
+      <PrivacySettings userId={session!.user.id} initial={privacy} />
+      <BlockedList people={blocked} />
     </div>
   );
 }

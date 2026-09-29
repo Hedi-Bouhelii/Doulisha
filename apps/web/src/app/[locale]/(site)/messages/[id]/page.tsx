@@ -61,7 +61,7 @@ export default async function ConversationPage({ params }: PageProps<'/[locale]/
           <p className="mt-2 text-xs text-muted-foreground">{t('privateHint')}</p>
         ) : null}
       </header>
-      <ChatThread conversationId={thread.id} />
+      <ChatThread conversationId={thread.id} canModerate={!session!.user.isAnonymous} />
     </div>
   );
 }

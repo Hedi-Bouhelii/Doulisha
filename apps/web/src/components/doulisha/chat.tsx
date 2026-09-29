@@ -6,6 +6,7 @@ import { Loader2, MessageCircle, MessagesSquare, SendHorizontal } from 'lucide-r
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
+import { ItemMenu } from '@/components/doulisha/safety';
 import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
@@ -127,7 +128,14 @@ export function GroupChatButton({ eventId }: { eventId: string }) {
  * An open conversation: messages oldest first, the newest at the bottom, and
  * the composer. Polls every few seconds while the tab is visible.
  */
-export function ChatThread({ conversationId }: { conversationId: string }) {
+export function ChatThread({
+  conversationId,
+  canModerate,
+}: {
+  conversationId: string;
+  /** Members can report messages and block senders; guests cannot. */
+  canModerate: boolean;
+}) {
   const t = useTranslations('Chat');
   const locale = useLocale() as Locale;
   const trpc = useTRPC();
@@ -157,6 +165,8 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
     try {
       await send.mutateAsync({ conversationId, body: text });
       setBody('');
+      // A poll still running from before the send would bring back the old list.
+      await queryClient.cancelQueries({ queryKey: threadOptions.queryKey });
       await queryClient.invalidateQueries({ queryKey: threadOptions.queryKey });
     } catch (e) {
       setError(errorMessage(e));
@@ -226,11 +236,29 @@ export function ChatThread({ conversationId }: { conversationId: string }) {
                 data-mine={message.mine ? 'true' : 'false'}
               >
                 {!message.mine ? (
-                  <p className="mb-0.5 text-xs font-semibold" dir="auto">
-                    {message.senderName}
+                  <p className="mb-0.5 flex items-center gap-1 text-xs font-semibold" dir="auto">
+                    {message.senderIsGuest ? (
+                      message.senderName
+                    ) : (
+                      <Link href={`/members/${message.senderId}`} className="hover:underline">
+                        {message.senderName}
+                      </Link>
+                    )}
                     {message.fromOrganizer ? (
                       <span className="ms-1.5 rounded-full bg-primary/10 px-1.5 font-normal text-primary">
                         {t('organizerBadge')}
+                      </span>
+                    ) : null}
+                    {canModerate ? (
+                      <span className="-my-2 ms-auto">
+                        <ItemMenu
+                          label={t('messageMenu')}
+                          report={{ type: 'message', id: message.id }}
+                          author={{ id: message.senderId, name: message.senderName }}
+                          onBlocked={() =>
+                            void queryClient.invalidateQueries({ queryKey: threadOptions.queryKey })
+                          }
+                        />
                       </span>
                     ) : null}
                   </p>

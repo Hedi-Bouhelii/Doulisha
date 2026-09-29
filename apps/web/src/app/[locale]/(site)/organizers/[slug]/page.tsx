@@ -7,6 +7,7 @@ import { cache } from 'react';
 import { EventCard } from '@/components/doulisha/event-card';
 import { FollowButton } from '@/components/doulisha/follow-button';
 import { OrganizerProfileView } from '@/components/doulisha/organizer-profile-view';
+import { ReportButton } from '@/components/doulisha/safety';
 import { resolveLocale } from '@/i18n/locale';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
@@ -69,6 +70,9 @@ export default async function OrganizerPage({ params }: PageProps<'/[locale]/org
             <span className="text-sm text-muted-foreground" data-testid="follower-count">
               {tFollow('followers', { count: organizer.followers })}
             </span>
+            {signedIn && !organizer.viewerIsOwner ? (
+              <ReportButton target={{ type: 'organizer', id: organizer.id }} />
+            ) : null}
           </div>
         }
       >
