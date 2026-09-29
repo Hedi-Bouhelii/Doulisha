@@ -7,9 +7,13 @@ import { nextCookies } from 'better-auth/next-js';
 import { anonymous, emailOTP, phoneNumber } from 'better-auth/plugins';
 import { and, eq, inArray } from 'drizzle-orm';
 
+import { grantRole } from './roles';
+
 /** Placeholder address for phone-only accounts; `.invalid` can never receive mail. */
 export const phoneEmailDomain = 'phone.doulisha.invalid';
 export const guestEmailDomain = 'guest.doulisha.invalid';
+/** Facebook accounts without an email (signed up with a phone number on Facebook). */
+export const facebookEmailDomain = 'facebook.doulisha.invalid';
 
 const E164 = /^\+[1-9]\d{7,14}$/;
 
@@ -28,6 +32,11 @@ export interface CreateAuthOptions {
   social?: { google?: OAuthCredentials; facebook?: OAuthCredentials; apple?: OAuthCredentials };
   /** Rate limits on auth endpoints; on in production, off for local runs and E2E tests. */
   rateLimit?: boolean;
+  /**
+   * Verified emails that become admins when they sign in (ADR 0020), so the
+   * production database gets its first admin without editing it by hand.
+   */
+  adminEmails?: string[];
 }
 
 /** Password length rules, shared with the sign-up form. */
@@ -37,7 +46,7 @@ export const PASSWORD_MAX_LENGTH = 128;
 /**
  * Better Auth for Doulisha (ADR 0003, ADR 0010, ADR 0016).
  * ACC-01: sign-up by phone or email code, then a password for next time;
- * sign-in by password or by code; Google, Facebook, Apple; guest sessions
+ * sign-in by password or by code; Google, Facebook, Apple (ADR 0019); guest sessions
  * for booking and RSVP without an account.
  */
 export function createAuth({
@@ -48,7 +57,9 @@ export function createAuth({
   email,
   social = {},
   rateLimit = true,
+  adminEmails = [],
 }: CreateAuthOptions) {
+  const admins = new Set(adminEmails.map((e) => e.trim().toLowerCase()).filter(Boolean));
   return betterAuth({
     appName: 'Doulisha',
     secret,
@@ -77,11 +88,29 @@ export function createAuth({
     },
     socialProviders: {
       ...(social.google && { google: social.google }),
-      ...(social.facebook && { facebook: social.facebook }),
+      ...(social.facebook && {
+        facebook: {
+          ...social.facebook,
+          // Facebook sends no email for accounts made with a phone number.
+          mapProfileToUser: (profile) =>
+            profile.email
+              ? {}
+              : { email: `${'id' in profile ? profile.id : profile.sub}@${facebookEmailDomain}` },
+        },
+      }),
       ...(social.apple && { apple: social.apple }),
     },
     account: {
-      accountLinking: { enabled: true, trustedProviders: ['google', 'facebook', 'apple'] },
+      // Social accounts are linked only on purpose, from "Connected accounts"
+      // while signed in (ADR 0019): never implicitly because an email matches,
+      // since Facebook does not say whether an email was verified. Trusting
+      // the providers lets that explicit link through, with any email.
+      accountLinking: {
+        enabled: true,
+        disableImplicitLinking: true,
+        trustedProviders: ['google', 'facebook', 'apple'],
+        allowDifferentEmails: true,
+      },
     },
     session: {
       expiresIn: 60 * 60 * 24 * 30,
@@ -113,6 +142,21 @@ export function createAuth({
           // ACC-02: every account gets a profile row with default privacy settings.
           after: async (user) => {
             await db.insert(schema.profiles).values({ userId: user.id }).onConflictDoNothing();
+          },
+        },
+      },
+      session: {
+        create: {
+          // ADR 0020: listed, verified emails get the admin role on sign-in.
+          after: async (session) => {
+            if (admins.size === 0) return;
+            const [user] = await db
+              .select({ email: schema.users.email, verified: schema.users.emailVerified })
+              .from(schema.users)
+              .where(eq(schema.users.id, session.userId));
+            if (user?.verified && admins.has(user.email.toLowerCase())) {
+              await grantRole(db, session.userId, 'admin');
+            }
           },
         },
       },

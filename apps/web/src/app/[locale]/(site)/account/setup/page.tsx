@@ -14,7 +14,8 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * Last step of sign-up (ADR 0016): name, city, password, participant or
- * organizer. Also where older accounts without a password add one.
+ * organizer. Also where older accounts without a password add one. Google or
+ * Facebook accounts skip the password (ADR 0019).
  */
 export default async function AccountSetupPage({
   params,
@@ -29,7 +30,9 @@ export default async function AccountSetupPage({
   }
   const caller = await api();
   const [status, cities] = await Promise.all([caller.account.status(), caller.catalog.cities()]);
-  if (!status.needsSetup) redirect({ href: next, locale });
+  // `welcome=1`: a new Google or Facebook account, which still picks a city and
+  // participant or organizer, though it needs no password (ADR 0019).
+  if (!status.needsSetup && sp.welcome !== '1') redirect({ href: next, locale });
   const t = await getTranslations('Auth');
 
   return (
@@ -37,7 +40,7 @@ export default async function AccountSetupPage({
       <SetupForm
         next={next}
         initial={{ name: status.name, city: status.city ?? '' }}
-        needsPassword={!status.hasPassword}
+        needsPassword={!status.hasPassword && !status.hasSocial}
         isOrganizer={status.isOrganizer}
         initialType={sp.type === 'organizer' ? 'organizer' : 'participant'}
         cities={cities}

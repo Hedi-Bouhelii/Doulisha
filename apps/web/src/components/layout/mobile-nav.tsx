@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 
+import { CountBadge } from './count-badge';
 import { ThemeToggle } from './theme-toggle';
 
 /** Menu sheet for small screens. It slides in from the reading-start side. */
-export function MobileNav({ links }: { links: { href: string; label: string }[] }) {
+export function MobileNav({ links }: { links: { href: string; label: string; badge?: number }[] }) {
   const t = useTranslations('Nav');
   const rtl = useLocale() === 'ar';
   const [open, setOpen] = useState(false);
@@ -40,9 +41,10 @@ export function MobileNav({ links }: { links: { href: string; label: string }[] 
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center rounded-lg px-3 font-medium hover:bg-accent"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-3 font-medium hover:bg-accent"
             >
               {link.label}
+              <CountBadge count={link.badge} />
             </Link>
           ))}
           <div className="mt-2 flex items-center gap-2 border-t border-border px-3 pt-3 text-sm">

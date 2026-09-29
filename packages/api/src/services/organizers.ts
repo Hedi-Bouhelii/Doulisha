@@ -2,7 +2,7 @@ import { grantRole } from '@doulisha/auth';
 import type { Db, Executor } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
-import type { organizerProfileInputSchema } from '@doulisha/validators';
+import { isPlaceholderEmail, type organizerProfileInputSchema } from '@doulisha/validators';
 import { and, asc, count, eq, isNull } from 'drizzle-orm';
 import type { z } from 'zod';
 
@@ -10,7 +10,8 @@ import type { ServiceDeps } from '../deps';
 import { makeSlug } from '../domain/slug';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
-import { listUpcomingPublicEvents } from './events';
+import { listPastPublicEvents, listUpcomingPublicEvents } from './events';
+import { followerCount, isFollowing } from './follows';
 import { publicUrlFromKey } from './uploads';
 
 type OrganizerInput = z.infer<typeof organizerProfileInputSchema>;
@@ -18,8 +19,6 @@ type Storage = Pick<ServiceDeps, 'storage'>;
 
 /** Past-event photos per organizer (founder decision, OPEN_QUESTIONS Q21). */
 export const MAX_ORGANIZER_PHOTOS = 12;
-
-const PLACEHOLDER_EMAIL = /@(phone|guest)\.doulisha\.invalid$/;
 
 /** Organizer profiles the actor owns (ACC-03). */
 export function listOwnProfiles(db: Executor, actor: Actor) {
@@ -155,7 +154,7 @@ export async function ensureProfileFromAccount(db: Executor, actor: Actor) {
       legalStatus: 'independent',
       regions: user.city ? [user.city] : [],
       contactPhone: user.phoneNumber,
-      contactEmail: PLACEHOLDER_EMAIL.test(user.email) ? null : user.email,
+      contactEmail: isPlaceholderEmail(user.email) ? null : user.email,
     })
     .returning();
   await grantRole(db, actor.userId, 'organizer');
@@ -221,11 +220,16 @@ export async function removePhoto(db: Executor, actor: Actor, photoId: string) {
 }
 
 /**
- * Public organizer page (ACC-03): profile, contacts, photos and upcoming
- * public events. Payment details stay private: buyers see them only on their
+ * Public organizer page (ACC-03, SOC-01): profile, contacts, photos, upcoming
+ * and past public events, followers. Payment details stay private: buyers see them only on their
  * own booking.
  */
-export async function getPublicProfile(db: Db, locale: Locale, slug: string) {
+export async function getPublicProfile(
+  db: Db,
+  locale: Locale,
+  slug: string,
+  actor: Actor | null = null,
+) {
   const [profile] = await db
     .select()
     .from(schema.organizerProfiles)
@@ -233,9 +237,12 @@ export async function getPublicProfile(db: Db, locale: Locale, slug: string) {
       and(eq(schema.organizerProfiles.slug, slug), isNull(schema.organizerProfiles.deletedAt)),
     );
   if (!profile) throw new AppError('NOT_FOUND', 'errors.notFound');
-  const [photos, events] = await Promise.all([
+  const [photos, events, pastEvents, followers, viewerFollows] = await Promise.all([
     listPhotos(db, profile.id),
     listUpcomingPublicEvents(db, locale, { limit: 12, organizerProfileId: profile.id }),
+    listPastPublicEvents(db, locale, { organizerProfileId: profile.id, limit: 12 }),
+    followerCount(db, profile.id),
+    isFollowing(db, actor, profile.id),
   ]);
   return {
     id: profile.id,
@@ -254,5 +261,11 @@ export async function getPublicProfile(db: Db, locale: Locale, slug: string) {
     memberSince: profile.createdAt,
     photos,
     events,
+    /** SOC-01: what they organized before, latest first. */
+    pastEvents,
+    followers,
+    /** Whether the viewer follows this organizer; the owner cannot follow themselves. */
+    viewerFollows,
+    viewerIsOwner: actor?.userId === profile.ownerUserId,
   };
 }

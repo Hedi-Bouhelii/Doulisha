@@ -13,6 +13,6 @@ export async function generateMetadata({
 }
 
 export default async function PrivacyPage({ params }: PageProps<'/[locale]/privacy'>) {
-  await resolveLocale(params);
-  return <LegalPage kind="privacy" />;
+  const locale = await resolveLocale(params);
+  return <LegalPage kind="privacy" locale={locale} />;
 }

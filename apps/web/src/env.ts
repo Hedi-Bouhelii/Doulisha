@@ -33,6 +33,8 @@ const schema = z
     FACEBOOK_CLIENT_SECRET: optional,
     APPLE_CLIENT_ID: optional,
     APPLE_CLIENT_SECRET: optional,
+    /** Comma-separated verified emails that become admins on sign-in (ADR 0020). */
+    ADMIN_EMAILS: optional,
   })
   .transform((env) => ({
     ...env,
@@ -66,4 +68,10 @@ export function configuredSocialProviders(env: ServerEnv) {
     facebook: pair(env.FACEBOOK_CLIENT_ID, env.FACEBOOK_CLIENT_SECRET),
     apple: pair(env.APPLE_CLIENT_ID, env.APPLE_CLIENT_SECRET),
   };
+}
+
+/** Names of the configured social providers, in display order. */
+export function socialProviderList(env: ServerEnv) {
+  const social = configuredSocialProviders(env);
+  return (['google', 'facebook', 'apple'] as const).filter((provider) => social[provider]);
 }

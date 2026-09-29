@@ -22,7 +22,9 @@
     "organizer": "Organizer space",
     "host": "Invite friends",
     "createEvent": "Create an event",
-    "signUp": "Create account"
+    "signUp": "Create account",
+    "feed": "My feed",
+    "messages": "Messages"
   },
   "Home": {
     "heroLine1": "Discover",
@@ -243,10 +245,27 @@
     "passwordTooShort": "The password needs at least 8 characters.",
     "passwordRequired": "Choose a password to finish.",
     "passwordAlreadySet": "This account already has a password.",
-    "tooManyPhotos": "You can show up to {max} photos.",
+    "tooManyPhotos": "At most {max} photos per post.",
     "paymentMethodNotAllowed": "This event does not accept this payment method.",
     "proofUnderReview": "Your receipt is being checked: wait for the organizer.",
-    "proofPending": "A receipt is waiting: check it in \"Payments\" first."
+    "proofPending": "A receipt is waiting: check it in \"Payments\" first.",
+    "socialAccountExists": "A Doulisha account already uses this email. Sign in with a code or your password, then connect this account in “My account”.",
+    "socialLinkedElsewhere": "This Google or Facebook account is already connected to another Doulisha account.",
+    "socialCancelled": "Sign-in cancelled.",
+    "socialFailed": "Sign-in did not work. Try again or use a code.",
+    "lastSignInMethod": "You cannot remove your last way to sign in.",
+    "chatOwnEvent": "This is your event: participants write to you from its page.",
+    "messageLength": "A message must be between 1 and 2000 characters.",
+    "tooManyMessages": "Too many messages at once. Please wait a minute.",
+    "cannotFollowSelf": "You cannot follow your own profile.",
+    "cannotBlockSelf": "You cannot block yourself.",
+    "cannotMessage": "You cannot write to this person.",
+    "cannotInteract": "You cannot reply to this post.",
+    "postLength": "Write some text (2000 characters at most) or add a photo.",
+    "tooManyPosts": "Too many posts at once. Try again in an hour.",
+    "commentLength": "A comment must be between 1 and 1000 characters.",
+    "tooManyComments": "Too many comments at once. Try again later.",
+    "tooManyReports": "Too many reports today. Try again tomorrow."
   },
   "Dev": {
     "outboxTitle": "Dev outbox",
@@ -267,7 +286,7 @@
     "copy": "Copy link",
     "copied": "Link copied",
     "more": "More…",
-    "images": "Images for social media",
+    "images": "Story and images (Instagram, TikTok…)",
     "post": "Post (square)",
     "story": "Story",
     "invitation": "Invitation card",
@@ -275,7 +294,10 @@
     "message": "{title} · {date} on Doulisha",
     "cardInvited": "You are invited",
     "cardBook": "Book on doulisha.tn",
-    "cardFree": "Free"
+    "cardFree": "Free",
+    "imagesShareHint": "Tap “Share”, then choose Instagram, TikTok or WhatsApp. Add the event link with a “Link” sticker.",
+    "imagesDownloadHint": "Download the image and post it from your phone. The event link is copied at the same time.",
+    "shareImage": "Share"
   },
   "Checkout": {
     "title": "Book: {title}",
@@ -724,8 +746,9 @@
   "Legal": {
     "terms": "Terms of use",
     "privacy": "Privacy policy",
-    "draft": "Draft for legal review: this text will be replaced by the version validated by our lawyer before launch.",
-    "updated": "Last updated: {date}"
+    "draft": "Draft, written from how Doulisha really works. It will be reviewed before the public launch.",
+    "updated": "Last updated: {date}",
+    "dataDeletion": "Data deletion"
   },
   "AdminTemplates": {
     "title": "Category templates",
@@ -740,7 +763,8 @@
   "Footer": {
     "terms": "Terms",
     "privacy": "Privacy",
-    "legal": "Legal"
+    "legal": "Legal",
+    "dataDeletion": "Data deletion"
   },
   "OrganizerProfile": {
     "about": "About",
@@ -790,7 +814,8 @@
     "publicPage": "Public page",
     "onboardingTitle": "Your organizer profile",
     "onboardingHint": "Three short steps. We filled in what we already know; you can change everything later.",
-    "upcoming": "Upcoming events"
+    "upcoming": "Upcoming events",
+    "past": "{count, plural, one {Past event} other {Past events}}"
   },
   "NewEvent": {
     "publicTitle": "A public event",
@@ -878,5 +903,149 @@
     "receipt_rejectedSubject": "Receipt refused for {event}",
     "reservation_cancelled": "Doulisha: your reservation {reference} for {event} was cancelled by the organizer (payment not received). {url}",
     "reservation_cancelledSubject": "Reservation cancelled for {event}"
+  },
+  "Account": {
+    "title": "My account",
+    "intro": "Your sign-in methods, your privacy and the people you blocked.",
+    "signInMethods": "Sign-in methods",
+    "signInHint": "Connect Google or Facebook to sign in with one tap. Always keep at least one way to sign in.",
+    "phone": "Phone",
+    "email": "Email",
+    "password": "Password",
+    "notAdded": "Not added",
+    "passwordSet": "Set",
+    "passwordNotSet": "No password: you sign in with a code, Google or Facebook.",
+    "addPassword": "Add",
+    "savePassword": "Save",
+    "cancel": "Cancel",
+    "connectedSince": "Connected since {date}",
+    "notConnected": "Not connected",
+    "connect": "Connect",
+    "remove": "Remove",
+    "removeTitle": "Remove {provider}?",
+    "removeHint": "You will no longer be able to sign in with {provider}. You can connect it again later.",
+    "lastMethodHint": "This is your only way to sign in: add a password or connect another account before removing it.",
+    "linked": "{provider} is now connected to your account."
+  },
+  "Chat": {
+    "askOrganizer": "Ask the organizer",
+    "groupChat": "Group chat",
+    "loading": "Loading the conversation…",
+    "retry": "Try again",
+    "emptyAsk": "Ask your question: the organizer answers here.",
+    "emptyOrganizer": "No messages yet.",
+    "emptyGroup": "Say hello and share the details with the guests.",
+    "organizerBadge": "Organizer",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "inboxTitle": "Messages",
+    "inboxIntro": "Your conversations with organizers and the chats of your invitations.",
+    "inboxEmpty": "No conversations",
+    "inboxEmptyHint": "On an event page, “Ask the organizer” starts a conversation.",
+    "groupOf": "Guests’ chat · {event}",
+    "about": "About {event}",
+    "noMessagesYet": "No messages yet",
+    "privateHint": "Only you and the organizer’s team see this conversation.",
+    "messageMenu": "Message options"
+  },
+  "Follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "followers": "{count, plural, =0 {No followers} one {# follower} other {# followers}}"
+  },
+  "Feed": {
+    "title": "My feed",
+    "intro": "Upcoming events from the organizers you follow.",
+    "following": "{count, plural, one {You follow # organizer} other {You follow # organizers}}",
+    "upcoming": "Upcoming",
+    "emptyNoFollows": "You don’t follow anyone yet",
+    "emptyNoEvents": "No upcoming events for now",
+    "emptyHint": "Follow organizers from their page or from the suggestions below.",
+    "explore": "Explore events",
+    "suggestions": "Organizers to follow",
+    "upcomingCount": "{count, plural, one {# upcoming event} other {# upcoming events}}"
+  },
+  "Wall": {
+    "title": "Event wall",
+    "organizer": "Organizer",
+    "reactions": "Reactions",
+    "reaction": {
+      "like": "Like",
+      "love": "Love",
+      "fire": "Great",
+      "clap": "Bravo",
+      "haha": "Funny"
+    },
+    "placeholder": "A question, some news, photos to share?",
+    "addPhotos": "Photos (max {max})",
+    "removePhoto": "Remove the photo",
+    "publish": "Post",
+    "commentPlaceholder": "Reply…",
+    "reply": "Reply",
+    "comments": "Comments",
+    "postMenu": "Post options",
+    "commentMenu": "Comment options",
+    "signInToPost": "Sign in to post, comment and react",
+    "empty": "No posts yet. Ask the first question!",
+    "retry": "Try again",
+    "more": "Show more"
+  },
+  "Safety": {
+    "report": "Report",
+    "reportTitle": {
+      "event": "Report this event",
+      "post": "Report this post",
+      "comment": "Report this comment",
+      "user": "Report this member",
+      "organizer": "Report this organizer",
+      "message": "Report this message"
+    },
+    "reportHint": "Your report stays confidential. The Doulisha team reviews it.",
+    "reasons": {
+      "spam": "Spam or advertising",
+      "harassment": "Harassment or insults",
+      "inappropriate": "Shocking or inappropriate content",
+      "scam": "Scam or false information",
+      "other": "Something else"
+    },
+    "details": "Details (optional)",
+    "send": "Send the report",
+    "cancel": "Cancel",
+    "close": "Close",
+    "reportSent": "Thank you for your report",
+    "reportSentHint": "Our team will review it.",
+    "remove": "Delete",
+    "block": "Block",
+    "blockName": "Block {name}",
+    "blockTitle": "Block {name}?",
+    "blockHint": "You will no longer see their posts, comments and messages, and they will no longer be able to write to you. They are not told.",
+    "unblock": "Unblock",
+    "blockedTitle": "Blocked people",
+    "blockedNone": "You have not blocked anyone.",
+    "blockedSince": "Blocked on {date}"
+  },
+  "Member": {
+    "memberSince": "Member since {date}",
+    "editPrivacy": "Edit my privacy",
+    "private": "This profile is private.",
+    "organizes": "Organizes with",
+    "attending": "Upcoming events",
+    "attendingHidden": "This member does not show the events they attend.",
+    "attendingNone": "No upcoming public events.",
+    "attendingSelfHint": "Only you see this list. You can make it visible in “My account”."
+  },
+  "Privacy": {
+    "title": "Privacy",
+    "profile": "My profile",
+    "profileHint": "Your member page: city, description, events.",
+    "profilePublic": "Visible to everyone",
+    "profilePrivate": "Private: only my name and photo show",
+    "attendance": "Events I attend",
+    "attendanceHint": "Public events you booked, shown on your page.",
+    "attendancePublic": "Visible to everyone",
+    "attendancePrivate": "Visible only to me",
+    "save": "Save",
+    "saved": "Saved",
+    "seeMyPage": "See my page"
   }
 }

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { millimesSchema, normalizePhone, phoneInputSchema, slugSchema } from './common';
+import {
+  isPlaceholderEmail,
+  millimesSchema,
+  normalizePhone,
+  phoneInputSchema,
+  slugSchema,
+} from './common';
 
 describe('phone numbers', () => {
   it('normalizes Tunisian numbers to E.164', () => {
@@ -28,5 +34,18 @@ describe('slugs', () => {
   it('accepts kebab-case only', () => {
     expect(slugSchema.safeParse('randonnee-ain-draham').success).toBe(true);
     expect(slugSchema.safeParse('Ain Draham').success).toBe(false);
+  });
+});
+
+describe('placeholder emails', () => {
+  it('recognises phone, guest and Facebook placeholders', () => {
+    expect(isPlaceholderEmail('21620000001@phone.doulisha.invalid')).toBe(true);
+    expect(isPlaceholderEmail('abc@guest.doulisha.invalid')).toBe(true);
+    expect(isPlaceholderEmail('1234567890@facebook.doulisha.invalid')).toBe(true);
+  });
+
+  it('leaves real addresses alone', () => {
+    expect(isPlaceholderEmail('hedi@gmail.com')).toBe(false);
+    expect(isPlaceholderEmail('someone@doulisha.invalid.example.com')).toBe(false);
   });
 });

@@ -22,7 +22,9 @@
     "organizer": "Espace organisateur",
     "host": "Inviter des amis",
     "createEvent": "Créer un événement",
-    "signUp": "Créer un compte"
+    "signUp": "Créer un compte",
+    "feed": "Mon fil",
+    "messages": "Messages"
   },
   "Home": {
     "heroLine1": "Découvrir",
@@ -243,10 +245,27 @@
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
     "passwordRequired": "Choisissez un mot de passe pour terminer.",
     "passwordAlreadySet": "Ce compte a déjà un mot de passe.",
-    "tooManyPhotos": "Vous pouvez montrer jusqu’à {max} photos.",
+    "tooManyPhotos": "{max} photos au plus par publication.",
     "paymentMethodNotAllowed": "Cet événement n’accepte pas ce moyen de paiement.",
     "proofUnderReview": "Votre reçu est en cours de vérification : attendez l’organisateur.",
-    "proofPending": "Un reçu attend : vérifiez-le d’abord dans « Paiements »."
+    "proofPending": "Un reçu attend : vérifiez-le d’abord dans « Paiements ».",
+    "socialAccountExists": "Un compte Doulisha utilise déjà cette adresse e-mail. Connectez-vous par code ou mot de passe, puis reliez ce compte dans « Mon compte ».",
+    "socialLinkedElsewhere": "Ce compte Google ou Facebook est déjà relié à un autre compte Doulisha.",
+    "socialCancelled": "Connexion annulée.",
+    "socialFailed": "La connexion n’a pas abouti. Réessayez ou utilisez un code.",
+    "lastSignInMethod": "Impossible de retirer votre dernier moyen de connexion.",
+    "chatOwnEvent": "C’est votre événement : les participants vous écrivent depuis sa page.",
+    "messageLength": "Le message doit faire entre 1 et 2000 caractères.",
+    "tooManyMessages": "Trop de messages d’un coup. Patientez une minute.",
+    "cannotFollowSelf": "Vous ne pouvez pas suivre votre propre profil.",
+    "cannotBlockSelf": "Vous ne pouvez pas vous bloquer vous-même.",
+    "cannotMessage": "Vous ne pouvez pas écrire à cette personne.",
+    "cannotInteract": "Vous ne pouvez pas répondre à cette publication.",
+    "postLength": "Écrivez un texte (2000 caractères au plus) ou ajoutez une photo.",
+    "tooManyPosts": "Trop de publications d’un coup. Réessayez dans une heure.",
+    "commentLength": "Le commentaire doit faire entre 1 et 1000 caractères.",
+    "tooManyComments": "Trop de commentaires d’un coup. Réessayez plus tard.",
+    "tooManyReports": "Trop de signalements aujourd’hui. Réessayez demain."
   },
   "Dev": {
     "outboxTitle": "Boîte d’envoi (développement)",
@@ -267,7 +286,7 @@
     "copy": "Copier le lien",
     "copied": "Lien copié",
     "more": "Plus…",
-    "images": "Visuels pour les réseaux sociaux",
+    "images": "Story et visuels (Instagram, TikTok…)",
     "post": "Publication (carrée)",
     "story": "Story",
     "invitation": "Carte d’invitation",
@@ -275,7 +294,10 @@
     "message": "{title} · {date} sur Doulisha",
     "cardInvited": "Vous êtes invité",
     "cardBook": "Réservez sur doulisha.tn",
-    "cardFree": "Gratuit"
+    "cardFree": "Gratuit",
+    "imagesShareHint": "Touchez « Partager » puis choisissez Instagram, TikTok ou WhatsApp. Ajoutez le lien de l’événement avec un sticker « Lien ».",
+    "imagesDownloadHint": "Téléchargez l’image et publiez-la depuis votre téléphone. Le lien de l’événement est copié en même temps.",
+    "shareImage": "Partager"
   },
   "Checkout": {
     "title": "Réserver : {title}",
@@ -724,8 +746,9 @@
   "Legal": {
     "terms": "Conditions d’utilisation",
     "privacy": "Politique de confidentialité",
-    "draft": "Version provisoire pour relecture juridique : ce texte sera remplacé par la version validée par notre avocat avant le lancement.",
-    "updated": "Dernière mise à jour : {date}"
+    "draft": "Version provisoire, rédigée d’après le fonctionnement réel de Doulisha. Elle sera relue avant le lancement public.",
+    "updated": "Dernière mise à jour : {date}",
+    "dataDeletion": "Suppression des données"
   },
   "AdminTemplates": {
     "title": "Modèles de catégories",
@@ -740,7 +763,8 @@
   "Footer": {
     "terms": "Conditions",
     "privacy": "Confidentialité",
-    "legal": "Informations légales"
+    "legal": "Informations légales",
+    "dataDeletion": "Suppression des données"
   },
   "OrganizerProfile": {
     "about": "À propos",
@@ -790,7 +814,8 @@
     "publicPage": "Page publique",
     "onboardingTitle": "Votre profil organisateur",
     "onboardingHint": "Trois étapes courtes. Nous avons rempli ce que nous savons déjà ; tout reste modifiable.",
-    "upcoming": "Événements à venir"
+    "upcoming": "Événements à venir",
+    "past": "{count, plural, one {Événement organisé} other {Événements organisés}}"
   },
   "NewEvent": {
     "publicTitle": "Un événement public",
@@ -878,5 +903,149 @@
     "receipt_rejectedSubject": "Reçu refusé pour {event}",
     "reservation_cancelled": "Doulisha : votre réservation {reference} pour {event} a été annulée par l’organisateur (paiement non reçu). {url}",
     "reservation_cancelledSubject": "Réservation annulée pour {event}"
+  },
+  "Account": {
+    "title": "Mon compte",
+    "intro": "Vos moyens de connexion, votre confidentialité et les personnes bloquées.",
+    "signInMethods": "Moyens de connexion",
+    "signInHint": "Reliez Google ou Facebook pour vous connecter en un geste. Gardez toujours au moins un moyen de connexion.",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "notAdded": "Non ajouté",
+    "passwordSet": "Défini",
+    "passwordNotSet": "Aucun mot de passe : vous vous connectez par code, Google ou Facebook.",
+    "addPassword": "Ajouter",
+    "savePassword": "Enregistrer",
+    "cancel": "Annuler",
+    "connectedSince": "Relié depuis le {date}",
+    "notConnected": "Non relié",
+    "connect": "Relier",
+    "remove": "Retirer",
+    "removeTitle": "Retirer {provider} ?",
+    "removeHint": "Vous ne pourrez plus vous connecter avec {provider}. Vous pourrez le relier à nouveau plus tard.",
+    "lastMethodHint": "C’est votre seul moyen de connexion : ajoutez un mot de passe ou reliez un autre compte avant de le retirer.",
+    "linked": "{provider} est relié à votre compte."
+  },
+  "Chat": {
+    "askOrganizer": "Poser une question à l’organisateur",
+    "groupChat": "Discussion du groupe",
+    "loading": "Chargement de la discussion…",
+    "retry": "Réessayer",
+    "emptyAsk": "Posez votre question : l’organisateur vous répond ici.",
+    "emptyOrganizer": "Aucun message pour l’instant.",
+    "emptyGroup": "Dites bonjour et partagez les détails avec les invités.",
+    "organizerBadge": "Organisateur",
+    "placeholder": "Écrire un message…",
+    "send": "Envoyer",
+    "inboxTitle": "Messages",
+    "inboxIntro": "Vos échanges avec les organisateurs et les discussions de vos invitations.",
+    "inboxEmpty": "Aucune discussion",
+    "inboxEmptyHint": "Sur la page d’un événement, « Poser une question à l’organisateur » ouvre une discussion.",
+    "groupOf": "Discussion des invités · {event}",
+    "about": "À propos de {event}",
+    "noMessagesYet": "Pas encore de message",
+    "privateHint": "Seuls vous et l’équipe de l’organisateur voyez cette discussion.",
+    "messageMenu": "Options du message"
+  },
+  "Follow": {
+    "follow": "Suivre",
+    "following": "Suivi",
+    "followers": "{count, plural, =0 {Aucun abonné} one {# abonné} other {# abonnés}}"
+  },
+  "Feed": {
+    "title": "Mon fil",
+    "intro": "Les prochains événements des organisateurs que vous suivez.",
+    "following": "{count, plural, one {Vous suivez # organisateur} other {Vous suivez # organisateurs}}",
+    "upcoming": "À venir",
+    "emptyNoFollows": "Vous ne suivez encore personne",
+    "emptyNoEvents": "Pas d’événement à venir pour l’instant",
+    "emptyHint": "Suivez des organisateurs depuis leur page ou les suggestions ci-dessous.",
+    "explore": "Explorer les événements",
+    "suggestions": "Organisateurs à suivre",
+    "upcomingCount": "{count, plural, one {# événement à venir} other {# événements à venir}}"
+  },
+  "Wall": {
+    "title": "Mur de l’événement",
+    "organizer": "Organisateur",
+    "reactions": "Réactions",
+    "reaction": {
+      "like": "J’aime",
+      "love": "J’adore",
+      "fire": "Génial",
+      "clap": "Bravo",
+      "haha": "Drôle"
+    },
+    "placeholder": "Une question, une info, des photos à partager ?",
+    "addPhotos": "Photos (max {max})",
+    "removePhoto": "Retirer la photo",
+    "publish": "Publier",
+    "commentPlaceholder": "Répondre…",
+    "reply": "Répondre",
+    "comments": "Commentaires",
+    "postMenu": "Options de la publication",
+    "commentMenu": "Options du commentaire",
+    "signInToPost": "Connectez-vous pour publier, commenter et réagir",
+    "empty": "Aucune publication pour l’instant. Posez la première question !",
+    "retry": "Réessayer",
+    "more": "Voir plus"
+  },
+  "Safety": {
+    "report": "Signaler",
+    "reportTitle": {
+      "event": "Signaler cet événement",
+      "post": "Signaler cette publication",
+      "comment": "Signaler ce commentaire",
+      "user": "Signaler ce membre",
+      "organizer": "Signaler cet organisateur",
+      "message": "Signaler ce message"
+    },
+    "reportHint": "Votre signalement reste confidentiel. L’équipe Doulisha l’examine.",
+    "reasons": {
+      "spam": "Spam ou publicité",
+      "harassment": "Harcèlement ou insultes",
+      "inappropriate": "Contenu choquant ou inapproprié",
+      "scam": "Arnaque ou fausse information",
+      "other": "Autre"
+    },
+    "details": "Détails (facultatif)",
+    "send": "Envoyer le signalement",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "reportSent": "Merci pour votre signalement",
+    "reportSentHint": "Notre équipe va l’examiner.",
+    "remove": "Supprimer",
+    "block": "Bloquer",
+    "blockName": "Bloquer {name}",
+    "blockTitle": "Bloquer {name} ?",
+    "blockHint": "Vous ne verrez plus ses publications, commentaires et messages, et cette personne ne pourra plus vous écrire. Elle n’est pas prévenue.",
+    "unblock": "Débloquer",
+    "blockedTitle": "Personnes bloquées",
+    "blockedNone": "Vous n’avez bloqué personne.",
+    "blockedSince": "Bloqué le {date}"
+  },
+  "Member": {
+    "memberSince": "Membre depuis le {date}",
+    "editPrivacy": "Modifier ma confidentialité",
+    "private": "Ce profil est privé.",
+    "organizes": "Organise avec",
+    "attending": "Événements à venir",
+    "attendingHidden": "Ce membre ne montre pas les événements auxquels il participe.",
+    "attendingNone": "Aucun événement public à venir.",
+    "attendingSelfHint": "Vous seul voyez cette liste. Vous pouvez la rendre visible dans « Mon compte »."
+  },
+  "Privacy": {
+    "title": "Confidentialité",
+    "profile": "Mon profil",
+    "profileHint": "Votre page de membre : ville, présentation, événements.",
+    "profilePublic": "Visible par tous",
+    "profilePrivate": "Privé : seuls mon nom et ma photo apparaissent",
+    "attendance": "Les événements auxquels je participe",
+    "attendanceHint": "Les événements publics réservés, affichés sur votre page.",
+    "attendancePublic": "Visibles par tous",
+    "attendancePrivate": "Visibles par moi seul",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "seeMyPage": "Voir ma page"
   }
 }

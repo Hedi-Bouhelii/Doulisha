@@ -11,7 +11,7 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,9 +31,14 @@ function withUtm(url: string, source: string): string {
   return u.toString();
 }
 
+type ImageFormat = 'post' | 'story' | 'invitation';
+const FORMATS: ImageFormat[] = ['post', 'story', 'invitation'];
+
 /**
  * One-tap sharing of an event (SHR-01): WhatsApp, Facebook, Messenger, copy
- * link, the phone's share sheet, and ready-made images (SHR-02).
+ * link, the phone's share sheet, and ready-made images (SHR-02). On phones the
+ * images go straight to the share sheet, so a story reaches Instagram or
+ * TikTok (section 9.2); elsewhere they download and the link is copied.
  */
 export function ShareBar({
   url,
@@ -49,6 +54,48 @@ export function ShareBar({
 }) {
   const t = useTranslations('Share');
   const [copied, setCopied] = useState(false);
+  const [imagesOpen, setImagesOpen] = useState(false);
+  const [files, setFiles] = useState<Partial<Record<ImageFormat, File>>>({});
+  const [shareFiles, setShareFiles] = useState(false);
+
+  // Fetch the images when the dialog opens: the share sheet must open right on
+  // the tap (Safari refuses it after waiting for a download).
+  useEffect(() => {
+    if (!imagesOpen || typeof navigator.canShare !== 'function') return;
+    let cancelled = false;
+    void Promise.all(
+      FORMATS.map(async (format) => {
+        const response = await fetch(`${imageBase}&format=${format}`);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return [
+          format,
+          new File([blob], `doulisha-${format}.jpg`, { type: blob.type || 'image/jpeg' }),
+        ] as const;
+      }),
+    )
+      .then((entries) => {
+        if (cancelled) return;
+        const ready = Object.fromEntries(entries.filter((e) => e !== null));
+        setFiles(ready);
+        const first = Object.values(ready)[0];
+        setShareFiles(Boolean(first && navigator.canShare({ files: [first] })));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [imagesOpen, imageBase]);
+
+  async function shareImage(format: ImageFormat) {
+    const file = files[format];
+    if (!file) return;
+    try {
+      await navigator.share({ files: [file], text: `${message} ${withUtm(url, format)}` });
+    } catch {
+      // The person closed the share sheet.
+    }
+  }
 
   async function copy() {
     try {
@@ -111,7 +158,7 @@ export function ShareBar({
           <Share2 aria-hidden="true" />
           {t('more')}
         </Button>
-        <Dialog>
+        <Dialog open={imagesOpen} onOpenChange={setImagesOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className={linkClass} data-testid="share-images">
               <ImageIcon aria-hidden="true" />
@@ -120,9 +167,11 @@ export function ShareBar({
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogTitle>{t('images')}</DialogTitle>
-            <DialogDescription className="sr-only">{t('images')}</DialogDescription>
+            <DialogDescription>
+              {shareFiles ? t('imagesShareHint') : t('imagesDownloadHint')}
+            </DialogDescription>
             <ul className="grid grid-cols-3 gap-3">
-              {(['post', 'story', 'invitation'] as const).map((format) => (
+              {FORMATS.map((format) => (
                 <li key={format} className="flex flex-col items-center gap-2 text-center text-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element -- generated image, already sized and compressed by the route */}
                   <img
@@ -132,12 +181,29 @@ export function ShareBar({
                     className="aspect-[4/5] w-full rounded-lg border border-border bg-muted object-contain"
                   />
                   <span>{t(format)}</span>
-                  <Button asChild size="sm" variant="secondary" className="min-h-11 w-full">
-                    <a href={`${imageBase}&format=${format}&download=1`} download>
-                      <Download aria-hidden="true" />
-                      {t('download')}
-                    </a>
-                  </Button>
+                  {shareFiles && files[format] ? (
+                    <Button
+                      size="sm"
+                      className="min-h-11 w-full"
+                      onClick={() => void shareImage(format)}
+                      data-testid={`share-image-${format}`}
+                    >
+                      <Share2 aria-hidden="true" />
+                      {t('shareImage')}
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm" variant="secondary" className="min-h-11 w-full">
+                      <a
+                        href={`${imageBase}&format=${format}&download=1`}
+                        download
+                        onClick={() => void copy()}
+                        data-testid={`download-image-${format}`}
+                      >
+                        <Download aria-hidden="true" />
+                        {t('download')}
+                      </a>
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>

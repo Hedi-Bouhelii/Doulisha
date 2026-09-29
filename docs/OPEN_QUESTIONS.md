@@ -187,7 +187,7 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-25 (Phase 2 review)
 - **Context:** Organizer profiles have links to Facebook, Instagram, TikTok and a website. The founder wants to discuss connecting social accounts (sign-in, importing content, publishing).
 - **Assumption:** Links only for now; the linking process is the next topic with the founder.
-- **Decision:**
+- **Decision (2026-09-29, founder):** Now: Google and Facebook sign-in, a "My account → Sign-in methods" page, story sharing through the phone's share sheet, and draft Privacy, Terms and data deletion pages naming "Doulisha" and bouhelii.hedi@gmail.com (ADR 0019). Direct publishing to Facebook Pages and Instagram waits until Doulisha is a registered company (Meta business verification); TikTok publishing waits for TikTok's audit; Apple waits for the iPhone app.
 
 ### Q25. How long to pay by D17 or transfer
 
@@ -195,3 +195,24 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** A D17 or transfer booking now reserves the places without a QR code until the organizer confirms the money (ADR 0018). The reservation needs a deadline so unpaid places go back to other people.
 - **Assumption:** 48 hours to pay, never later than 12 hours before the event and never less than 2 hours. Sending a receipt pauses the clock; a refused receipt gives 24 hours to send another; the organizer can add one day at a time. The values are constants in `packages/api/src/domain/payment-deadline.ts`.
 - **Decision (2026-09-28, founder):** Keep the assumption (48 h, 12 h before the event at the latest, 2 h minimum, 24 h after a refused receipt).
+
+### Q26. Which database the live site uses
+
+- **Asked:** 2026-09-29 (first Vercel deployment)
+- **Context:** The founder deployed `main` to `https://doulisha.vercel.app` to get an `https` address for Google and Facebook. The Neon `production` branch has no tables yet: migrations were only ever applied to `dev`, and the project rule is never to migrate `production` by hand.
+- **Assumption:** For now the live site points at the `dev` database (demo data, E2E events, and accounts created on the live site all live there; `pnpm db:seed` would erase them). Before real users, the live site moves to `production`, with migrations applied automatically on each production deploy and no demo data.
+- **Decision (2026-09-29, founder):** Move the live site to `production`, migrated automatically on each production deploy, with categories and templates added and no demo data; the first admin comes from `ADMIN_EMAILS` (ADR 0020).
+
+### Q27. Friends and "friends going" (SOC-02)
+
+- **Asked:** 2026-09-29 (Phase 4 plan)
+- **Context:** The build prompt's Phase 4 starts with friend requests, a friends' feed and "friends going" on every event.
+- **Assumption:** —
+- **Decision (2026-09-29, founder):** No friend requests for now: they would rebuild Facebook without adding much; a community-based version may come later. Instead: follow organizers and see what they organized, a chat with the organizer from the event page, and a group chat for private events (ADR 0021). "Friends going" and finding friends from contacts wait with SOC-02.
+
+### Q28. Age rules and "who can invite me" (TRS-05, ACC-06)
+
+- **Asked:** 2026-09-29 (Phase 4b)
+- **Context:** The spec lists age-gated events (18+ nightlife), no public profile for minors, and a "who can invite me" setting.
+- **Assumption:** —
+- **Decision (2026-09-29, founder):** No age restrictions. An organizer can state a minimum age on the event (it shows on the event page); nothing blocks a booking. "Who can invite me" is not shown: invitations go by shared link only, so the setting would do nothing yet.

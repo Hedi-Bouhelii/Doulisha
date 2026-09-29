@@ -13,6 +13,7 @@ import {
 
 import { createdAt, deletedAt, id, timestamps } from './columns';
 import {
+  conversationKind,
   followTarget,
   friendshipStatus,
   mediaKind,
@@ -181,4 +182,71 @@ export const blocks = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.blockerId, t.blockedId] }), index().on(t.blockedId)],
+);
+
+/**
+ * Event chat (ADR 0021). `organizer`: one private thread per participant
+ * (`memberId`) with the event's organizers (COM-05). `group`: one chat per
+ * private event for hosts and guests (COM-06), `memberId` null.
+ */
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: id(),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    kind: conversationKind().notNull(),
+    memberId: uuid().references(() => users.id, { onDelete: 'cascade' }),
+    lastMessageAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('conversations_organizer_unique')
+      .on(t.eventId, t.memberId)
+      .where(sql`${t.kind} = 'organizer'`),
+    uniqueIndex('conversations_group_unique')
+      .on(t.eventId)
+      .where(sql`${t.kind} = 'group'`),
+    index().on(t.memberId),
+    check(
+      'conversations_member_matches_kind',
+      sql`(${t.kind} = 'organizer') = (${t.memberId} is not null)`,
+    ),
+  ],
+);
+
+export const messages = pgTable(
+  'messages',
+  {
+    id: id(),
+    conversationId: uuid()
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    senderId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    body: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index().on(t.conversationId, t.createdAt),
+    index().on(t.senderId, t.createdAt),
+    check('messages_body_length', sql`char_length(${t.body}) between 1 and 2000`),
+  ],
+);
+
+/** Where each person stopped reading, for unread counts. */
+export const conversationReads = pgTable(
+  'conversation_reads',
+  {
+    conversationId: uuid()
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    lastReadAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.conversationId, t.userId] })],
 );

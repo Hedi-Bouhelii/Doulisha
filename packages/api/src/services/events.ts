@@ -5,12 +5,14 @@ import {
   and,
   arrayOverlaps,
   asc,
+  desc,
   eq,
   gt,
   gte,
   inArray,
   isNull,
   lt,
+  lte,
   or,
   sql,
   type SQL,
@@ -72,9 +74,19 @@ export interface ListUpcomingInput {
   /** Only events with places left. */
   available?: boolean | undefined;
   /** DSC-02 "near me": within `radiusKm` of a point (PostGIS). */
-  near?: { lat: number; lng: number; radiusKm: number } | undefined;
+  near?:
+    | {
+        lat: number;
+        lng: number;
+        radiusKm: number;
+      }
+    | undefined;
   /** Events published by one organizer profile (public organizer page). */
   organizerProfileId?: string | undefined;
+  /** Several organizers at once (SOC-03 feed); an empty list returns no events. */
+  organizerProfileIds?: string[] | undefined;
+  /** Only these events (a member's bookings); an empty list returns no events. */
+  eventIds?: string[] | undefined;
 }
 
 /** DSC-01 filters as SQL conditions (pure, unit-tested). */
@@ -149,6 +161,14 @@ export async function listUpcomingPublicEvents(
   if (input.organizerProfileId) {
     conditions.push(eq(e.organizerProfileId, input.organizerProfileId));
   }
+  if (input.organizerProfileIds) {
+    if (input.organizerProfileIds.length === 0) return [];
+    conditions.push(inArray(e.organizerProfileId, input.organizerProfileIds));
+  }
+  if (input.eventIds) {
+    if (input.eventIds.length === 0) return [];
+    conditions.push(inArray(e.id, input.eventIds));
+  }
 
   const rows = await db
     .select({
@@ -165,7 +185,21 @@ export async function listUpcomingPublicEvents(
     .orderBy(asc(e.startsAt))
     .limit(input.limit);
 
-  return rows.map(({ event, category, templateName, organizer }) => ({
+  return rows.map((row) => toEventCard(row, locale));
+}
+
+type CardRow = {
+  event: typeof schema.events.$inferSelect;
+  category: typeof schema.categories.$inferSelect;
+  templateName: Record<Locale, string>;
+  organizer: typeof schema.organizerProfiles.$inferSelect | null;
+};
+
+function toEventCard(
+  { event, category, templateName, organizer }: CardRow,
+  locale: Locale,
+): EventCardDto {
+  return {
     id: event.id,
     slug: event.slug,
     title: event.title,
@@ -188,7 +222,40 @@ export async function listUpcomingPublicEvents(
     organizer: organizer
       ? { name: organizer.name, slug: organizer.slug, verified: organizer.verifiedAt !== null }
       : null,
-  }));
+  };
+}
+
+/** Past public events of an organizer, latest first ("what they organized"). */
+export async function listPastPublicEvents(
+  db: Db,
+  locale: Locale,
+  input: { organizerProfileId: string; limit: number },
+  now = new Date(),
+): Promise<EventCardDto[]> {
+  const e = schema.events;
+  const rows = await db
+    .select({
+      event: e,
+      category: schema.categories,
+      templateName: schema.templates.name,
+      organizer: schema.organizerProfiles,
+    })
+    .from(e)
+    .innerJoin(schema.categories, eq(schema.categories.id, e.categoryId))
+    .innerJoin(schema.templates, eq(schema.templates.id, e.templateId))
+    .leftJoin(schema.organizerProfiles, eq(schema.organizerProfiles.id, e.organizerProfileId))
+    .where(
+      and(
+        eq(e.visibility, 'public'),
+        inArray(e.status, ['published', 'full', 'completed']),
+        isNull(e.deletedAt),
+        lte(e.startsAt, now),
+        eq(e.organizerProfileId, input.organizerProfileId),
+      ),
+    )
+    .orderBy(desc(e.startsAt))
+    .limit(input.limit);
+  return rows.map((row) => toEventCard(row, locale));
 }
 
 /** Public upcoming events for the sitemap (DSC-03 SEO). Private and unlisted events never appear. */

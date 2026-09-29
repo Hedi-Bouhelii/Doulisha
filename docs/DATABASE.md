@@ -49,8 +49,11 @@ pnpm --filter @doulisha/db exec drizzle-kit check   # CI: migrations consistent 
 - `0001_init.sql`: all MVP tables. drizzle-kit quotes custom column types, so `geography(Point, 4326)` was unquoted by hand in this file; do the same if a new migration adds a geography column.
 - `0002_event_audience.sql`: `events.audience` (`text[]`, "for whom" filter, DSC-02).
 - `0003_organizer_details.sql`: organizer contact phone and email, `payment_instructions` (D17 number, bank, RIB, account holder) and the `organizer_photos` gallery table.
+- `0006_report_messages.sql`: `report_target` gains `message` (TRS-03 reports on chat messages, ADR 0022).
+- `0005_event_chat.sql`: `conversations` (kind `organizer` with its `member_id`, or `group`; one per participant and event, one group per event), `messages` (1–2000 characters) and `conversation_reads` (unread counts), ADR 0021.
 - `0004_payment_review.sql`: `orders.locale` (language of the buyer's messages) and `payment_proofs.rejection_reason` (ADR 0018). D17 and transfer reservations use the existing `bookings.hold_expires_at` as their deadline.
 - Never run `drizzle-kit push` against production.
+- **Production migrates itself** (ADR 0020): the web build starts with `pnpm --filter @doulisha/db db:deploy`, which, on a Vercel production deployment only, applies the migrations and adds missing categories and templates (`ensureReferenceData`, also used by the seed). Keep migrations backward compatible: the new schema is live a few minutes before the new code.
 
 Stock changes (bookings, payments, cancellations) run in WebSocket `Pool` transactions that lock the event row first (ADR 0011). `pnpm --filter @doulisha/api test:integration` runs the 50-parallel-bookings test and the D17 reservation workflow (ADR 0018) against the branch in `.env.local`.
 

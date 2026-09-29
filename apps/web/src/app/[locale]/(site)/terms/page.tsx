@@ -13,6 +13,6 @@ export async function generateMetadata({
 }
 
 export default async function TermsPage({ params }: PageProps<'/[locale]/terms'>) {
-  await resolveLocale(params);
-  return <LegalPage kind="terms" />;
+  const locale = await resolveLocale(params);
+  return <LegalPage kind="terms" locale={locale} />;
 }

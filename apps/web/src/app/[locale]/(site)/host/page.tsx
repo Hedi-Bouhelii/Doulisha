@@ -3,6 +3,7 @@ import { PartyPopper } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
+import { GroupChatButton } from '@/components/doulisha/chat';
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { Button } from '@/components/ui/button';
 import { resolveLocale } from '@/i18n/locale';
@@ -56,12 +57,15 @@ export default async function HostPage({ params }: PageProps<'/[locale]/host'>) 
                   </p>
                 </div>
               </div>
-              {event.token ? (
-                <InviteLinkActions
-                  url={absoluteUrl(`/${locale}/invite/${event.token}`)}
-                  title={event.title}
-                />
-              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                <GroupChatButton eventId={event.id} />
+                {event.token ? (
+                  <InviteLinkActions
+                    url={absoluteUrl(`/${locale}/invite/${event.token}`)}
+                    title={event.title}
+                  />
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

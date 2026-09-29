@@ -4,6 +4,37 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Phase 4b, event wall and safety (2026-09-29)
+
+- **Event wall** (SOC-04, SOC-05) on public and unlisted events: posts with up to 4 photos, comments and reactions (👍 ❤️ 🔥 👏 😂); authors and organizers can delete. Visitors read it; members take part.
+- **Report** (TRS-03): events, posts, comments, members, organizers and chat messages, with a reason; stored for the moderation queue of Phase 5.
+- **Block** (TRS-03): from a post, comment, chat message or member page. You no longer see that person's posts, comments and messages, and they can no longer write to you. "Mon compte" lists blocked people.
+- **Member pages** (`/members/{id}`), linked from wall and chat names, and **privacy settings** in "Mon compte" (ACC-06): profile public or private; events attended visible to everyone or only to you.
+- Private events proven absent from listings, search, feed and sitemap (TRS-06).
+- No age restrictions beyond the minimum age an organizer states (OPEN_QUESTIONS Q28).
+- Posting a message or a wall post while an earlier load was still running no longer shows the old list.
+
+### Added: Phase 4a, following and chat (2026-09-29)
+
+- **Follow organizers** (SOC-01): Follow button and follower count on organizer pages, which now also list the events they organized.
+- **"Mon fil"** (`/feed`, SOC-03): upcoming events of the organizers you follow, and organizers to follow.
+- **Chat** (ADR 0021): "Poser une question à l'organisateur" on event pages opens a private conversation with the organizer's team (COM-05); private events get a group chat for the host and the guests going or maybe, guests without an account included (COM-06). "Messages" (`/messages`) lists every conversation with unread counts; a dot on the avatar and a count in the menu show new messages. Conversations update every few seconds while open.
+- Friend requests are postponed by founder decision (OPEN_QUESTIONS Q27).
+
+### Changed: production database (2026-09-29)
+
+- Production deployments apply the database migrations and add missing categories and templates by themselves (`db:deploy`, ADR 0020); the live site moves from the `dev` database to `production` (OPEN_QUESTIONS Q26).
+- `ADMIN_EMAILS` gives the admin role to those verified addresses when they sign in.
+
+### Added: social sign-in and sharing (2026-09-29)
+
+- **Google and Facebook sign-in and sign-up** (ADR 0019). New accounts finish setup without a password (city, participant or organizer). Facebook accounts without an email get a placeholder address.
+- **"Mon compte → Moyens de connexion"** (`/account`, in the avatar menu): phone, email, password (with "Add"), and Google / Facebook to connect or remove. The last way to sign in can never be removed.
+- **Safer linking:** Google or Facebook never attaches itself to an existing account because the email matches; the person connects it from "Mon compte" while signed in, and a clear message explains this at sign-in.
+- **Story sharing:** on phones, "Share" under the story, post or invitation image opens the share sheet with the image and the tracked link (Instagram Stories, TikTok, WhatsApp…). On computers the image downloads and the link is copied.
+- **Draft Privacy, Terms and data deletion pages** in French, Arabic and English, naming Doulisha and bouhelii.hedi@gmail.com as the contact; `/data-deletion` is new and linked from the footer.
+- `docs/SOCIAL_SIGN_IN_SETUP.md`: the founder's step-by-step guide for the Google and Facebook apps.
+
 ### Fixed: Vercel build (2026-09-29)
 
 - The Vercel build failed with "Invalid environment variables": Turborepo's strict mode hid the project variables from `next build`. They are now declared in `turbo.json`.

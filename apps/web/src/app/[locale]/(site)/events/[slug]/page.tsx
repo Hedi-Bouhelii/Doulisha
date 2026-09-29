@@ -20,9 +20,12 @@ import { cache, type ReactNode } from 'react';
 import { accentOf, CategoryIcon } from '@/components/doulisha/category-icon';
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { FriendsGoing } from '@/components/doulisha/friends-going';
+import { AskOrganizerButton } from '@/components/doulisha/chat';
+import { EventWall } from '@/components/doulisha/event-wall';
 import { OrganizerCard } from '@/components/doulisha/organizer-card';
 import { PlacesLeft } from '@/components/doulisha/places-left';
 import { PriceTag } from '@/components/doulisha/price-tag';
+import { ReportButton } from '@/components/doulisha/safety';
 import { ShareBar } from '@/components/doulisha/share-bar';
 import { StickyCTA } from '@/components/doulisha/sticky-cta';
 import { Button } from '@/components/ui/button';
@@ -30,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from '@/i18n/navigation';
 import { absoluteUrl, jsonLdScript, siteUrl } from '@/lib/site';
 import { cn } from '@/lib/utils';
+import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 import { resolveLocale } from '@/i18n/locale';
 
@@ -116,6 +120,16 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
   const locale = await resolveLocale(params);
   const { slug } = await params;
   const event = await loadEvent(slug);
+  const session = await getSession();
+  const signedIn = Boolean(session && !session.user.isAnonymous);
+  // COM-05: participants reach the organizer here instead of hunting for their social pages.
+  const ask = event.canManage ? null : (
+    <AskOrganizerButton
+      eventId={event.id}
+      eventPath={`/events/${event.slug}`}
+      signedIn={signedIn}
+    />
+  );
   const t = await getTranslations('Event');
   const tLang = await getTranslations('Languages');
   const tShare = await getTranslations('Share');
@@ -322,6 +336,7 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
 
             <TabsContent value="organizer" className="mt-4">
               {event.organizer ? <OrganizerCard organizer={event.organizer} /> : null}
+              {ask ? <div className="mt-4">{ask}</div> : null}
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-4">
@@ -339,6 +354,21 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               imageBase={shareImage(event.slug, locale)}
             />
           </div>
+
+          {/* SOC-04: questions, news and photos about the event. */}
+          <div className="mt-8 border-t border-border pt-6">
+            <EventWall
+              eventId={event.id}
+              viewerId={signedIn ? session!.user.id : null}
+              signInPath={`/events/${event.slug}`}
+            />
+          </div>
+
+          {signedIn && !event.canManage ? (
+            <div className="mt-6 flex justify-end">
+              <ReportButton target={{ type: 'event', id: event.id }} />
+            </div>
+          ) : null}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -370,6 +400,7 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               )
             }
           />
+          {ask ? <div className="mt-3 hidden lg:block">{ask}</div> : null}
         </aside>
       </div>
     </article>

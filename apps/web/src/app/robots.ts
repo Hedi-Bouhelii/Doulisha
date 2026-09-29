@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
         '/*/invite',
         '/*/admin',
         '/*/sign-in',
+        '/*/account',
         '/*/dev',
         '/*/events/*/book',
       ],

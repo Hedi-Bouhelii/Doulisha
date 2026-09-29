@@ -1,7 +1,7 @@
 'use client';
 
 import { authClient } from '@doulisha/auth/client';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState, type FormEvent } from 'react';
 
 import {
@@ -16,31 +16,44 @@ import {
   parseIdentifier,
   type Method,
 } from '@/components/auth/auth-parts';
+import {
+  SocialButtons,
+  socialErrorKey,
+  type SocialProvider,
+} from '@/components/auth/social-buttons';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
 
 /**
- * ACC-01 sign-up (ADR 0016): what you mainly do, then a phone or email code.
- * The name, city and password come right after, on /account/setup.
+ * ACC-01 sign-up (ADR 0016, ADR 0019): what you mainly do, then a phone or
+ * email code, or Google / Facebook. The name, city and (for codes) password
+ * come right after, on /account/setup.
  */
 export function SignUpForm({
   next,
   initialType,
+  socialProviders,
+  socialError,
   showDevOutbox,
 }: {
   next: string;
   initialType: AccountType;
+  socialProviders: SocialProvider[];
+  /** `?error=` from a failed Google or Facebook sign-up. */
+  socialError?: string;
   showDevOutbox: boolean;
 }) {
   const t = useTranslations('Auth');
   const tErrors = useTranslations('Errors');
   const router = useRouter();
+  const locale = useLocale();
   const [type, setType] = useState<AccountType>(initialType);
   const [method, setMethod] = useState<Method>('phone');
   const [identifier, setIdentifier] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [code, setCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const socialKey = socialErrorKey(socialError);
+  const [error, setError] = useState<string | null>(socialKey ? tErrors(socialKey) : null);
   const [busy, setBusy] = useState(false);
 
   async function sendCode(event?: FormEvent) {
@@ -73,6 +86,23 @@ export function SignUpForm({
     const search = new URLSearchParams({ type, next });
     router.push(`/account/setup?${search.toString()}`);
     router.refresh();
+  }
+
+  /** Google or Facebook: new accounts go to setup with the chosen type (ADR 0019). */
+  async function social(provider: SocialProvider) {
+    setBusy(true);
+    setError(null);
+    const nextParam = encodeURIComponent(next);
+    const { error: failure } = await authClient.signIn.social({
+      provider,
+      callbackURL: `/${locale}${next === '/' ? '' : next}`,
+      newUserCallbackURL: `/${locale}/account/setup?welcome=1&type=${type}&next=${nextParam}`,
+      errorCallbackURL: `/${locale}/sign-up?type=${type}&next=${nextParam}`,
+    });
+    if (failure) {
+      setBusy(false);
+      setError(tErrors('socialFailed'));
+    }
   }
 
   if (sentTo) {
@@ -139,6 +169,11 @@ export function SignUpForm({
         {t('sendCode')}
       </Button>
       <p className="text-center text-xs text-muted-foreground">{t('codeExplainer')}</p>
+      <SocialButtons
+        providers={socialProviders}
+        disabled={busy}
+        onSelect={(provider) => void social(provider)}
+      />
       <DevOutboxNote show={showDevOutbox} />
     </form>
   );

@@ -23,6 +23,7 @@ export function getAuth(): Auth {
     email: mockEmailSender,
     social: configuredSocialProviders(env),
     rateLimit: env.NODE_ENV === 'production',
+    adminEmails: env.ADMIN_EMAILS?.split(',') ?? [],
   });
   return auth;
 }

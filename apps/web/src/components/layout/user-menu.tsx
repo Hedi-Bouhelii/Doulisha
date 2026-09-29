@@ -1,7 +1,16 @@
 'use client';
 
 import { authClient } from '@doulisha/auth/client';
-import { CalendarPlus, LayoutDashboard, LogOut, PartyPopper, type LucideIcon } from 'lucide-react';
+import {
+  CalendarPlus,
+  LayoutDashboard,
+  LogOut,
+  MessagesSquare,
+  PartyPopper,
+  Rss,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { initials } from '@/components/doulisha/friends-going';
@@ -17,6 +26,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Link, useRouter } from '@/i18n/navigation';
 
+import { CountBadge } from './count-badge';
+
 export interface MenuUser {
   name: string;
   image: string | null;
@@ -24,6 +35,9 @@ export interface MenuUser {
 }
 
 const icons: Record<string, LucideIcon> = {
+  '/account': UserRound,
+  '/feed': Rss,
+  '/messages': MessagesSquare,
   '/organizer': CalendarPlus,
   '/host': PartyPopper,
   '/admin': LayoutDashboard,
@@ -35,8 +49,9 @@ export function UserMenu({
   links = [],
 }: {
   user: MenuUser | null;
-  links?: { href: string; label: string }[];
+  links?: { href: string; label: string; badge?: number }[];
 }) {
+  const unread = links.reduce((sum, link) => sum + (link.badge ?? 0), 0);
   const t = useTranslations('Nav');
   const router = useRouter();
 
@@ -73,7 +88,7 @@ export function UserMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 rounded-full"
+          className="relative size-11 rounded-full"
           aria-label={t('account')}
           data-testid="user-menu"
         >
@@ -83,6 +98,12 @@ export function UserMenu({
               {initials(user.name)}
             </AvatarFallback>
           </Avatar>
+          {unread > 0 ? (
+            <span
+              className="absolute end-1 top-1 size-3 rounded-full border-2 border-background bg-highlight"
+              data-testid="unread-dot"
+            />
+          ) : null}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
@@ -95,6 +116,7 @@ export function UserMenu({
               <Link href={link.href}>
                 <Icon />
                 {link.label}
+                <CountBadge count={link.badge} testId={`menu-badge-${link.href.slice(1)}`} />
               </Link>
             </DropdownMenuItem>
           );

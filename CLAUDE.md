@@ -54,7 +54,7 @@ pnpm --filter @doulisha/web <script>     # run a script in one package
   - `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, for migrations) are in the root `.env.local`, written by `neon link`. The database is `Doulisha`, not `neondb`.
   - The `neon` CLI is installed and logged in. Neon agent skills are in `.claude/skills/`: use them for Neon questions.
   - Auth is **self-managed Better Auth**, not Neon Managed Auth (OPEN_QUESTIONS Q10). Details in ADR 0010.
-  - Local work uses the Neon `dev` branch. Never migrate or seed `production` by hand.
+  - Local work uses the Neon `dev` branch. Never migrate or seed `production` by hand: production deployments migrate themselves (`db:deploy`, ADR 0020).
 - **RTL:** use logical properties only (`ms-`, `pe-`, `start-`, `end-`, never `ml-`, `pr-`, `left-`). Mirror directional icons. Test every screen in Arabic.
 - **Arabic copy:** mark any Arabic or Tunisian wording you are unsure of with `// TODO(i18n-review)`.
 - **Development mocks:** SMS, payments and email always use mocks in development. Never hard-code credentials.

@@ -23,7 +23,9 @@
         "FACEBOOK_CLIENT_SECRET",
         "APPLE_CLIENT_ID",
         "APPLE_CLIENT_SECRET",
-        "SKIP_ENV_VALIDATION"
+        "ADMIN_EMAILS",
+        "SKIP_ENV_VALIDATION",
+        "VERCEL_ENV"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
