@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 
+import { CountBadge } from './count-badge';
 import { LocaleSwitcher } from './locale-switcher';
 import { MobileNav } from './mobile-nav';
 import { ThemeToggle } from './theme-toggle';
@@ -23,15 +24,20 @@ export async function SiteHeader() {
       ? { name: me.name, image: me.image, isAdmin: me.roles.includes('admin') }
       : null;
 
-  const links = [
+  // Unread chat messages (ADR 0021), for members and for guests in a private event's chat.
+  const unread = me ? await (await api()).chat.unread() : 0;
+  const links: { href: string; label: string; badge?: number }[] = [
     { href: '/', label: t('home') },
     { href: '/explore', label: t('explore') },
     // Visitors have no tickets; guests who booked on this device do.
     ...(me ? [{ href: '/tickets', label: t('myTickets') }] : []),
+    ...(me && !user ? [{ href: '/messages', label: t('messages'), badge: unread }] : []),
   ];
   // Member spaces: in the account menu on large screens, in the menu sheet on phones.
   const spaces = user
     ? [
+        { href: '/feed', label: t('feed') },
+        { href: '/messages', label: t('messages'), badge: unread },
         { href: '/account', label: t('account') },
         { href: '/organizer', label: t('organizer') },
         { href: '/host', label: t('host') },
@@ -53,9 +59,10 @@ export async function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+              className="flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
             >
               {link.label}
+              <CountBadge count={link.badge} />
             </Link>
           ))}
         </nav>

@@ -22,7 +22,9 @@
     "organizer": "Organizer space",
     "host": "Invite friends",
     "createEvent": "Create an event",
-    "signUp": "Create account"
+    "signUp": "Create account",
+    "feed": "My feed",
+    "messages": "Messages"
   },
   "Home": {
     "heroLine1": "Discover",
@@ -251,7 +253,11 @@
     "socialLinkedElsewhere": "This Google or Facebook account is already connected to another Doulisha account.",
     "socialCancelled": "Sign-in cancelled.",
     "socialFailed": "Sign-in did not work. Try again or use a code.",
-    "lastSignInMethod": "You cannot remove your last way to sign in."
+    "lastSignInMethod": "You cannot remove your last way to sign in.",
+    "chatOwnEvent": "This is your event: participants write to you from its page.",
+    "messageLength": "A message must be between 1 and 2000 characters.",
+    "tooManyMessages": "Too many messages at once. Please wait a minute.",
+    "cannotFollowSelf": "You cannot follow your own profile."
   },
   "Dev": {
     "outboxTitle": "Dev outbox",
@@ -800,7 +806,8 @@
     "publicPage": "Public page",
     "onboardingTitle": "Your organizer profile",
     "onboardingHint": "Three short steps. We filled in what we already know; you can change everything later.",
-    "upcoming": "Upcoming events"
+    "upcoming": "Upcoming events",
+    "past": "{count, plural, one {Past event} other {Past events}}"
   },
   "NewEvent": {
     "publicTitle": "A public event",
@@ -911,5 +918,42 @@
     "removeHint": "You will no longer be able to sign in with {provider}. You can connect it again later.",
     "lastMethodHint": "This is your only way to sign in: add a password or connect another account before removing it.",
     "linked": "{provider} is now connected to your account."
+  },
+  "Chat": {
+    "askOrganizer": "Ask the organizer",
+    "groupChat": "Group chat",
+    "loading": "Loading the conversation…",
+    "retry": "Try again",
+    "emptyAsk": "Ask your question: the organizer answers here.",
+    "emptyOrganizer": "No messages yet.",
+    "emptyGroup": "Say hello and share the details with the guests.",
+    "organizerBadge": "Organizer",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "inboxTitle": "Messages",
+    "inboxIntro": "Your conversations with organizers and the chats of your invitations.",
+    "inboxEmpty": "No conversations",
+    "inboxEmptyHint": "On an event page, “Ask the organizer” starts a conversation.",
+    "groupOf": "Guests’ chat · {event}",
+    "about": "About {event}",
+    "noMessagesYet": "No messages yet",
+    "privateHint": "Only you and the organizer’s team see this conversation."
+  },
+  "Follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "followers": "{count, plural, =0 {No followers} one {# follower} other {# followers}}"
+  },
+  "Feed": {
+    "title": "My feed",
+    "intro": "Upcoming events from the organizers you follow.",
+    "following": "{count, plural, one {You follow # organizer} other {You follow # organizers}}",
+    "upcoming": "Upcoming",
+    "emptyNoFollows": "You don’t follow anyone yet",
+    "emptyNoEvents": "No upcoming events for now",
+    "emptyHint": "Follow organizers from their page or from the suggestions below.",
+    "explore": "Explore events",
+    "suggestions": "Organizers to follow",
+    "upcomingCount": "{count, plural, one {# upcoming event} other {# upcoming events}}"
   }
 }

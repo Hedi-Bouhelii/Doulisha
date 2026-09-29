@@ -22,7 +22,9 @@
     "organizer": "Espace organisateur",
     "host": "Inviter des amis",
     "createEvent": "Créer un événement",
-    "signUp": "Créer un compte"
+    "signUp": "Créer un compte",
+    "feed": "Mon fil",
+    "messages": "Messages"
   },
   "Home": {
     "heroLine1": "Découvrir",
@@ -251,7 +253,11 @@
     "socialLinkedElsewhere": "Ce compte Google ou Facebook est déjà relié à un autre compte Doulisha.",
     "socialCancelled": "Connexion annulée.",
     "socialFailed": "La connexion n’a pas abouti. Réessayez ou utilisez un code.",
-    "lastSignInMethod": "Impossible de retirer votre dernier moyen de connexion."
+    "lastSignInMethod": "Impossible de retirer votre dernier moyen de connexion.",
+    "chatOwnEvent": "C’est votre événement : les participants vous écrivent depuis sa page.",
+    "messageLength": "Le message doit faire entre 1 et 2000 caractères.",
+    "tooManyMessages": "Trop de messages d’un coup. Patientez une minute.",
+    "cannotFollowSelf": "Vous ne pouvez pas suivre votre propre profil."
   },
   "Dev": {
     "outboxTitle": "Boîte d’envoi (développement)",
@@ -800,7 +806,8 @@
     "publicPage": "Page publique",
     "onboardingTitle": "Votre profil organisateur",
     "onboardingHint": "Trois étapes courtes. Nous avons rempli ce que nous savons déjà ; tout reste modifiable.",
-    "upcoming": "Événements à venir"
+    "upcoming": "Événements à venir",
+    "past": "{count, plural, one {Événement organisé} other {Événements organisés}}"
   },
   "NewEvent": {
     "publicTitle": "Un événement public",
@@ -911,5 +918,42 @@
     "removeHint": "Vous ne pourrez plus vous connecter avec {provider}. Vous pourrez le relier à nouveau plus tard.",
     "lastMethodHint": "C’est votre seul moyen de connexion : ajoutez un mot de passe ou reliez un autre compte avant de le retirer.",
     "linked": "{provider} est relié à votre compte."
+  },
+  "Chat": {
+    "askOrganizer": "Poser une question à l’organisateur",
+    "groupChat": "Discussion du groupe",
+    "loading": "Chargement de la discussion…",
+    "retry": "Réessayer",
+    "emptyAsk": "Posez votre question : l’organisateur vous répond ici.",
+    "emptyOrganizer": "Aucun message pour l’instant.",
+    "emptyGroup": "Dites bonjour et partagez les détails avec les invités.",
+    "organizerBadge": "Organisateur",
+    "placeholder": "Écrire un message…",
+    "send": "Envoyer",
+    "inboxTitle": "Messages",
+    "inboxIntro": "Vos échanges avec les organisateurs et les discussions de vos invitations.",
+    "inboxEmpty": "Aucune discussion",
+    "inboxEmptyHint": "Sur la page d’un événement, « Poser une question à l’organisateur » ouvre une discussion.",
+    "groupOf": "Discussion des invités · {event}",
+    "about": "À propos de {event}",
+    "noMessagesYet": "Pas encore de message",
+    "privateHint": "Seuls vous et l’équipe de l’organisateur voyez cette discussion."
+  },
+  "Follow": {
+    "follow": "Suivre",
+    "following": "Suivi",
+    "followers": "{count, plural, =0 {Aucun abonné} one {# abonné} other {# abonnés}}"
+  },
+  "Feed": {
+    "title": "Mon fil",
+    "intro": "Les prochains événements des organisateurs que vous suivez.",
+    "following": "{count, plural, one {Vous suivez # organisateur} other {Vous suivez # organisateurs}}",
+    "upcoming": "À venir",
+    "emptyNoFollows": "Vous ne suivez encore personne",
+    "emptyNoEvents": "Pas d’événement à venir pour l’instant",
+    "emptyHint": "Suivez des organisateurs depuis leur page ou les suggestions ci-dessous.",
+    "explore": "Explorer les événements",
+    "suggestions": "Organisateurs à suivre",
+    "upcomingCount": "{count, plural, one {# événement à venir} other {# événements à venir}}"
   }
 }

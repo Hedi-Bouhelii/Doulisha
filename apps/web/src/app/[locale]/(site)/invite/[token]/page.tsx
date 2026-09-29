@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
+import { GroupChatButton } from '@/components/doulisha/chat';
 import { FriendsGoing } from '@/components/doulisha/friends-going';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
@@ -118,6 +119,16 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
           />
         )}
       </div>
+
+      {/* COM-06: hosts and guests who answered going or maybe share one chat. */}
+      {!cancelled &&
+      (invitation.isHost ||
+        invitation.myRsvp?.status === 'going' ||
+        invitation.myRsvp?.status === 'maybe') ? (
+        <div className="mt-6 flex justify-center">
+          <GroupChatButton eventId={invitation.eventId} />
+        </div>
+      ) : null}
 
       <section aria-labelledby="guests-title" className="mt-8">
         <h2 id="guests-title" className="mb-3 font-sans text-lg font-semibold">
