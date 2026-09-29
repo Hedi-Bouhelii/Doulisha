@@ -1,10 +1,9 @@
 import type { Executor } from '@doulisha/db';
 import { schema } from '@doulisha/db';
+import { isPlaceholderEmail } from '@doulisha/validators';
 import { and, asc, eq, isNotNull } from 'drizzle-orm';
 
 import type { BuyerNotice, ServiceDeps } from '../deps';
-
-const PLACEHOLDER_EMAIL = /@(phone|guest)\.doulisha\.invalid$/;
 
 /**
  * Where to reach the buyer of an order: the phone or email they gave for
@@ -39,8 +38,7 @@ export async function buyerContact(db: Executor, orderId: string) {
     to: {
       phone: self?.phone ?? row.userPhone ?? null,
       email:
-        self?.email ??
-        (row.userEmail && !PLACEHOLDER_EMAIL.test(row.userEmail) ? row.userEmail : null),
+        self?.email ?? (row.userEmail && !isPlaceholderEmail(row.userEmail) ? row.userEmail : null),
     },
   };
 }

@@ -2,7 +2,7 @@ import { grantRole } from '@doulisha/auth';
 import type { Db, Executor } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
-import type { organizerProfileInputSchema } from '@doulisha/validators';
+import { isPlaceholderEmail, type organizerProfileInputSchema } from '@doulisha/validators';
 import { and, asc, count, eq, isNull } from 'drizzle-orm';
 import type { z } from 'zod';
 
@@ -18,8 +18,6 @@ type Storage = Pick<ServiceDeps, 'storage'>;
 
 /** Past-event photos per organizer (founder decision, OPEN_QUESTIONS Q21). */
 export const MAX_ORGANIZER_PHOTOS = 12;
-
-const PLACEHOLDER_EMAIL = /@(phone|guest)\.doulisha\.invalid$/;
 
 /** Organizer profiles the actor owns (ACC-03). */
 export function listOwnProfiles(db: Executor, actor: Actor) {
@@ -155,7 +153,7 @@ export async function ensureProfileFromAccount(db: Executor, actor: Actor) {
       legalStatus: 'independent',
       regions: user.city ? [user.city] : [],
       contactPhone: user.phoneNumber,
-      contactEmail: PLACEHOLDER_EMAIL.test(user.email) ? null : user.email,
+      contactEmail: isPlaceholderEmail(user.email) ? null : user.email,
     })
     .returning();
   await grantRole(db, actor.userId, 'organizer');

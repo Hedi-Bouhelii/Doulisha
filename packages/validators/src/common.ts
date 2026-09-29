@@ -37,3 +37,12 @@ export const paginationSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
   cursor: z.string().nullish(),
 });
+
+/**
+ * Accounts without a real email get a placeholder at a `*.doulisha.invalid`
+ * domain (phone-only accounts, guests, Facebook accounts without an email).
+ * The `.invalid` top-level domain can never receive mail.
+ */
+export function isPlaceholderEmail(email: string): boolean {
+  return /@[a-z]+\.doulisha\.invalid$/i.test(email);
+}
