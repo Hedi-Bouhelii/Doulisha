@@ -46,6 +46,8 @@ export const notificationChannel = pgEnum('notification_channel', ['push', 'emai
 // --- Social ---------------------------------------------------------------
 export const friendshipStatus = pgEnum('friendship_status', ['pending', 'accepted', 'declined']);
 export const followTarget = pgEnum('follow_target', ['user', 'organizer', 'provider']);
+/** COM-05 a participant and an event's organizers; COM-06 a private event's group chat. */
+export const conversationKind = pgEnum('conversation_kind', ['organizer', 'group']);
 export const reactionTarget = pgEnum('reaction_target', ['post', 'comment', 'media']);
 export const reactionKind = pgEnum('reaction_kind', ['like', 'love', 'fire', 'clap', 'haha']);
 export const mediaKind = pgEnum('media_kind', ['image', 'video', 'document', 'gpx']);
