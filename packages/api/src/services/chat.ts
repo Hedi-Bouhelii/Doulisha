@@ -13,6 +13,7 @@ import {
 } from '../domain/chat-access';
 import { AppError } from '../errors';
 import { canManageEvent, type Actor } from '../permissions';
+import { blockedEitherWay, blockedIds, isBlockedBy } from './blocks';
 
 const c = schema.conversations;
 const m = schema.messages;
@@ -56,6 +57,10 @@ async function hasGroupRsvp(db: Executor, eventId: string, userId: string) {
   return Boolean(row);
 }
 
+function organizerIds(event: ChatEvent) {
+  return [event.creatorId, event.organizerOwnerId].filter((id): id is string => Boolean(id));
+}
+
 function managesEvent(actor: Actor, event: ChatEvent) {
   return canManageEvent(actor, {
     creatorId: event.creatorId,
@@ -91,6 +96,9 @@ export async function openOrganizerThread(db: Executor, actor: Actor, eventId: s
     throw new AppError('NOT_FOUND', 'errors.notFound');
   }
   if (managesEvent(actor, event)) throw new AppError('BAD_REQUEST', 'errors.chatOwnEvent');
+  if (await isBlockedBy(db, organizerIds(event), actor.userId)) {
+    throw new AppError('FORBIDDEN', 'errors.cannotMessage');
+  }
   return {
     conversationId: await findOrCreate(db, { eventId, kind: 'organizer', memberId: actor.userId }),
   };
@@ -110,7 +118,8 @@ export async function openGroupChat(db: Executor, actor: Actor, eventId: string)
   return { conversationId: await findOrCreate(db, { eventId, kind: 'group', memberId: null }) };
 }
 
-async function requireAccess(db: Executor, actor: Actor, conversationId: string) {
+/** The conversation, its event and the actor's role; "not found" without access. */
+export async function requireAccess(db: Executor, actor: Actor, conversationId: string) {
   const [conversation] = await db.select().from(c).where(eq(c.id, conversationId));
   if (!conversation) throw new AppError('NOT_FOUND', 'errors.notFound');
   const event = await loadEvent(db, conversation.eventId);
@@ -147,6 +156,7 @@ export async function getThread(
   now = new Date(),
 ) {
   const { conversation, event, role } = await requireAccess(db, actor, conversationId);
+  const hidden = await blockedIds(db, actor.userId);
   const rows = await db
     .select({
       id: m.id,
@@ -154,6 +164,7 @@ export async function getThread(
       createdAt: m.createdAt,
       senderId: m.senderId,
       senderName: schema.users.name,
+      senderIsGuest: schema.users.isAnonymous,
       guestName: schema.rsvps.guestName,
     })
     .from(m)
@@ -187,14 +198,21 @@ export async function getThread(
     role,
     title,
     event: { id: event.id, title: event.title, slug: event.slug, startsAt: event.startsAt },
-    messages: rows.reverse().map((row) => ({
-      id: row.id,
-      body: row.body,
-      createdAt: row.createdAt,
-      mine: row.senderId === actor.userId,
-      fromOrganizer: organizers.has(row.senderId),
-      senderName: row.guestName ?? row.senderName,
-    })),
+    // Messages of people the viewer blocked are left out (TRS-03).
+    messages: rows
+      .reverse()
+      .filter((row) => !hidden.has(row.senderId))
+      .map((row) => ({
+        id: row.id,
+        body: row.body,
+        createdAt: row.createdAt,
+        mine: row.senderId === actor.userId,
+        senderId: row.senderId,
+        /** Guests without an account have no profile page. */
+        senderIsGuest: row.senderIsGuest,
+        fromOrganizer: organizers.has(row.senderId),
+        senderName: row.guestName ?? row.senderName,
+      })),
   };
 }
 
@@ -210,7 +228,15 @@ export async function sendMessage(
   if (!text || text.length > MESSAGE_MAX_LENGTH) {
     throw new AppError('BAD_REQUEST', 'errors.messageLength');
   }
-  await requireAccess(db, actor, conversationId);
+  const { conversation, event, role } = await requireAccess(db, actor, conversationId);
+  if (conversation.kind === 'organizer') {
+    const others = role === 'member' ? organizerIds(event) : [conversation.memberId!];
+    for (const other of others) {
+      if (other !== actor.userId && (await blockedEitherWay(db, actor.userId, other))) {
+        throw new AppError('FORBIDDEN', 'errors.cannotMessage');
+      }
+    }
+  }
   const [recent] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(m)
@@ -239,7 +265,7 @@ function inboxCondition(actor: Actor): SQL {
 }
 
 function unreadCount(actor: Actor) {
-  return sql<number>`(select count(*)::int from ${m} where ${m.conversationId} = ${c.id} and ${m.senderId} <> ${actor.userId} and ${m.createdAt} > coalesce((select ${schema.conversationReads.lastReadAt} from ${schema.conversationReads} where ${schema.conversationReads.conversationId} = ${c.id} and ${schema.conversationReads.userId} = ${actor.userId}), 'epoch'::timestamptz))`;
+  return sql<number>`(select count(*)::int from ${m} where ${m.conversationId} = ${c.id} and ${m.senderId} <> ${actor.userId} and ${m.senderId} not in (select ${schema.blocks.blockedId} from ${schema.blocks} where ${schema.blocks.blockerId} = ${actor.userId}) and ${m.createdAt} > coalesce((select ${schema.conversationReads.lastReadAt} from ${schema.conversationReads} where ${schema.conversationReads.conversationId} = ${c.id} and ${schema.conversationReads.userId} = ${actor.userId}), 'epoch'::timestamptz))`;
 }
 
 /** "Messages": every conversation of the actor, latest first, with unread counts. */

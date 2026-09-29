@@ -11,6 +11,9 @@ import { catalogRouter } from './routers/catalog';
 import { eventsRouter } from './routers/events';
 import { healthRouter } from './routers/health';
 import { meRouter } from './routers/me';
+import { membersRouter } from './routers/members';
+import { safetyRouter } from './routers/safety';
+import { wallRouter } from './routers/wall';
 import { createCallerFactory, router } from './trpc';
 
 /** Every router of the Doulisha API (listed in docs/API.md). */
@@ -26,6 +29,9 @@ export const appRouter = router({
   organizers: organizersRouter,
   invitations: invitationsRouter,
   chat: chatRouter,
+  wall: wallRouter,
+  safety: safetyRouter,
+  members: membersRouter,
   uploads: uploadsRouter,
   admin: adminRouter,
 });

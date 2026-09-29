@@ -46,7 +46,7 @@ export function publicUrlFromKey(
   deps: Pick<ServiceDeps, 'storage'>,
   actor: Actor,
   key: string,
-  purpose: 'event-cover' | 'organizer-logo' | 'organizer-cover' | 'organizer-photo',
+  purpose: 'event-cover' | 'organizer-logo' | 'organizer-cover' | 'organizer-photo' | 'post-photo',
 ): string {
   if (!keyBelongsTo(key, purpose, actor.userId)) {
     throw new AppError('FORBIDDEN', 'errors.forbidden');

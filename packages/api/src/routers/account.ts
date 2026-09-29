@@ -9,6 +9,7 @@ import {
   signInMethods,
   unlinkProvider,
 } from '../services/account';
+import { getPrivacy, updatePrivacy } from '../services/members';
 import { ensureProfileFromAccount } from '../services/organizers';
 import { protectedProcedure, router } from '../trpc';
 
@@ -50,6 +51,18 @@ export const accountRouter = router({
   unlinkProvider: protectedProcedure
     .input(z.object({ providerId: z.enum(SOCIAL_PROVIDERS) }))
     .mutation(({ ctx, input }) => unlinkProvider(ctx.db, ctx.actor, input.providerId)),
+
+  /** ACC-06: who sees the profile and the events the member attends. */
+  privacy: protectedProcedure.query(({ ctx }) => getPrivacy(ctx.db, ctx.actor)),
+
+  setPrivacy: protectedProcedure
+    .input(
+      z.object({
+        visibility: z.enum(['public', 'private']),
+        attendanceVisibility: z.enum(['public', 'private']),
+      }),
+    )
+    .mutation(({ ctx, input }) => updatePrivacy(ctx.db, ctx.actor, input)),
 
   /** "Become an organizer" from an existing account: a prefilled profile. */
   becomeOrganizer: protectedProcedure.mutation(async ({ ctx }) => {

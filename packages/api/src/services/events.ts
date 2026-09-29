@@ -85,6 +85,8 @@ export interface ListUpcomingInput {
   organizerProfileId?: string | undefined;
   /** Several organizers at once (SOC-03 feed); an empty list returns no events. */
   organizerProfileIds?: string[] | undefined;
+  /** Only these events (a member's bookings); an empty list returns no events. */
+  eventIds?: string[] | undefined;
 }
 
 /** DSC-01 filters as SQL conditions (pure, unit-tested). */
@@ -162,6 +164,10 @@ export async function listUpcomingPublicEvents(
   if (input.organizerProfileIds) {
     if (input.organizerProfileIds.length === 0) return [];
     conditions.push(inArray(e.organizerProfileId, input.organizerProfileIds));
+  }
+  if (input.eventIds) {
+    if (input.eventIds.length === 0) return [];
+    conditions.push(inArray(e.id, input.eventIds));
   }
 
   const rows = await db
