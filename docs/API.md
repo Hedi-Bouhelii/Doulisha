@@ -46,7 +46,7 @@ Access: **public** (anyone, guests included), **member** (`protectedProcedure`: 
 | `events.upcoming`    | query | public | Upcoming public events, soonest first. Input: `limit` (1–50), `categorySlug?`, `query?` (accent-insensitive), `city?`, `when?` (`today`, `tonight`, `weekend`, `week`, `month`, Tunisia time), `price?` (`free`, `paid`), `maxPriceMillimes?`, `audience?`, `available?`, `near?` (`lat`, `lng`, `radiusKm`). Never returns private, unlisted, draft, deleted or past events. |
 | `events.bySlug`      | query | public | One event page. Public and unlisted events only; private events and drafts return `NOT_FOUND` (TRS-06). Includes `bookingOpen`, `waitlistEnabled`, `canManage` for the viewer, and `facts`: the template details (distance, difficulty, line-up…) as labelled, formatted values.                                                                                              |
 | `events.sitemap`     | query | public | Slugs and update times of public upcoming events, for `sitemap.xml`.                                                                                                                                                                                                                                                                                                          |
-| `organizers.bySlug`  | query | public | Public organizer page (ACC-03): profile, contacts, social links, past-event photos and upcoming public events. Payment details are never returned.                                                                                                                                                                                                                            |
+| `organizers.bySlug`  | query | public | Public organizer page (ACC-03): profile, contacts, social links, past-event photos, upcoming and past public events (`pastEvents`), `followers`, and for the viewer `viewerFollows` and `viewerIsOwner`. Payment details are never returned.                                                                                                                                  |
 
 ### Account (ACC-01, ACC-05, ADR 0016)
 
@@ -116,6 +116,20 @@ Access: **public** (anyone, guests included), **member** (`protectedProcedure`: 
 | `invitations.hosted`      | query    | member  | The member's private events with their link tokens.                                                                                                                            |
 | `invitations.byToken`     | query    | public  | INV-02 invitation page. The guest list is returned only to the host and to guests who answered; dietary notes only to the host; a hidden address only to guests who are going. |
 | `invitations.respond`     | mutation | public  | INV-03 answer (going, maybe, not going, +1s, food notes). Guests without an account give a name.                                                                               |
+
+### Following and chat (SOC-01, SOC-03, COM-05, COM-06, ADR 0021)
+
+| Procedure                | Type     | Access  | Description                                                                                                                                                             |
+| ------------------------ | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organizers.follow`      | mutation | member  | Follow an organizer (`organizerProfileId`); refused for your own profile (`errors.cannotFollowSelf`).                                                                   |
+| `organizers.unfollow`    | mutation | member  | Stop following.                                                                                                                                                         |
+| `organizers.feed`        | query    | member  | "My feed": `following` (organizers), `events` (their upcoming public events) and `suggestions` (organizers to follow).                                                  |
+| `chat.openWithOrganizer` | mutation | member  | "Ask the organizer" of a public or unlisted event: returns the member's `conversationId` (created once). Refused to the event's own organizers (`errors.chatOwnEvent`). |
+| `chat.openGroup`         | mutation | session | The group chat of a private event, for hosts and guests going or maybe (guests without an account included).                                                            |
+| `chat.thread`            | query    | session | Title, event and the latest 100 messages, oldest first (`mine`, `fromOrganizer`, `senderName`); marks the conversation read. Polled every 5 s while open.               |
+| `chat.send`              | mutation | session | Sends 1–2000 characters; at most 20 messages a minute (`errors.tooManyMessages`).                                                                                       |
+| `chat.inbox`             | query    | session | Every conversation of the actor, latest first, with the last message and the unread count.                                                                              |
+| `chat.unread`            | query    | session | Unread messages in total (menu badge).                                                                                                                                  |
 
 ### Uploads and admin
 

@@ -202,3 +202,10 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** The founder deployed `main` to `https://doulisha.vercel.app` to get an `https` address for Google and Facebook. The Neon `production` branch has no tables yet: migrations were only ever applied to `dev`, and the project rule is never to migrate `production` by hand.
 - **Assumption:** For now the live site points at the `dev` database (demo data, E2E events, and accounts created on the live site all live there; `pnpm db:seed` would erase them). Before real users, the live site moves to `production`, with migrations applied automatically on each production deploy and no demo data.
 - **Decision (2026-09-29, founder):** Move the live site to `production`, migrated automatically on each production deploy, with categories and templates added and no demo data; the first admin comes from `ADMIN_EMAILS` (ADR 0020).
+
+### Q27. Friends and "friends going" (SOC-02)
+
+- **Asked:** 2026-09-29 (Phase 4 plan)
+- **Context:** The build prompt's Phase 4 starts with friend requests, a friends' feed and "friends going" on every event.
+- **Assumption:** —
+- **Decision (2026-09-29, founder):** No friend requests for now: they would rebuild Facebook without adding much; a community-based version may come later. Instead: follow organizers and see what they organized, a chat with the organizer from the event page, and a group chat for private events (ADR 0021). "Friends going" and finding friends from contacts wait with SOC-02.

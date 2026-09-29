@@ -4,6 +4,13 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Phase 4a, following and chat (2026-09-29)
+
+- **Follow organizers** (SOC-01): Follow button and follower count on organizer pages, which now also list the events they organized.
+- **"Mon fil"** (`/feed`, SOC-03): upcoming events of the organizers you follow, and organizers to follow.
+- **Chat** (ADR 0021): "Poser une question à l'organisateur" on event pages opens a private conversation with the organizer's team (COM-05); private events get a group chat for the host and the guests going or maybe, guests without an account included (COM-06). "Messages" (`/messages`) lists every conversation with unread counts; a dot on the avatar and a count in the menu show new messages. Conversations update every few seconds while open.
+- Friend requests are postponed by founder decision (OPEN_QUESTIONS Q27).
+
 ### Changed: production database (2026-09-29)
 
 - Production deployments apply the database migrations and add missing categories and templates by themselves (`db:deploy`, ADR 0020); the live site moves from the `dev` database to `production` (OPEN_QUESTIONS Q26).
