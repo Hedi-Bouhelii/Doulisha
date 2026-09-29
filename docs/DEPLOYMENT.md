@@ -1,6 +1,6 @@
 # Deployment
 
-> Status: Phase 2. Production deployment (Vercel) is set up in Phase 6; this page lists what exists so far.
+> Status: a test deployment runs on Vercel since 2026-09-29 (below). The production set-up (real providers, storage, production database) comes in Phase 6.
 
 ## Neon
 
@@ -19,6 +19,14 @@ Repository settings → Secrets and variables → Actions:
 | `BETTER_AUTH_SECRET_CI` | secret   | Any random 32+ character string (`openssl rand -base64 32`)     |
 
 With these set, `.github/workflows/ci.yml` creates a Neon branch per pull request, migrates and seeds it, and runs the Playwright suite; `neon-cleanup.yml` deletes the branch when the pull request closes. Without them, the E2E job is skipped and only lint, typecheck, tests, migration check and build run.
+
+## Current deployment (2026-09-29)
+
+- `main` deploys to `https://doulisha.vercel.app` (free Vercel plan). Every merge into `main` redeploys.
+- Variables set on Vercel: `NEXT_PUBLIC_APP_URL=https://doulisha.vercel.app`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH`, `BETTER_AUTH_SECRET`, and the Google and Facebook keys. `NEXT_PUBLIC_APP_URL` is baked in at build time: redeploy after changing it.
+- The live site uses the Neon `dev` database for now; `production` is still empty (OPEN_QUESTIONS Q26).
+- Google and Facebook sign-in (ADR 0019): the redirect addresses are `https://doulisha.vercel.app/api/auth/callback/google` and `…/callback/facebook`, never with a language prefix. How the founder set up both apps: [SOCIAL_SIGN_IN_SETUP.md](SOCIAL_SIGN_IN_SETUP.md).
+- Not working on the live site yet, by design until Phase 6: SMS and email codes (mock senders; the dev outbox returns 404 in production), uploads (local disk), and online card payment (mock page returns 404).
 
 ## Vercel (Phase 6)
 

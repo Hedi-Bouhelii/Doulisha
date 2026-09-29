@@ -50,12 +50,14 @@ Access: **public** (anyone, guests included), **member** (`protectedProcedure`: 
 
 ### Account (ACC-01, ACC-05, ADR 0016)
 
-| Procedure                 | Type     | Access | Description                                                                                                                         |
-| ------------------------- | -------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `account.status`          | query    | member | Whether the account still needs a name or a password (`needsSetup`), plus `hasPassword` and `isOrganizer`.                          |
-| `account.completeSignUp`  | mutation | member | Last sign-up step: name, city, password (unless one exists) and `accountType`. Organizers get a profile prefilled from the account. |
-| `account.setPassword`     | mutation | member | Adds a password to an account that has none.                                                                                        |
-| `account.becomeOrganizer` | mutation | member | Creates the prefilled organizer profile and grants the role ("Become an organizer").                                                |
+| Procedure                 | Type     | Access | Description                                                                                                                                                                |
+| ------------------------- | -------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account.status`          | query    | member | Whether the account still needs a name or a password (`needsSetup`; no password needed with Google or Facebook), plus `hasPassword`, `hasSocial` and `isOrganizer`.        |
+| `account.completeSignUp`  | mutation | member | Last sign-up step: name, city, password (unless one exists or a social account is connected) and `accountType`. Organizers get a profile prefilled from the account.       |
+| `account.setPassword`     | mutation | member | Adds a password to an account that has none.                                                                                                                               |
+| `account.signInMethods`   | query    | member | "My account" (ADR 0019): verified phone, real email (never a placeholder), `hasPassword`, and connected `providers` (`google`, `facebook`, `apple`) with their link date.  |
+| `account.unlinkProvider`  | mutation | member | Disconnects a social account. Refused with `errors.lastSignInMethod` when it is the last way to sign in. Connecting goes through Better Auth's `linkSocial` on the client. |
+| `account.becomeOrganizer` | mutation | member | Creates the prefilled organizer profile and grants the role ("Become an organizer").                                                                                       |
 
 ### Booking and tickets (TKT, PAY)
 

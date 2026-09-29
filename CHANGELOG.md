@@ -4,6 +4,15 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: social sign-in and sharing (2026-09-29)
+
+- **Google and Facebook sign-in and sign-up** (ADR 0019). New accounts finish setup without a password (city, participant or organizer). Facebook accounts without an email get a placeholder address.
+- **"Mon compte → Moyens de connexion"** (`/account`, in the avatar menu): phone, email, password (with "Add"), and Google / Facebook to connect or remove. The last way to sign in can never be removed.
+- **Safer linking:** Google or Facebook never attaches itself to an existing account because the email matches; the person connects it from "Mon compte" while signed in, and a clear message explains this at sign-in.
+- **Story sharing:** on phones, "Share" under the story, post or invitation image opens the share sheet with the image and the tracked link (Instagram Stories, TikTok, WhatsApp…). On computers the image downloads and the link is copied.
+- **Draft Privacy, Terms and data deletion pages** in French, Arabic and English, naming Doulisha and bouhelii.hedi@gmail.com as the contact; `/data-deletion` is new and linked from the footer.
+- `docs/SOCIAL_SIGN_IN_SETUP.md`: the founder's step-by-step guide for the Google and Facebook apps.
+
 ### Fixed: Vercel build (2026-09-29)
 
 - The Vercel build failed with "Invalid environment variables": Turborepo's strict mode hid the project variables from `next build`. They are now declared in `turbo.json`.
