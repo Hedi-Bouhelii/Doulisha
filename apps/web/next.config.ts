@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
     '@doulisha/db',
     '@doulisha/i18n',
     '@doulisha/notifications',
+    '@doulisha/payments',
+    '@doulisha/storage',
     '@doulisha/templates',
     '@doulisha/ui-tokens',
     '@doulisha/validators',

@@ -1,0 +1,22 @@
+{
+  "name": "@doulisha/storage",
+  "version": "0.0.0",
+  "private": true,
+  "description": "File storage: upload policies, signed uploads, local provider (dev) and R2 (Phase 6)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@doulisha/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -4,6 +4,72 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: manual payments and event setup (2026-09-28)
+
+- **D17 and transfer bookings are reservations (ADR 0018):** no QR code or PDF until the organizer confirms the payment. The buyer has 48 hours to pay (never later than 12 hours before the event; OPEN_QUESTIONS Q25); sending a receipt pauses the clock; unpaid reservations expire and their places go to the waitlist. Payment instructions ask the buyer to write their booking reference in the payment message.
+- **Payments inbox** for organizers (`/organizer/payments`, and a "Payments" tab on each event): receipts to verify shown inline with the expected amount, confirm with a transaction number, refuse with a reason the buyer sees (24 hours to send another), one more day, cancel a reservation. Badge in the navigation and a banner on the dashboard.
+- **Buyer messages** (SMS, or email without a phone) when a payment is confirmed, a receipt refused or a reservation cancelled, in the language of the booking.
+- **"Mark as paid" no longer bypasses a receipt:** it is refused while a receipt waits for review, and the attendee list shows "Verify the receipt" instead. Marking a D17 or transfer as paid asks for confirmation of the amount.
+- **Cash at the door:** scanning an unpaid cash ticket shows the amount to collect, with one button "Collected, check in".
+- **Guest PDF tickets** now download once, as soon as the ticket exists (also after the organizer confirms a D17 payment).
+- **Tickets step of the wizard:** a new event starts with one ticket; only the price is needed. Other options (kind, quantity, people per ticket) are folded away; free events show no ticket editor.
+- **Template details on the event page:** distance, difficulty, line-up and other template fields now appear in the "About" tab. The concert field "Programmation" is renamed "Artistes / line-up" with a hint. New script `pnpm db:sync-templates` updates existing template rows.
+- **Back office on phones:** the data explorer no longer overflows the screen; its table list scrolls sideways.
+- **Arabic wording:** "وصل" is used for every payment receipt (it mixed "وصل" and "إيصال"); the scanner button reads "تأكيد الدخول" instead of "تسجيل الدخول" (sign in).
+
+### Added: PDF tickets (2026-09-28)
+
+- Guests who book without an account get their ticket as a PDF, downloaded automatically after booking or paying: logo, event, date, place, pick-up point, holder, payment status and one QR code per person, in the interface language (Arabic included). Everyone can download it again from the ticket page (ADR 0017).
+- The share-image code is shared with the PDF (`server/og-kit.tsx`).
+- The checkout order summary no longer repeats its test id on phones and desktop.
+
+### Changed: Phase 2 founder review (2026-09-25)
+
+- **Accounts (ADR 0016):**
+  - Separate sign-up and sign-in. Sign-up: participant or organizer, then a phone or email code, then name, city and password.
+  - Sign-in with phone or email and password; "Receive a code instead" as a fallback; forgot-password by code.
+  - Email codes replace magic links.
+  - A guest who booked and then signs up keeps their orders and tickets (the link used to fail on them).
+- **Organizers:**
+  - Organizer sign-up creates a profile prefilled from the account, then a three-step onboarding: who you are, what you organize, contact and payment.
+  - Profiles gain a cover, logo, contact phone and email, Facebook / Instagram / TikTok / website links, up to 12 photos of past events, and D17 / bank details for buyers.
+  - The profile tab shows the profile as participants see it, with an edit mode; a public page `/organizers/{slug}` lists upcoming events. Event pages link to it.
+  - "Become an organizer" for existing members.
+- **Booking:**
+  - Redesigned checkout: labelled steps, summary always visible, bottom action bar on phones, payment methods as cards, and "Continue" explains what is missing.
+  - After choosing D17 or a transfer, the ticket page shows only that method: the organizer's number or RIB (copy button) and the receipt upload. "Pay differently" switches method on request.
+  - Redesigned ticket page (next-step card, ticket-style QR cards) and "My tickets" (upcoming / past).
+- **Create an event:** a first choice between a public event and a private invitation, then large template cards with photos and descriptions.
+- **Navigation:** "My tickets" is hidden from visitors; "Create account" next to "Sign in".
+- **Security:** social links accept only http(s) addresses; organizer images are ownership-checked upload keys, like event covers.
+
+### Added: Phase 2, events, booking, payments, organizers and sharing (2026-09-25)
+
+- **Event creation (EVT-01..09):**
+  - "What are you organizing?" picker, then a seven-step wizard driven by the template: basics and cover, date and place, template fields, tickets, logistics, brief, publish.
+  - Auto-saved drafts, publish checks shared with the server, duplicate, cancel with full refunds.
+  - Admins edit templates as validated JSON at `/admin/templates`.
+- **Discovery (DSC-01..05):**
+  - Explore filters: when, price, for whom, places left, near me (URL parameters, work without JavaScript).
+  - Home rails: tonight, this weekend, near me, and an "organize something" section.
+  - Event pages: booking button (book, join the waitlist, closed), JSON-LD `Event`, canonical and language alternates, share image as the preview, `noindex` for unlisted events.
+  - `sitemap.xml` (public upcoming events only) and `robots.txt`; Terms and Privacy placeholder pages.
+- **Booking and tickets (TKT-01..05):**
+  - Three-step checkout for members and guests: ticket types, deposit, details per person, pick-up point, questions, payment method.
+  - Row-locked stock with 15-minute holds and a waitlist whose offers last 24 hours; proven by an integration test (50 parallel bookings, 10 places, exactly 10 sold).
+  - "My tickets" with status, amounts due, QR codes, calendar file, receipt upload and cancellation under the refund policy.
+- **Payments (PAY-01..04):** mock online gateway with signed, idempotent webhooks; D17, bank transfer and cash confirmed by the organizer or by an approved receipt; refunds; double-entry ledger.
+- **Organizer tools (ORG-01, PRT-01..05, LOG-01):** dashboard (fill rate, collected, pending, sources), organizer profile, attendee list with payment status, notes and search, manual bookings, receipt and refund review, waitlist, door check-in by camera or code, Excel export and a print view for PDF.
+- **Private events (INV-01..03):** quick invitation form, link to share on WhatsApp, RSVP without an account (going, maybe, can't come, +1s, food notes); the guest list is shown only to the host and to guests who answered.
+- **Sharing (SHR-01..04):** WhatsApp, Facebook, Messenger, copy link and share sheet with `utm_source`; generated share images (link preview, square post, story, invitation card) in three languages, Arabic included; bookings by source for organizers.
+- **Packages:** `packages/payments` (mock and manual providers) and `packages/storage` (upload policies, signed tokens, local provider).
+- **Tests:** unit tests for pricing, availability, refund policy, ledger, publish checks, dates, Arabic shaping, wizard conversions and upload ownership; Playwright E2E for the Phase 2 flow in Arabic, French and English, and for private invitations.
+- **Docs:** API reference for every router, ADRs 0011–0015, open questions Q14–Q20.
+
+### Security (2026-09-25)
+
+- Event covers were free URLs that the share-image route fetched from the server. Forms now send the upload key, the API accepts only the member's own cover uploads, and the route reads covers from disk only.
+
 ### Added: Phase 1, data, auth, i18n and design system (2026-09-24)
 
 - **Database (`packages/db`):**

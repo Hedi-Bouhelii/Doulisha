@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
+import { siteUrl } from '@/lib/site';
 
 import '../globals.css';
 
@@ -46,6 +47,8 @@ export async function generateMetadata({ params }: LayoutProps<'/[locale]'>): Pr
     namespace: 'Metadata',
   });
   return {
+    // Share previews need absolute image URLs.
+    metadataBase: new URL(siteUrl),
     title: { default: t('title'), template: '%s · Doulisha' },
     description: t('description'),
     applicationName: 'Doulisha',

@@ -3,6 +3,7 @@
  * The definitions here seed the `templates` table; admins then edit the rows.
  */
 export * from './categories';
+export * from './definition-schema';
 export * from './definitions';
 export * from './details-schema';
 export type * from './types';

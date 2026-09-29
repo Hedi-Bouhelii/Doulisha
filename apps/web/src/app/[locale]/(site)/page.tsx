@@ -1,11 +1,13 @@
-import { ArrowRight, MapPin, Search } from 'lucide-react';
+import { ArrowRight, CalendarPlus, MapPin, PartyPopper, Search } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
-import { Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 
 import { CategoryTile } from '@/components/doulisha/category-tile';
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { EventCard, EventCardSkeleton } from '@/components/doulisha/event-card';
+import { NearMeRail } from '@/components/doulisha/near-me';
+import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 import { api } from '@/trpc/server';
 import { resolveLocale } from '@/i18n/locale';
@@ -128,7 +130,102 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
           <TrendingEvents />
         </Suspense>
       </section>
+
+      <Rail id="tonight" title={t('tonight')} href="/explore?when=tonight">
+        <Suspense fallback={<EventGridSkeleton />}>
+          <WhenEvents when="tonight" empty={t('nothingTonight')} />
+        </Suspense>
+      </Rail>
+
+      <Rail id="weekend" title={t('weekend')} href="/explore?when=weekend">
+        <Suspense fallback={<EventGridSkeleton />}>
+          <WhenEvents when="weekend" />
+        </Suspense>
+      </Rail>
+
+      <Rail id="near-me" title={t('nearMe')}>
+        <NearMeRail />
+      </Rail>
+
+      {/* Organize: public event (organizer wizard) or private invitation (INV-01). */}
+      <section aria-labelledby="organize" className="mx-auto w-full max-w-7xl px-4 pt-12 sm:px-6">
+        <div className="flex flex-col gap-4 rounded-2xl bg-secondary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="max-w-xl">
+            <h2 id="organize" className="text-2xl font-bold sm:text-3xl">
+              {t('organizeTitle')}
+            </h2>
+            <p className="mt-2 text-secondary-foreground/80">{t('organizeHint')}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Button asChild className="min-h-11 rounded-full px-6">
+              <Link href="/organizer/events/new">
+                <CalendarPlus aria-hidden="true" />
+                {t('organizePublic')}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="min-h-11 rounded-full px-6">
+              <Link href="/host/new">
+                <PartyPopper aria-hidden="true" />
+                {t('organizePrivate')}
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </>
+  );
+}
+
+function Rail({
+  id,
+  title,
+  href,
+  children,
+}: {
+  id: string;
+  title: string;
+  href?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="mx-auto w-full max-w-7xl px-4 pt-12 sm:px-6">
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <h2 id={id} className="text-2xl font-bold sm:text-3xl">
+          {title}
+        </h2>
+        {href ? <SeeAll href={href} /> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+async function SeeAll({ href }: { href: string }) {
+  const t = await getTranslations('Home');
+  return (
+    <Link
+      href={href}
+      className="flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:underline"
+    >
+      {t('seeAll')}
+      <ArrowRight className="size-4 rtl:rotate-180" aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** Tonight / this weekend rails (DSC-04), in Tunisia time. */
+async function WhenEvents({ when, empty }: { when: 'tonight' | 'weekend'; empty?: string }) {
+  const tStates = await getTranslations('States');
+  const events = await (await api()).events.upcoming({ limit: 4, when });
+  if (events.length === 0) {
+    return <p className="text-muted-foreground">{empty ?? tStates('emptyEventsHint')}</p>;
+  }
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {events.map((event) => (
+        <EventCard key={event.id} event={event} />
+      ))}
+    </div>
   );
 }
 

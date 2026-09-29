@@ -1,0 +1,232 @@
+import type { Executor } from '@doulisha/db';
+import { schema } from '@doulisha/db';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+
+import { refundAmount } from '../domain/refund-policy';
+import { AppError } from '../errors';
+import type { Actor } from '../permissions';
+import { allowedPayments } from './booking';
+import { attendeePayment } from './organizer-tools';
+import { getOwnOrder } from './payments';
+
+/** The buyer's orders, newest event first ("My tickets"). */
+export async function listMyOrders(db: Executor, actor: Actor | null) {
+  if (!actor) throw new AppError('UNAUTHORIZED', 'errors.signInRequired');
+  return db
+    .select({
+      reference: schema.orders.reference,
+      status: schema.orders.status,
+      totalMillimes: schema.orders.totalMillimes,
+      paidMillimes: schema.orders.paidMillimes,
+      createdAt: schema.orders.createdAt,
+      event: {
+        slug: schema.events.slug,
+        title: schema.events.title,
+        startsAt: schema.events.startsAt,
+        city: schema.events.city,
+        coverUrl: schema.events.coverUrl,
+      },
+    })
+    .from(schema.orders)
+    .innerJoin(schema.events, eq(schema.events.id, schema.orders.eventId))
+    .where(eq(schema.orders.buyerId, actor.userId))
+    .orderBy(desc(schema.events.startsAt));
+}
+
+/**
+ * One order with its tickets (TKT-04): QR codes only for confirmed bookings,
+ * payment state, what is still due, pending proof, and the refund the buyer
+ * would get if they cancelled now (PAY-04).
+ */
+export async function getMyOrder(
+  db: Executor,
+  actor: Actor | null,
+  reference: string,
+  now = new Date(),
+) {
+  const order = await getOwnOrder(db, actor, reference);
+  const [event] = await db.select().from(schema.events).where(eq(schema.events.id, order.eventId!));
+  if (!event) throw new AppError('NOT_FOUND', 'errors.notFound');
+  const bookings = await db
+    .select({
+      booking: schema.bookings,
+      ticketName: schema.ticketTypes.name,
+      meetingPoint: schema.meetingPoints.name,
+      meetAt: schema.meetingPoints.meetAt,
+    })
+    .from(schema.bookings)
+    .leftJoin(schema.ticketTypes, eq(schema.ticketTypes.id, schema.bookings.ticketTypeId))
+    .leftJoin(schema.meetingPoints, eq(schema.meetingPoints.id, schema.bookings.meetingPointId))
+    .where(eq(schema.bookings.orderId, order.id));
+  const attendees = await db
+    .select()
+    .from(schema.attendees)
+    .where(
+      inArray(
+        schema.attendees.bookingId,
+        bookings.map((b) => b.booking.id),
+      ),
+    )
+    .orderBy(asc(schema.attendees.createdAt));
+  const payments = await db
+    .select()
+    .from(schema.payments)
+    .where(eq(schema.payments.orderId, order.id))
+    .orderBy(desc(schema.payments.createdAt));
+  const proofs = payments.length
+    ? await db
+        .select({
+          status: schema.paymentProofs.status,
+          rejectionReason: schema.paymentProofs.rejectionReason,
+          note: schema.paymentProofs.note,
+        })
+        .from(schema.paymentProofs)
+        .where(
+          inArray(
+            schema.paymentProofs.paymentId,
+            payments.map((p) => p.id),
+          ),
+        )
+        .orderBy(asc(schema.paymentProofs.createdAt))
+    : [];
+  const [refund] = await db
+    .select()
+    .from(schema.refunds)
+    .where(eq(schema.refunds.orderId, order.id))
+    .orderBy(desc(schema.refunds.createdAt))
+    .limit(1);
+
+  const [organizer] = event.organizerProfileId
+    ? await db
+        .select({
+          name: schema.organizerProfiles.name,
+          slug: schema.organizerProfiles.slug,
+          paymentInstructions: schema.organizerProfiles.paymentInstructions,
+        })
+        .from(schema.organizerProfiles)
+        .where(eq(schema.organizerProfiles.id, event.organizerProfileId))
+    : [];
+
+  const rawStatus = bookings[0]?.booking.status ?? 'cancelled';
+  // A reservation past its payment deadline counts as expired, even before
+  // the next booking on the event releases its places (ADR 0018).
+  const heldDeadlines = bookings
+    .filter((b) => b.booking.status === 'held' && b.booking.holdExpiresAt)
+    .map((b) => b.booking.holdExpiresAt!);
+  const lapsed = heldDeadlines.some((d) => d <= now);
+  const status = lapsed ? 'expired' : rawStatus;
+  const lastProof = proofs.at(-1);
+  const pendingManual = payments.find((p) => p.status === 'pending' && p.provider === 'manual');
+  const canCancel =
+    !lapsed &&
+    ['pending', 'awaiting_payment', 'partially_paid', 'paid'].includes(order.status) &&
+    event.startsAt > now;
+
+  return {
+    reference: order.reference,
+    bookingStatus: status,
+    payment: attendeePayment(order, status),
+    totalMillimes: order.totalMillimes,
+    paidMillimes: order.paidMillimes,
+    dueMillimes: Math.max(0, order.totalMillimes - order.paidMillimes),
+    balanceDueAt: order.balanceDueAt,
+    holdExpiresAt: bookings.find((b) => b.booking.status === 'held')?.booking.holdExpiresAt ?? null,
+    offerExpiresAt:
+      bookings.find((b) => b.booking.status === 'offered')?.booking.offerExpiresAt ?? null,
+    waitlistPosition:
+      bookings.find((b) => b.booking.status === 'waitlisted')?.booking.waitlistPosition ?? null,
+    manualMethod: pendingManual?.method ?? null,
+    /**
+     * Where to send the money, only for the method the buyer chose (PAY-02).
+     * Null when the organizer has not filled it in yet.
+     */
+    payTo: payToFor(pendingManual?.method ?? null, organizer),
+    /** Methods the event accepts, for "Pay differently". */
+    paymentMethods: allowedPayments(event.registrationType),
+    organizer: organizer ? { name: organizer.name, slug: organizer.slug } : null,
+    proofStatus: lastProof?.status ?? null,
+    /** The organizer's reason when the latest receipt was rejected. */
+    proofRejection:
+      lastProof?.status === 'rejected'
+        ? { reason: lastProof.rejectionReason, note: lastProof.note }
+        : null,
+    /** When an unpaid D17 or transfer reservation lapses; null while a receipt is reviewed. */
+    paymentDeadline: lapsed
+      ? null
+      : heldDeadlines.reduce<Date | null>((min, d) => (!min || d < min ? d : min), null),
+    orderStatus: lapsed ? 'expired' : order.status,
+    refund: refund ? { status: refund.status, amountMillimes: refund.amountMillimes } : null,
+    canCancel,
+    refundIfCancelled: canCancel
+      ? refundAmount({
+          policy: event.cancellationPolicy,
+          startsAt: event.startsAt,
+          now,
+          paidMillimes: order.paidMillimes,
+          cancelledByOrganizer: false,
+        })
+      : 0,
+    event: {
+      id: event.id,
+      slug: event.slug,
+      title: event.title,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      venueName: event.venueName,
+      address: event.address,
+      city: event.city,
+      coverUrl: event.coverUrl,
+      cancellationPolicy: event.cancellationPolicy,
+      status: event.status,
+    },
+    tickets: attendees.map((a) => {
+      const line = bookings.find((b) => b.booking.id === a.bookingId);
+      return {
+        id: a.id,
+        fullName: a.fullName,
+        ticketName: line?.ticketName ?? null,
+        meetingPoint: line?.meetingPoint ?? null,
+        meetAt: line?.meetAt ?? null,
+        // The QR code is only issued once the place is confirmed.
+        ticketCode: line?.booking.status === 'confirmed' ? a.ticketCode : null,
+        checkedInAt: a.checkedInAt,
+      };
+    }),
+  };
+}
+
+function payToFor(
+  method: string | null,
+  organizer: { paymentInstructions: Record<string, string | undefined> } | undefined,
+) {
+  const info = organizer?.paymentInstructions ?? {};
+  if (method === 'd17' && info.d17Number)
+    return { method: 'd17' as const, d17Number: info.d17Number };
+  if (method === 'bank_transfer' && info.rib) {
+    return {
+      method: 'bank_transfer' as const,
+      rib: info.rib,
+      bankName: info.bankName ?? null,
+      accountHolder: info.accountHolder ?? null,
+    };
+  }
+  return null;
+}
+
+/** Private file key of a proof, for organizers of the order's event (served via a checked route). */
+export async function getProofForViewer(db: Executor, actor: Actor | null, proofId: string) {
+  if (!actor) throw new AppError('UNAUTHORIZED', 'errors.signInRequired');
+  const [row] = await db
+    .select({
+      proof: schema.paymentProofs,
+      eventId: schema.orders.eventId,
+      buyerId: schema.orders.buyerId,
+    })
+    .from(schema.paymentProofs)
+    .innerJoin(schema.payments, eq(schema.payments.id, schema.paymentProofs.paymentId))
+    .innerJoin(schema.orders, eq(schema.orders.id, schema.payments.orderId))
+    .where(and(eq(schema.paymentProofs.id, proofId)))
+    .limit(1);
+  if (!row?.eventId) throw new AppError('NOT_FOUND', 'errors.notFound');
+  return row;
+}

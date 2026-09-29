@@ -63,3 +63,52 @@ export function formatTime(date: Date, locale: Locale): string {
 export function formatNumber(value: number, locale: Locale): string {
   return new Intl.NumberFormat(intlLocale[locale]).format(value);
 }
+
+/** 0.42 → "42 %" (fr), "42%" (en). */
+export function formatPercent(ratio: number, locale: Locale): string {
+  return new Intl.NumberFormat(intlLocale[locale], {
+    style: 'percent',
+    maximumFractionDigits: 0,
+  }).format(ratio);
+}
+
+const inputParts = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** A date as a `datetime-local` value in Tunisia time, e.g. "2026-10-03T07:00". */
+export function toTunisInput(date: Date): string {
+  const p = Object.fromEntries(
+    inputParts.formatToParts(date).map((part) => [part.type, part.value]),
+  );
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
+
+/**
+ * Reads a `datetime-local` value as Tunisia time, whatever the device's time
+ * zone. Returns null for an empty or malformed value.
+ */
+export function fromTunisInput(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!m) return null;
+  const [, y, mo, d, h, mi] = m.map(Number) as [number, number, number, number, number, number];
+  const wallClock = Date.UTC(y, mo - 1, d, h, mi);
+  // Offset of Tunis at that moment: format the instant back and compare.
+  const probe = new Date(wallClock);
+  const shown = toTunisInput(probe);
+  const [sy, smo, sd, sh, smi] = shown.split(/[-T:]/).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  const offset = Date.UTC(sy, smo - 1, sd, sh, smi) - wallClock;
+  return new Date(wallClock - offset);
+}

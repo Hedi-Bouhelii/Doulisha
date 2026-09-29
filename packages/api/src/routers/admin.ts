@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { explorableTableNames, tableOverview, tableRows } from '../services/admin';
+import { listTemplates, updateTemplate } from '../services/templates-admin';
 import { roleProcedure, router } from '../trpc';
 
 const adminProcedure = roleProcedure('admin');
@@ -20,4 +21,14 @@ export const adminRouter = router({
     .query(({ ctx, input }) =>
       tableRows(ctx.db, input.table as (typeof explorableTableNames)[number], input.limit),
     ),
+
+  /** Admins only: every template, active or not (EVT-09). */
+  templates: adminProcedure.query(({ ctx }) => listTemplates(ctx.db, ctx.locale, false)),
+
+  /** Admins only: edits a template definition (validated) and its activation. */
+  updateTemplate: adminProcedure
+    .input(
+      z.object({ key: z.string().min(1).max(40), definition: z.unknown(), isActive: z.boolean() }),
+    )
+    .mutation(({ ctx, input }) => updateTemplate(ctx.db, input.key, input)),
 });

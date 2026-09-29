@@ -20,7 +20,10 @@ export async function TicketQR({
     color: { dark: '#2A2420', light: '#FFFFFF' },
   });
   return (
-    <figure className="inline-flex flex-col items-center gap-2 rounded-xl border border-border bg-white p-4 text-[#2A2420]">
+    <figure
+      className="inline-flex flex-col items-center gap-2 rounded-xl border border-border bg-white p-4 text-[#2A2420]"
+      data-testid="ticket-qr"
+    >
       <div
         role="img"
         aria-label={label}

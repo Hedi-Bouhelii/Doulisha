@@ -1,7 +1,7 @@
 'use client';
 
 import { authClient } from '@doulisha/auth/client';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { CalendarPlus, LayoutDashboard, LogOut, PartyPopper, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { initials } from '@/components/doulisha/friends-going';
@@ -23,16 +23,41 @@ export interface MenuUser {
   isAdmin: boolean;
 }
 
+const icons: Record<string, LucideIcon> = {
+  '/organizer': CalendarPlus,
+  '/host': PartyPopper,
+  '/admin': LayoutDashboard,
+};
+
 /** Avatar menu for signed-in members; guests and visitors see "Sign in". */
-export function UserMenu({ user }: { user: MenuUser | null }) {
+export function UserMenu({
+  user,
+  links = [],
+}: {
+  user: MenuUser | null;
+  links?: { href: string; label: string }[];
+}) {
   const t = useTranslations('Nav');
   const router = useRouter();
 
   if (!user) {
     return (
-      <Button asChild className="min-h-11 rounded-full px-4 text-sm sm:px-5">
-        <Link href="/sign-in">{t('signIn')}</Link>
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          asChild
+          variant="ghost"
+          className="hidden min-h-11 rounded-full px-4 text-sm sm:inline-flex"
+        >
+          <Link href="/sign-in" data-testid="header-sign-in">
+            {t('signIn')}
+          </Link>
+        </Button>
+        <Button asChild className="min-h-11 rounded-full px-4 text-sm sm:px-5">
+          <Link href="/sign-up" data-testid="header-sign-up">
+            {t('signUp')}
+          </Link>
+        </Button>
+      </div>
     );
   }
 
@@ -63,14 +88,18 @@ export function UserMenu({ user }: { user: MenuUser | null }) {
       <DropdownMenuContent align="end" className="min-w-56">
         <DropdownMenuLabel className="truncate">{user.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {user.isAdmin ? (
-          <DropdownMenuItem asChild className="min-h-11">
-            <Link href="/admin">
-              <LayoutDashboard />
-              {t('admin')}
-            </Link>
-          </DropdownMenuItem>
-        ) : null}
+        {links.map((link) => {
+          const Icon = icons[link.href] ?? LayoutDashboard;
+          return (
+            <DropdownMenuItem key={link.href} asChild className="min-h-11">
+              <Link href={link.href}>
+                <Icon />
+                {link.label}
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
+        {links.length > 0 ? <DropdownMenuSeparator /> : null}
         <DropdownMenuItem onSelect={() => void signOut()} className="min-h-11">
           <LogOut className="rtl:-scale-x-100" />
           {t('signOut')}

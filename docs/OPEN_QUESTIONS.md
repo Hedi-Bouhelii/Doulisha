@@ -97,7 +97,7 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-24 (Phase 1)
 - **Context:** All Arabic interface text (`packages/i18n/messages/ar.json`), category and template names, and the Arabic seed event were written without a native speaker.
 - **Assumption:** Clear Modern Standard Arabic that reads naturally in Tunisia, marked `TODO(i18n-review)`. Needs a native review before launch.
-- **Decision:**
+- **Decision (2026-09-28, founder):** Use the recommended wording. Terms are kept consistent across the app (for example "وصل" for a payment receipt, as commonly said in Tunisia). A native read-through before launch is still recommended.
 
 ### Q12. Demo photos and brand assets
 
@@ -112,3 +112,86 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** From this development machine, each database round trip takes roughly 150–500 ms, and a few requests stalled until timeout ("fetch failed") before succeeding on retry. Sign-in steps make several sequential queries (1–3 s locally, once 15 s). In production, Vercel functions run in `cle1` next to the database, so this mostly affects local work and E2E runs.
 - **Assumption:** No code change now. Phase 6 adds database timeouts and retries and re-measures from Tunisia.
 - **Decision:**
+
+### Q14. Booking questions: per booking or per person?
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** TKT-03 lets organizers add questions at booking (size, allergy…). The spec does not say whether each person on a group booking answers separately.
+- **Assumption:** Asked once per booking and stored on the buyer's ticket (the first person). Simplest for the buyer on a phone; per-person answers can be added if organizers need them.
+- **Decision:**
+
+### Q15. Map pin and map tiles
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** The wizard should let organizers pin the venue (EVT-02) so "near me" (DSC-02/04) finds the event. A map needs a tile provider (OpenFreeMap, MapTiler, Mapbox…) with its own terms and costs.
+- **Assumption:** Not in Phase 2. Events created in the app have no coordinates yet; seeded events do. Proposal: MapLibre with a free OpenStreetMap-based provider, chosen with the founder.
+- **Decision:**
+
+### Q16. GPX track upload for hikes
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** The hiking template has an optional `gpx` field. Uploads accept only images and PDF so far.
+- **Assumption:** The wizard hides the field until a `gpx` upload purpose and a track preview exist (with the map, Q15).
+- **Decision:**
+
+### Q17. Terms of use and privacy policy texts
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** `/terms` and `/privacy` exist and are linked from the footer, but the legal texts (law 2004-63, INPDP) must come from the founder's lawyer.
+- **Assumption:** The pages say plainly that the text is pending legal review. No legal wording is invented.
+- **Decision:**
+
+### Q18. Messenger sharing on desktop
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** SHR-01 lists Messenger. On phones the `fb-messenger://share` link opens the app; on desktop, Messenger's send dialog needs a Facebook app id.
+- **Assumption:** The Messenger button shows on phones only. Add the desktop dialog when the Facebook app exists (Phase 6, with Facebook login).
+- **Decision:**
+
+### Q19. File storage before production
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** Covers and receipts use the local disk provider, which does not survive serverless deployments.
+- **Assumption:** Production must use Cloudflare R2 (Phase 6, `STORAGE_PROVIDER=r2`). `STORAGE_PROVIDER` accepts only `local` until then, so a deployment cannot silently use the disk.
+- **Decision:**
+
+### Q20. E2E data on the dev branch
+
+- **Asked:** 2026-09-25 (Phase 2)
+- **Context:** Each Phase 2 E2E run publishes real test hikes and invitations on the Neon `dev` branch; they then appear in local listings.
+- **Assumption:** Acceptable: `pnpm db:seed` resets the branch, and CI runs on a throwaway branch per pull request. Tests use unique titles so runs never collide.
+- **Decision:**
+
+### Q21. Photos of past events on organizer profiles
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The spec's organizer profile (ACC-03) lists name, logo, bio, cover, categories, regions, social links and legal status. The founder asked for photos of previous work too.
+- **Decision (2026-09-25, founder):** Organizers show up to 12 photos of past events on their profile (`organizer_photos`). Moderation of these photos comes with the admin tools (Phase 5).
+
+### Q22. Organizer contacts on the public page
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The organizer profile is prefilled from the account, including the verified phone and email, and organizers want to be reachable.
+- **Assumption:** The contact phone and email appear on the public organizer page; the form says so and the organizer can clear them. Payment details (D17 number, RIB) are never public: buyers see them only on their own booking.
+- **Decision (2026-09-28, founder):** Approved as proposed.
+
+### Q23. "My tickets" for guests
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** The founder asked to hide "My tickets" from people who are not signed in. Guests who book without an account have a guest session on their device.
+- **Assumption:** Hidden for visitors without a session; shown for members and for guests who booked on this device, so they can find their ticket again.
+- **Decision (2026-09-28, founder):** Guests who book without an account get their ticket as a PDF (QR code, event details, logo) in the interface language, downloaded automatically after booking and available from the ticket page (ADR 0017).
+
+### Q24. Linking social accounts
+
+- **Asked:** 2026-09-25 (Phase 2 review)
+- **Context:** Organizer profiles have links to Facebook, Instagram, TikTok and a website. The founder wants to discuss connecting social accounts (sign-in, importing content, publishing).
+- **Assumption:** Links only for now; the linking process is the next topic with the founder.
+- **Decision:**
+
+### Q25. How long to pay by D17 or transfer
+
+- **Asked:** 2026-09-28 (payment review)
+- **Context:** A D17 or transfer booking now reserves the places without a QR code until the organizer confirms the money (ADR 0018). The reservation needs a deadline so unpaid places go back to other people.
+- **Assumption:** 48 hours to pay, never later than 12 hours before the event and never less than 2 hours. Sending a receipt pauses the clock; a refused receipt gives 24 hours to send another; the organizer can add one day at a time. The values are constants in `packages/api/src/domain/payment-deadline.ts`.
+- **Decision (2026-09-28, founder):** Keep the assumption (48 h, 12 h before the event at the latest, 2 h minimum, 24 h after a refused receipt).

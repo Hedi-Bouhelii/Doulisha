@@ -51,6 +51,7 @@ Other variables are listed in [`.env.example`](.env.example). Development uses m
 ```sh
 pnpm db:migrate   # apply migrations (extensions + tables)
 pnpm db:seed      # demo data in Arabic, French and English (wipes the branch first)
+pnpm db:sync-templates  # after changing a template in packages/templates: update the rows
 ```
 
 ### 5. Run
@@ -59,10 +60,14 @@ pnpm db:seed      # demo data in Arabic, French and English (wipes the branch fi
 pnpm dev          # http://localhost:3000 → redirects to /fr, /ar or /en
 ```
 
-- **Sign in** at `/fr/sign-in` with any phone number. The code appears in the dev outbox at `/fr/dev/outbox` (nothing is really sent).
-- **Admin:** sign in with `20 000 001` (the seeded admin) and open `/fr/admin` to browse the seed data.
+- **Create an account** at `/fr/sign-up` (participant or organizer) with any phone number or email. Codes appear in the dev outbox at `/fr/dev/outbox` (nothing is really sent). Then choose a password.
+- **Seeded accounts** have no password yet: on `/fr/sign-in`, choose "Receive a code instead" the first time, then set a password.
+- **Admin:** `20 000 001` (the seeded admin); open `/fr/admin` to browse the seed data and `/fr/admin/templates` to edit templates.
 - **Arabic:** use the language menu or open `/ar`; the layout flips to right-to-left.
 - **Components:** `/fr/design` shows every base component and state (development only).
+- **Organizer:** sign in with `22 000 001` (Sami, owner of "Kroumirie Trekkers"), open `/fr/organizer`, create an event from a template and publish it.
+- **Booking:** on any event page, "Get ticket" books as a guest; the online payment goes to a simulated gateway (`/fr/checkout/mock-pay`). Tickets and their QR codes are under `/fr/tickets`.
+- **Private invitation:** `/fr/host/new` creates one and gives a link; guests answer at `/fr/invite/…` without an account.
 
 ### 6. Check before you push
 
@@ -70,6 +75,7 @@ pnpm dev          # http://localhost:3000 → redirects to /fr, /ar or /en
 pnpm check   # prettier check, ESLint, TypeScript, Vitest
 pnpm build   # production build
 pnpm e2e     # Playwright (desktop + mobile) against the running app and the dev branch
+pnpm --filter @doulisha/api test:integration   # booking concurrency test on the dev branch
 ```
 
 First E2E run: `pnpm --filter @doulisha/web exec playwright install chromium`.
@@ -91,7 +97,8 @@ packages/
   templates/  category templates
   validators/ shared Zod schemas
   notifications/ SMS and email senders (mocks for now)
-  payments/   payment providers (Phase 2)
+  payments/   payment providers (mock gateway, manual methods)
+  storage/    uploads: policies, signed upload tokens, local provider
 docs/         specification, build plan, architecture, database, API, UX, ADRs, open questions
 .claude/      Claude Code skills shared by the team (Neon)
 ```

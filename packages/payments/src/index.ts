@@ -1,5 +1,9 @@
 /**
- * @doulisha/payments: PaymentProvider interface and implementations (mock, manual, konnect, flouci).
- * Empty in Phase 0; see docs/BUILD_PROMPT.md for the phase that fills it.
+ * @doulisha/payments: the PaymentProvider interface and its implementations.
+ * Phase 2: `mock` (simulated online gateway) and `manual` (cash, transfer, D17).
+ * Konnect and Flouci are added in Phase 6 behind the same interface.
  */
-export {};
+export * from './manual';
+export * from './mock';
+export * from './signature';
+export * from './types';

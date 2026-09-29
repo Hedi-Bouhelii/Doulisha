@@ -87,7 +87,12 @@ const concertParty: TemplateDefinition = {
         type: 'text',
         maxLength: 500,
         multiline: true,
-        label: { ar: 'الفنانون', fr: 'Programmation', en: 'Lineup' },
+        label: { ar: 'الفنانون المشاركون', fr: 'Artistes / line-up', en: 'Line-up' },
+        help: {
+          ar: 'من يصعد إلى المنصة وبأي ترتيب، مثلًا: «أمال، ثم دي جي كايس».',
+          fr: 'Qui monte sur scène et dans quel ordre, par ex. « Emel, puis DJ Kays ».',
+          en: 'Who performs and in which order, e.g. "Emel, then DJ Kays".',
+        },
       },
       {
         key: 'genre',

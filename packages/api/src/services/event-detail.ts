@@ -1,10 +1,12 @@
 import type { Db } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
-import type { EventBrief } from '@doulisha/templates';
+import type { EventBrief, TemplateField } from '@doulisha/templates';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { AppError } from '../errors';
+import { type Actor, canManageEvent } from '../permissions';
+import { isBookable } from './booking';
 import { placesLeft } from './events';
 
 export interface EventDetailDto {
@@ -15,6 +17,8 @@ export interface EventDetailDto {
   language: Locale;
   coverUrl: string | null;
   status: (typeof schema.eventStatus.enumValues)[number];
+  visibility: (typeof schema.eventVisibility.enumValues)[number];
+  audience: string[];
   model: (typeof schema.eventModel.enumValues)[number];
   startsAt: Date;
   endsAt: Date | null;
@@ -51,6 +55,17 @@ export interface EventDetailDto {
   programme: { id: string; title: string; startsAt: Date | null; day: number }[];
   /** Attendees who chose to show their attendance publicly (ACC-06). */
   publicAttendees: { name: string; image: string | null }[];
+  /** Bookings are open now (dates, status); a full event may still take a waitlist. */
+  bookingOpen: boolean;
+  waitlistEnabled: boolean;
+  /** The viewer is the creator, the organizer's owner or an admin. */
+  canManage: boolean;
+  /**
+   * The template's own fields the organizer filled in (line-up, genre,
+   * difficulty, distance…), labelled in the reader's language. A null value
+   * is a yes/no field that is "yes".
+   */
+  facts: { key: string; label: string; value: string | null }[];
 }
 
 /** Statuses a visitor may open. Drafts stay private to their organizer. */
@@ -65,6 +80,7 @@ export async function getEventBySlug(
   db: Db,
   locale: Locale,
   slug: string,
+  actor: Actor | null = null,
 ): Promise<EventDetailDto> {
   const e = schema.events;
   const [row] = await db
@@ -72,6 +88,7 @@ export async function getEventBySlug(
       event: e,
       category: schema.categories,
       templateName: schema.templates.name,
+      templateDefinition: schema.templates.definition,
       organizer: schema.organizerProfiles,
     })
     .from(e)
@@ -88,7 +105,7 @@ export async function getEventBySlug(
     )
     .limit(1);
   if (!row) throw new AppError('NOT_FOUND', 'errors.notFound');
-  const { event, category, templateName, organizer } = row;
+  const { event, category, templateName, templateDefinition, organizer } = row;
 
   const [tickets, points, steps, attendees] = await Promise.all([
     db
@@ -128,6 +145,8 @@ export async function getEventBySlug(
     language: event.language,
     coverUrl: event.coverUrl,
     status: event.status,
+    visibility: event.visibility,
+    audience: event.audience,
     model: event.model,
     startsAt: event.startsAt,
     endsAt: event.endsAt,
@@ -169,5 +188,56 @@ export async function getEventBySlug(
     meetingPoints: points.map((p) => ({ id: p.id, name: p.name, meetAt: p.meetAt })),
     programme: steps.map((s) => ({ id: s.id, title: s.title, startsAt: s.startsAt, day: s.day })),
     publicAttendees: attendees,
+    facts: templateFacts(templateDefinition.fields, event.details, locale),
+    bookingOpen: isBookable(event),
+    waitlistEnabled: event.waitlistEnabled,
+    canManage: canManageEvent(actor, {
+      creatorId: event.creatorId,
+      organizerOwnerId: organizer?.ownerUserId ?? null,
+    }),
   };
+}
+
+/** Filled-in template fields as label and display value (DSC-03). */
+export function templateFacts(
+  fields: TemplateField[],
+  details: Record<string, unknown>,
+  locale: Locale,
+): EventDetailDto['facts'] {
+  const facts: EventDetailDto['facts'] = [];
+  for (const field of fields) {
+    const value = details[field.key];
+    if (value === undefined || value === null || value === '' || field.type === 'gpx') continue;
+    const label = field.label[locale];
+    switch (field.type) {
+      case 'number': {
+        if (typeof value !== 'number') break;
+        const shown = field.unit
+          ? `${value} ${field.unit}`
+          : field.max !== undefined && field.max <= 10
+            ? `${value} / ${field.max}`
+            : String(value);
+        facts.push({ key: field.key, label, value: shown });
+        break;
+      }
+      case 'text':
+        if (typeof value === 'string' && value.trim()) {
+          facts.push({ key: field.key, label, value: value.trim() });
+        }
+        break;
+      case 'select': {
+        const values = Array.isArray(value) ? value : [value];
+        const shown = values
+          .map((v) => field.options.find((o) => o.value === v)?.label[locale])
+          .filter(Boolean)
+          .join(', ');
+        if (shown) facts.push({ key: field.key, label, value: shown });
+        break;
+      }
+      case 'boolean':
+        if (value === true) facts.push({ key: field.key, label, value: null });
+        break;
+    }
+  }
+  return facts;
 }

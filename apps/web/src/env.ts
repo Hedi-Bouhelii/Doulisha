@@ -23,6 +23,10 @@ const schema = z
     /** Development and tests always use mocks (CLAUDE.md). Real providers arrive in Phase 6. */
     SMS_PROVIDER: z.enum(['mock']).default('mock'),
     EMAIL_PROVIDER: z.enum(['mock']).default('mock'),
+    /** Online payments: the simulated gateway until Konnect/Flouci (Phase 6). */
+    PAYMENT_PROVIDER: z.enum(['mock']).default('mock'),
+    /** File storage: local disk in development, Cloudflare R2 in Phase 6. */
+    STORAGE_PROVIDER: z.enum(['local']).default('local'),
     GOOGLE_CLIENT_ID: optional,
     GOOGLE_CLIENT_SECRET: optional,
     FACEBOOK_CLIENT_ID: optional,

@@ -8,6 +8,9 @@ interface OutboxMessage {
   text?: string;
 }
 
+/** Password given to seeded accounts the first time E2E signs them in (ADR 0016). */
+export const E2E_PASSWORD = 'doulisha-e2e-2026';
+
 /**
  * Waits for a message from the mock SMS or email sender (development only),
  * ignoring anything sent before `since` so earlier runs cannot interfere.
@@ -36,23 +39,88 @@ export async function readOutbox(
   return match!;
 }
 
-/** Signs in with phone OTP on the sign-in page of the given locale. */
+/** Enters the 6-digit code that the mock sender delivered. */
+export async function enterCode(page: Page, channel: 'sms' | 'email', to: string, since: number) {
+  await expect(page.locator('#otp')).toBeVisible();
+  const code = await readOutbox(page, { channel, to, since, pattern: /\d{6}/ });
+  await page.locator('#otp').fill(code);
+  await page.getByTestId('verify-code').click();
+}
+
+/**
+ * Finishes account setup when it appears (new accounts, and seeded accounts
+ * signing in for the first time): keeps or sets the name, sets the password.
+ */
+export async function completeSetupIfAsked(page: Page, name?: string) {
+  // The sign-in form goes to /account/setup only when the account needs it.
+  await page.waitForURL(
+    (url) => !url.pathname.endsWith('/sign-in') && !url.pathname.endsWith('/sign-up'),
+  );
+  if (!/\/account\/setup/.test(page.url())) return;
+  const nameField = page.getByTestId('setup-name');
+  await nameField.waitFor();
+  if (name || !(await nameField.inputValue())) await nameField.fill(name ?? 'Membre E2E');
+  const password = page.locator('#new-password');
+  if (await password.count()) await password.fill(E2E_PASSWORD);
+  await page.getByTestId('setup-submit').click();
+  await page.waitForURL((url) => !/\/account\/setup/.test(url.pathname));
+}
+
+/** Signs in with a phone code ("Receive a code instead") on the given locale. */
 export async function signInWithPhone(page: Page, locale: string, localPhone: string) {
   const e164 = `+216${localPhone.replace(/\s/g, '')}`;
   await page.goto(`/${locale}/sign-in`);
+  await page.getByTestId('use-code').click();
   await page.locator('#phone').fill(localPhone);
   const since = Date.now() - 1000;
-  await page
-    .locator('form')
-    .filter({ has: page.locator('#phone') })
-    .locator('button[type=submit]')
-    .click();
-  await expect(page.locator('#otp')).toBeVisible();
-  const code = await readOutbox(page, { channel: 'sms', to: e164, since, pattern: /\d{6}/ });
-  await page.locator('#otp').fill(code);
-  await page
-    .locator('form')
-    .filter({ has: page.locator('#otp') })
-    .locator('button[type=submit]')
-    .click();
+  await page.getByTestId('send-code').click();
+  await enterCode(page, 'sms', e164, since);
+  await completeSetupIfAsked(page);
+}
+
+/**
+ * Creates and publishes a hike at 30 DT (paid online/D17/transfer, or paid at
+ * the door), from the organizer space of the signed-in organizer: only the
+ * price is filled, the default ticket does the rest. Returns the event id and
+ * the public page URL. Each test gets fresh places, whatever earlier runs booked.
+ */
+export async function createPublishedHike(
+  page: Page,
+  locale: string,
+  {
+    title,
+    capacity = 20,
+    registration = 'paid',
+  }: { title: string; capacity?: number; registration?: 'paid' | 'pay_at_door' },
+) {
+  await page.goto(`/${locale}/organizer/events/new`);
+  await page.getByTestId('template-hiking_trip').click();
+  await page.waitForURL(/\/organizer\/events\/[0-9a-f-]+\/edit$/);
+  const eventId = /events\/([0-9a-f-]+)\/edit/.exec(page.url())![1]!;
+
+  await page.getByTestId('wizard-title').fill(title);
+  await page.getByTestId('wizard-next').click();
+  await page.getByTestId('wizard-city').fill('Zaghouan');
+  await page.getByTestId('wizard-next').click();
+  await page.locator('#detail-difficulty').fill('2');
+  await page.getByTestId('wizard-next').click();
+  // Free events have no ticket editor at all.
+  await page.getByTestId('wizard-registration-free_rsvp').click();
+  await expect(page.getByTestId('free-no-tickets')).toBeVisible();
+  await expect(page.getByTestId('ticket-price-0')).toHaveCount(0);
+  await page.getByTestId(`wizard-registration-${registration}`).click();
+  await page.getByTestId('wizard-capacity').fill(String(capacity));
+  // A new event already has one ticket with a default name: only the price is needed.
+  await expect(page.getByTestId('ticket-name-0')).not.toHaveValue('');
+  await expect(page.getByTestId('remove-ticket-0')).toHaveCount(0);
+  await page.getByTestId('ticket-price-0').fill('30');
+
+  await page.getByTestId('wizard-step-publish').click();
+  await expect(page.getByTestId('publish-event')).toBeVisible();
+  await expect(page.getByTestId('publish-problems')).toHaveCount(0);
+  await page.getByTestId('publish-event').click();
+  await expect(page.getByTestId('wizard-published')).toBeVisible();
+  await page.getByTestId('view-published').click();
+  await page.waitForURL(new RegExp(`/${locale}/events/[^/]+$`));
+  return { eventId, eventUrl: page.url() };
 }
