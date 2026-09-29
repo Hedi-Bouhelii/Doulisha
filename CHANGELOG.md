@@ -8,6 +8,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 - The auth endpoints accept the mobile app (Better Auth's Expo plugin, ADR 0023): sessions for the app, and Google or Facebook sign-in that returns to the app through `doulisha://`.
 - Better Auth 1.7.6.
+- **`packages/api-types`** (ADR 0024): the API types (`AppRouter`, `RouterInputs`, `RouterOutputs`) bundled into one committed file for the mobile app; CI checks it matches the routers.
 
 ### Added: Phase 4b, event wall and safety (2026-09-29)
 

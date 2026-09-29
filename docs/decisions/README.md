@@ -27,6 +27,7 @@ One file per important decision, numbered in order. An ADR is never edited after
 | 0021 | [Event chat by polling, following organizers, and no friend requests for now](0021-event-chat-and-following.md)                | Accepted                           |
 | 0022 | [Event wall, report and block, member pages and privacy settings](0022-event-wall-and-safety.md)                               | Accepted                           |
 | 0023 | [Sign-in for the mobile app through Better Auth's Expo plugin](0023-mobile-app-auth.md)                                        | Accepted                           |
+| 0024 | [The API types, bundled into one committed file for the mobile app](0024-api-types-package.md)                                 | Accepted                           |
 
 ## Template
 

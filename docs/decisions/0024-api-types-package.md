@@ -11,7 +11,7 @@ The mobile app lives in its own repository (ADR 0006) and cannot import `@doulis
 ## Decision
 
 - **`packages/api-types`** bundles `AppRouter`, `RouterInputs` and `RouterOutputs` into one declaration file, `dist/index.d.ts`, with `rollup-plugin-dts` (`pnpm --filter @doulisha/api-types build`).
-  - Types from this repository's packages are inlined. Libraries stay imports (`@trpc/server`, `zod`, `better-auth`, `drizzle-orm`, `@neondatabase/serverless`); the mobile app installs them, the last two for types only.
+  - Types from this repository's packages are inlined. Libraries stay imports (`@trpc/server`, `zod`, `better-auth`, `@better-auth/expo`, `drizzle-orm`, `@neondatabase/serverless`); the mobile app installs them, the last two for types only.
   - The plugin turns on TypeScript's `preserveSymlinks` by default, which cannot name types through pnpm's symlinked packages; the config turns it off.
 - **`Context` is a named interface** in `packages/api/src/context.ts`. Inferred, it was repeated in full in every router's type (a 2.4 MB declaration); named, the bundle is about 0.6 MB. Server behaviour is unchanged.
 - **The bundle is committed** (an exception in `.gitignore`), so the mobile repository copies it from any checkout without building the web repository. CI rebuilds it and fails when the committed file differs ("API types are up to date").
