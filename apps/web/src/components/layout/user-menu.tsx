@@ -1,7 +1,14 @@
 'use client';
 
 import { authClient } from '@doulisha/auth/client';
-import { CalendarPlus, LayoutDashboard, LogOut, PartyPopper, type LucideIcon } from 'lucide-react';
+import {
+  CalendarPlus,
+  LayoutDashboard,
+  LogOut,
+  PartyPopper,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { initials } from '@/components/doulisha/friends-going';
@@ -24,6 +31,7 @@ export interface MenuUser {
 }
 
 const icons: Record<string, LucideIcon> = {
+  '/account': UserRound,
   '/organizer': CalendarPlus,
   '/host': PartyPopper,
   '/admin': LayoutDashboard,

@@ -10,6 +10,8 @@ import { and, eq, inArray } from 'drizzle-orm';
 /** Placeholder address for phone-only accounts; `.invalid` can never receive mail. */
 export const phoneEmailDomain = 'phone.doulisha.invalid';
 export const guestEmailDomain = 'guest.doulisha.invalid';
+/** Facebook accounts without an email (signed up with a phone number on Facebook). */
+export const facebookEmailDomain = 'facebook.doulisha.invalid';
 
 const E164 = /^\+[1-9]\d{7,14}$/;
 
@@ -37,7 +39,7 @@ export const PASSWORD_MAX_LENGTH = 128;
 /**
  * Better Auth for Doulisha (ADR 0003, ADR 0010, ADR 0016).
  * ACC-01: sign-up by phone or email code, then a password for next time;
- * sign-in by password or by code; Google, Facebook, Apple; guest sessions
+ * sign-in by password or by code; Google, Facebook, Apple (ADR 0019); guest sessions
  * for booking and RSVP without an account.
  */
 export function createAuth({
@@ -77,11 +79,29 @@ export function createAuth({
     },
     socialProviders: {
       ...(social.google && { google: social.google }),
-      ...(social.facebook && { facebook: social.facebook }),
+      ...(social.facebook && {
+        facebook: {
+          ...social.facebook,
+          // Facebook sends no email for accounts made with a phone number.
+          mapProfileToUser: (profile) =>
+            profile.email
+              ? {}
+              : { email: `${'id' in profile ? profile.id : profile.sub}@${facebookEmailDomain}` },
+        },
+      }),
       ...(social.apple && { apple: social.apple }),
     },
     account: {
-      accountLinking: { enabled: true, trustedProviders: ['google', 'facebook', 'apple'] },
+      // Social accounts are linked only on purpose, from "Connected accounts"
+      // while signed in (ADR 0019): never implicitly because an email matches,
+      // since Facebook does not say whether an email was verified. Trusting
+      // the providers lets that explicit link through, with any email.
+      accountLinking: {
+        enabled: true,
+        disableImplicitLinking: true,
+        trustedProviders: ['google', 'facebook', 'apple'],
+        allowDifferentEmails: true,
+      },
     },
     session: {
       expiresIn: 60 * 60 * 24 * 30,

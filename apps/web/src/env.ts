@@ -67,3 +67,9 @@ export function configuredSocialProviders(env: ServerEnv) {
     apple: pair(env.APPLE_CLIENT_ID, env.APPLE_CLIENT_SECRET),
   };
 }
+
+/** Names of the configured social providers, in display order. */
+export function socialProviderList(env: ServerEnv) {
+  const social = configuredSocialProviders(env);
+  return (['google', 'facebook', 'apple'] as const).filter((provider) => social[provider]);
+}

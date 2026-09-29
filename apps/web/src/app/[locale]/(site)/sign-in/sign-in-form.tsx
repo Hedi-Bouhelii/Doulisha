@@ -16,11 +16,14 @@ import {
   PasswordField,
   type Method,
 } from '@/components/auth/auth-parts';
+import {
+  SocialButtons,
+  socialErrorKey,
+  type SocialProvider,
+} from '@/components/auth/social-buttons';
 import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTRPC } from '@/trpc/client';
-
-export type SocialProvider = 'google' | 'facebook' | 'apple';
 
 type Mode = 'password' | 'code' | 'verify';
 
@@ -31,10 +34,13 @@ type Mode = 'password' | 'code' | 'verify';
 export function SignInForm({
   next,
   socialProviders,
+  socialError,
   showDevOutbox,
 }: {
   next: string;
   socialProviders: SocialProvider[];
+  /** `?error=` from a failed Google or Facebook sign-in. */
+  socialError?: string;
   showDevOutbox: boolean;
 }) {
   const t = useTranslations('Auth');
@@ -50,7 +56,8 @@ export function SignInForm({
   const [sentTo, setSentTo] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const socialKey = socialErrorKey(socialError);
+  const [error, setError] = useState<string | null>(socialKey ? tErrors(socialKey) : null);
   const [busy, setBusy] = useState(false);
 
   const callbackURL = `/${locale}${next === '/' ? '' : next}`;
@@ -115,9 +122,23 @@ export function SignInForm({
     await done(true);
   }
 
+  /**
+   * Google or Facebook (ADR 0019). New accounts finish setup (city, participant
+   * or organizer); failures come back here with `?error=`.
+   */
   async function social(provider: SocialProvider) {
     setBusy(true);
-    await authClient.signIn.social({ provider, callbackURL });
+    const nextParam = encodeURIComponent(next);
+    const { error: failure } = await authClient.signIn.social({
+      provider,
+      callbackURL,
+      newUserCallbackURL: `/${locale}/account/setup?welcome=1&next=${nextParam}`,
+      errorCallbackURL: `/${locale}/sign-in?next=${nextParam}`,
+    });
+    if (failure) {
+      setBusy(false);
+      setError(tErrors('socialFailed'));
+    }
   }
 
   return (
@@ -231,21 +252,12 @@ export function SignInForm({
         </form>
       ) : null}
 
-      {socialProviders.length > 0 ? (
-        <div className="space-y-3">
-          <p className="text-center text-xs text-muted-foreground">{t('orContinueWith')}</p>
-          {socialProviders.map((provider) => (
-            <Button
-              key={provider}
-              variant="outline"
-              className="h-11 w-full"
-              disabled={busy}
-              onClick={() => void social(provider)}
-            >
-              {t(provider)}
-            </Button>
-          ))}
-        </div>
+      {mode !== 'verify' ? (
+        <SocialButtons
+          providers={socialProviders}
+          disabled={busy}
+          onSelect={(provider) => void social(provider)}
+        />
       ) : null}
 
       <DevOutboxNote show={showDevOutbox} />

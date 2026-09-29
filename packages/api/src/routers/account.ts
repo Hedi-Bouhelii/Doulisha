@@ -1,11 +1,18 @@
 import { completeSignUpSchema, passwordSchema } from '@doulisha/validators';
 import { z } from 'zod';
 
-import { accountStatus, completeSignUp, setFirstPassword } from '../services/account';
+import { SOCIAL_PROVIDERS } from '../domain/sign-in-methods';
+import {
+  accountStatus,
+  completeSignUp,
+  setFirstPassword,
+  signInMethods,
+  unlinkProvider,
+} from '../services/account';
 import { ensureProfileFromAccount } from '../services/organizers';
 import { protectedProcedure, router } from '../trpc';
 
-/** Account setup after a code sign-up (ACC-01, ACC-05, ADR 0016). */
+/** Account setup and sign-in methods (ACC-01, ACC-05, ADR 0016, ADR 0019). */
 export const accountRouter = router({
   /** Whether the member still has to choose a name or a password. */
   status: protectedProcedure.query(({ ctx }) => accountStatus(ctx.db, ctx.actor)),
@@ -35,6 +42,14 @@ export const accountRouter = router({
         input.password,
       ),
     ),
+
+  /** Phone, email, password and connected Google / Facebook / Apple accounts. */
+  signInMethods: protectedProcedure.query(({ ctx }) => signInMethods(ctx.db, ctx.actor)),
+
+  /** Disconnects a social account; refused for the last way to sign in. */
+  unlinkProvider: protectedProcedure
+    .input(z.object({ providerId: z.enum(SOCIAL_PROVIDERS) }))
+    .mutation(({ ctx, input }) => unlinkProvider(ctx.db, ctx.actor, input.providerId)),
 
   /** "Become an organizer" from an existing account: a prefilled profile. */
   becomeOrganizer: protectedProcedure.mutation(async ({ ctx }) => {

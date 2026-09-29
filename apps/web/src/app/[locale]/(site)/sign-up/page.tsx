@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { AuthCard } from '@/components/auth/auth-parts';
+import { getServerEnv, socialProviderList } from '@/env';
 import { resolveLocale } from '@/i18n/locale';
 import { Link, redirect } from '@/i18n/navigation';
 import { safeNext } from '@/lib/safe-next';
@@ -45,6 +46,8 @@ export default async function SignUpPage({ params, searchParams }: PageProps<'/[
       <SignUpForm
         next={next}
         initialType={sp.type === 'organizer' ? 'organizer' : 'participant'}
+        socialProviders={socialProviderList(getServerEnv())}
+        socialError={typeof sp.error === 'string' ? sp.error : undefined}
         showDevOutbox={process.env.NODE_ENV !== 'production'}
       />
     </AuthCard>

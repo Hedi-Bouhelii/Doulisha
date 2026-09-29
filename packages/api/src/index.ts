@@ -6,6 +6,11 @@ export { createContext, type Context } from './context';
 export type { BuyerNotice, ServiceDeps } from './deps';
 export { publishProblems, type PublishProblem } from './domain/publish';
 export { quoteOrder } from './domain/pricing';
+export {
+  canRemoveProvider,
+  type SignInMethods,
+  type SocialProvider,
+} from './domain/sign-in-methods';
 export { handlePaymentEvent } from './services/payments';
 export { getProofForViewer } from './services/tickets';
 export { loadManagedEvent } from './services/event-editor';

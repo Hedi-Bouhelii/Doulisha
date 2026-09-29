@@ -246,7 +246,12 @@
     "tooManyPhotos": "You can show up to {max} photos.",
     "paymentMethodNotAllowed": "This event does not accept this payment method.",
     "proofUnderReview": "Your receipt is being checked: wait for the organizer.",
-    "proofPending": "A receipt is waiting: check it in \"Payments\" first."
+    "proofPending": "A receipt is waiting: check it in \"Payments\" first.",
+    "socialAccountExists": "A Doulisha account already uses this email. Sign in with a code or your password, then connect this account in “My account”.",
+    "socialLinkedElsewhere": "This Google or Facebook account is already connected to another Doulisha account.",
+    "socialCancelled": "Sign-in cancelled.",
+    "socialFailed": "Sign-in did not work. Try again or use a code.",
+    "lastSignInMethod": "You cannot remove your last way to sign in."
   },
   "Dev": {
     "outboxTitle": "Dev outbox",
@@ -267,7 +272,7 @@
     "copy": "Copy link",
     "copied": "Link copied",
     "more": "More…",
-    "images": "Images for social media",
+    "images": "Story and images (Instagram, TikTok…)",
     "post": "Post (square)",
     "story": "Story",
     "invitation": "Invitation card",
@@ -275,7 +280,10 @@
     "message": "{title} · {date} on Doulisha",
     "cardInvited": "You are invited",
     "cardBook": "Book on doulisha.tn",
-    "cardFree": "Free"
+    "cardFree": "Free",
+    "imagesShareHint": "Tap “Share”, then choose Instagram, TikTok or WhatsApp. Add the event link with a “Link” sticker.",
+    "imagesDownloadHint": "Download the image and post it from your phone. The event link is copied at the same time.",
+    "shareImage": "Share"
   },
   "Checkout": {
     "title": "Book: {title}",
@@ -724,8 +732,9 @@
   "Legal": {
     "terms": "Terms of use",
     "privacy": "Privacy policy",
-    "draft": "Draft for legal review: this text will be replaced by the version validated by our lawyer before launch.",
-    "updated": "Last updated: {date}"
+    "draft": "Draft, written from how Doulisha really works. It will be reviewed before the public launch.",
+    "updated": "Last updated: {date}",
+    "dataDeletion": "Data deletion"
   },
   "AdminTemplates": {
     "title": "Category templates",
@@ -740,7 +749,8 @@
   "Footer": {
     "terms": "Terms",
     "privacy": "Privacy",
-    "legal": "Legal"
+    "legal": "Legal",
+    "dataDeletion": "Data deletion"
   },
   "OrganizerProfile": {
     "about": "About",
@@ -878,5 +888,28 @@
     "receipt_rejectedSubject": "Receipt refused for {event}",
     "reservation_cancelled": "Doulisha: your reservation {reference} for {event} was cancelled by the organizer (payment not received). {url}",
     "reservation_cancelledSubject": "Reservation cancelled for {event}"
+  },
+  "Account": {
+    "title": "My account",
+    "intro": "Choose how you sign in to Doulisha.",
+    "signInMethods": "Sign-in methods",
+    "signInHint": "Connect Google or Facebook to sign in with one tap. Always keep at least one way to sign in.",
+    "phone": "Phone",
+    "email": "Email",
+    "password": "Password",
+    "notAdded": "Not added",
+    "passwordSet": "Set",
+    "passwordNotSet": "No password: you sign in with a code, Google or Facebook.",
+    "addPassword": "Add",
+    "savePassword": "Save",
+    "cancel": "Cancel",
+    "connectedSince": "Connected since {date}",
+    "notConnected": "Not connected",
+    "connect": "Connect",
+    "remove": "Remove",
+    "removeTitle": "Remove {provider}?",
+    "removeHint": "You will no longer be able to sign in with {provider}. You can connect it again later.",
+    "lastMethodHint": "This is your only way to sign in: add a password or connect another account before removing it.",
+    "linked": "{provider} is now connected to your account."
   }
 }

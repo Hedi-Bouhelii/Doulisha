@@ -32,6 +32,7 @@ export async function SiteHeader() {
   // Member spaces: in the account menu on large screens, in the menu sheet on phones.
   const spaces = user
     ? [
+        { href: '/account', label: t('account') },
         { href: '/organizer', label: t('organizer') },
         { href: '/host', label: t('host') },
         ...(user.isAdmin ? [{ href: '/admin', label: t('admin') }] : []),
