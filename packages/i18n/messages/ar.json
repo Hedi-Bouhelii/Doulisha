@@ -83,7 +83,7 @@
     "reset": "إعادة الضبط"
   },
   "Event": {
-    "going": "{count} مشارك",
+    "going": "{count, plural, zero {لا مشاركين} one {مشارك واحد} two {مشاركان} few {# مشاركين} many {# مشاركًا} other {# مشارك}}",
     "free": "مجاني",
     "from": "ابتداءً من {price}",
     "onlineTicket": "تذكرة إلكترونية",
@@ -140,7 +140,7 @@
     "phoneTab": "الهاتف",
     "emailTab": "البريد الإلكتروني",
     "phoneLabel": "رقم الهاتف",
-    "phoneHint": "الأرقام التونسية: 8 أرقام. للبلدان الأخرى أضف رمز البلد، مثلًا \u2066+33\u2069.",
+    "phoneHint": "الأرقام التونسية: 8 أرقام. للبلدان الأخرى أضف رمز البلد، مثلًا ⁦+33⁩.",
     "sendCode": "أرسل الرمز",
     "codeLabel": "رمز من 6 أرقام",
     "codeSentTo": "أرسلنا رمزًا إلى {phone}.",
@@ -555,7 +555,7 @@
     "checkInAlready": "دخل مسبقًا على الساعة {time}.",
     "checkInInvalid": "تذكرة غير معروفة أو ملغاة.",
     "cameraUnavailable": "الماسح غير متاح على هذا المتصفح. اكتب الرمز.",
-    "present": "{count} حاضر",
+    "present": "{count, plural, zero {لا حاضرين} one {حاضر واحد} two {حاضران} few {# حاضرين} many {# حاضرًا} other {# حاضر}}",
     "printTitle": "قائمة المشاركين: {title}",
     "print": "اطبع أو احفظ بصيغة PDF",
     "shareTitle": "شارك فعاليتك",
