@@ -13,13 +13,16 @@ export const palette = {
   terracottaStrong: '#A64E1F',
   terracottaLight: '#F6E4D8',
   cream: '#F5F0E8',
+  /** Warm off-white for cards and inputs: never pure white on cream (design system v2). */
+  surface: '#FFFCF7',
   sand: '#E8DCC8',
   sandLight: '#F0E8DA',
   brown: '#8B5E3C',
   ink: '#2A2420',
   white: '#FFFFFF',
-  success: '#2E7D4F',
-  warning: '#9A6700',
+  /** Deep enough for text on cream and on its soft tint (WCAG AA). */
+  success: '#276F45',
+  warning: '#8A5A00',
   danger: '#B42318',
 } as const;
 
@@ -44,10 +47,17 @@ export interface ThemeColors {
   highlight: string;
   highlightForeground: string;
   highlightSoft: string;
+  /** Tints behind status text (badges, banners): the matching colour reads on them. */
+  primarySoft: string;
   destructive: string;
   destructiveForeground: string;
+  destructiveSoft: string;
   success: string;
+  successSoft: string;
   warning: string;
+  warningSoft: string;
+  info: string;
+  infoSoft: string;
   border: string;
   input: string;
   ring: string;
@@ -57,9 +67,9 @@ export const themes: { light: ThemeColors; dark: ThemeColors } = {
   light: {
     background: palette.cream,
     foreground: palette.ink,
-    card: palette.white,
+    card: palette.surface,
     cardForeground: palette.ink,
-    popover: palette.white,
+    popover: palette.surface,
     popoverForeground: palette.ink,
     primary: palette.forest,
     primaryForeground: palette.white,
@@ -72,10 +82,16 @@ export const themes: { light: ThemeColors; dark: ThemeColors } = {
     highlight: palette.terracottaStrong,
     highlightForeground: palette.white,
     highlightSoft: palette.terracottaLight,
+    primarySoft: '#E4EDDC',
     destructive: palette.danger,
     destructiveForeground: palette.white,
+    destructiveSoft: '#FBE3E0',
     success: palette.success,
+    successSoft: '#E0F0E5',
     warning: palette.warning,
+    warningSoft: '#FBEBC8',
+    info: '#2B5C8A',
+    infoSoft: '#E1EBF5',
     border: palette.sand,
     input: '#D9CBB3',
     ring: palette.forest,
@@ -98,10 +114,16 @@ export const themes: { light: ThemeColors; dark: ThemeColors } = {
     highlight: '#E08A55',
     highlightForeground: '#1E0F05',
     highlightSoft: '#3A2518',
+    primarySoft: '#1E3320',
     destructive: '#F2766B',
     destructiveForeground: '#1F0806',
+    destructiveSoft: '#3D1916',
     success: '#6FCF97',
+    successSoft: '#15301F',
     warning: '#E5B454',
+    warningSoft: '#3A2D12',
+    info: '#8DB9E3',
+    infoSoft: '#15283B',
     border: '#3A332C',
     input: '#4A4138',
     ring: '#7DB36E',
@@ -125,12 +147,38 @@ export const categoryAccents = {
 
 export type CategoryAccent = keyof typeof categoryAccents;
 
+/**
+ * Corner radii, smallest to largest (design system v2): chips and small
+ * controls `sm`–`lg`, inputs `xl`, cards `2xl`, hero images, dialogs and the
+ * booking card `3xl`, buttons and badges `full`.
+ */
 export const radii = {
   sm: '0.5rem',
-  md: '0.75rem',
-  lg: '1rem',
-  xl: '1.25rem',
+  md: '0.625rem',
+  lg: '0.75rem',
+  xl: '0.875rem',
+  '2xl': '1.25rem',
+  '3xl': '1.75rem',
   full: '9999px',
+} as const;
+
+/**
+ * Soft, warm-tinted shadows per theme: `card` for resting surfaces, `raised`
+ * for hover and sticky panels, `overlay` for menus, dialogs and sheets.
+ */
+export const elevations = {
+  light: {
+    xs: '0 1px 2px rgb(42 36 32 / 0.05)',
+    card: '0 1px 2px rgb(42 36 32 / 0.04), 0 6px 20px -8px rgb(42 36 32 / 0.10)',
+    raised: '0 2px 6px rgb(42 36 32 / 0.06), 0 16px 36px -12px rgb(42 36 32 / 0.18)',
+    overlay: '0 24px 64px -16px rgb(42 36 32 / 0.28)',
+  },
+  dark: {
+    xs: '0 1px 2px rgb(0 0 0 / 0.4)',
+    card: '0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -8px rgb(0 0 0 / 0.5)',
+    raised: '0 2px 6px rgb(0 0 0 / 0.35), 0 16px 36px -12px rgb(0 0 0 / 0.6)',
+    overlay: '0 24px 64px -16px rgb(0 0 0 / 0.7)',
+  },
 } as const;
 
 /** Font families (loaded by the app; these are the family names). */

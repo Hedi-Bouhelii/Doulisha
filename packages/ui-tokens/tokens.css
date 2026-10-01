@@ -3,9 +3,9 @@
 :root {
   --background: #F5F0E8;
   --foreground: #2A2420;
-  --card: #FFFFFF;
+  --card: #FFFCF7;
   --card-foreground: #2A2420;
-  --popover: #FFFFFF;
+  --popover: #FFFCF7;
   --popover-foreground: #2A2420;
   --primary: #2D5A27;
   --primary-foreground: #FFFFFF;
@@ -18,10 +18,16 @@
   --highlight: #A64E1F;
   --highlight-foreground: #FFFFFF;
   --highlight-soft: #F6E4D8;
+  --primary-soft: #E4EDDC;
   --destructive: #B42318;
   --destructive-foreground: #FFFFFF;
-  --success: #2E7D4F;
-  --warning: #9A6700;
+  --destructive-soft: #FBE3E0;
+  --success: #276F45;
+  --success-soft: #E0F0E5;
+  --warning: #8A5A00;
+  --warning-soft: #FBEBC8;
+  --info: #2B5C8A;
+  --info-soft: #E1EBF5;
   --border: #E8DCC8;
   --input: #D9CBB3;
   --ring: #2D5A27;
@@ -49,7 +55,11 @@
   --cat-kids: #2E8C80;
   --cat-kids-bg: #DDF1EE;
   --cat-kids-fg: #1E6259;
-  --radius: 1rem;
+  --elevation-xs: 0 1px 2px rgb(42 36 32 / 0.05);
+  --elevation-card: 0 1px 2px rgb(42 36 32 / 0.04), 0 6px 20px -8px rgb(42 36 32 / 0.10);
+  --elevation-raised: 0 2px 6px rgb(42 36 32 / 0.06), 0 16px 36px -12px rgb(42 36 32 / 0.18);
+  --elevation-overlay: 0 24px 64px -16px rgb(42 36 32 / 0.28);
+  --radius: 0.875rem;
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 250ms;
@@ -75,13 +85,23 @@
   --highlight: #E08A55;
   --highlight-foreground: #1E0F05;
   --highlight-soft: #3A2518;
+  --primary-soft: #1E3320;
   --destructive: #F2766B;
   --destructive-foreground: #1F0806;
+  --destructive-soft: #3D1916;
   --success: #6FCF97;
+  --success-soft: #15301F;
   --warning: #E5B454;
+  --warning-soft: #3A2D12;
+  --info: #8DB9E3;
+  --info-soft: #15283B;
   --border: #3A332C;
   --input: #4A4138;
   --ring: #7DB36E;
+  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -8px rgb(0 0 0 / 0.5);
+  --elevation-raised: 0 2px 6px rgb(0 0 0 / 0.35), 0 16px 36px -12px rgb(0 0 0 / 0.6);
+  --elevation-overlay: 0 24px 64px -16px rgb(0 0 0 / 0.7);
   color-scheme: dark;
 }
 
@@ -103,10 +123,16 @@
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-highlight-soft: var(--highlight-soft);
+  --color-primary-soft: var(--primary-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -135,7 +161,13 @@
   --color-cat-kids-bg: var(--cat-kids-bg);
   --color-cat-kids-fg: var(--cat-kids-fg);
   --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+  --shadow-xs: var(--elevation-xs);
+  --shadow-card: var(--elevation-card);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-overlay: var(--elevation-overlay);
 }

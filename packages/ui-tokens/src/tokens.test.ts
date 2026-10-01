@@ -23,6 +23,15 @@ describe('WCAG AA contrast', () => {
         ['destructive button', t.destructiveForeground, t.destructive],
         ['primary text on background', t.primary, t.background],
         ['highlight text on background', t.highlight, t.background],
+        ['muted text on card', t.mutedForeground, t.card],
+        ['primary text on card', t.primary, t.card],
+        ['primary on its soft tint', t.primary, t.primarySoft],
+        ['highlight on its soft tint', t.highlight, t.highlightSoft],
+        ['success on its soft tint', t.success, t.successSoft],
+        ['success text on background', t.success, t.background],
+        ['warning on its soft tint', t.warning, t.warningSoft],
+        ['danger on its soft tint', t.destructive, t.destructiveSoft],
+        ['info on its soft tint', t.info, t.infoSoft],
       ];
       for (const [label, fg, bg] of pairs) {
         it(`${label} is at least ${AA_TEXT}:1`, () => {
