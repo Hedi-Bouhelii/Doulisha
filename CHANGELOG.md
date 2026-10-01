@@ -20,7 +20,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
   - event management, after the founder's mockup: cover, stat tiles, fill bar, a "⋯" menu for exports, duplicate and cancel, attendee cards, booking sources and sharing;
   - the create-event wizard, after the founder's mockup: side stepper, "Step 2 of 7", option cards, cover drop zone;
   - payments inbox, check-in, profile editor and template picker.
-- **States:** loading skeletons for the main routes (`loading.tsx`); error and 404 pages offer a way home; empty states with icons.
+- **States:** loading skeletons shaped like the page on Explore, the feed, messages and the list of private invitations; error and 404 pages offer a way home; empty states with icons.
 - **Private invitation form:** the founder's draft layout, with every text translated (fr, en, ar).
 - The radio dot is centred in Arabic too; the dialog and sheet close buttons and the logo link have translated labels.
 
