@@ -43,8 +43,8 @@ export function OrganizerProfileView({
   const links = socialNetworks.filter((n) => profile.socialLinks[n.key]);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="relative aspect-[5/2] max-h-72 w-full bg-secondary sm:aspect-[4/1]">
+    <article className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card">
+      <div className="relative aspect-[5/2] max-h-80 w-full bg-secondary sm:aspect-[7/2]">
         {profile.coverUrl ? (
           <Image
             src={profile.coverUrl}
@@ -57,11 +57,12 @@ export function OrganizerProfileView({
         ) : (
           <div className="absolute inset-0 bg-linear-to-br from-primary/25 via-secondary to-highlight/20" />
         )}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/25 to-transparent" />
       </div>
-      <div className="px-4 pb-6 sm:px-6">
+      <div className="px-4 pb-8 sm:px-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex items-end gap-3">
-            <div className="relative -mt-10 size-20 shrink-0 overflow-hidden rounded-2xl border-4 border-card bg-muted shadow-sm sm:-mt-12 sm:size-24">
+            <div className="relative -mt-10 size-20 shrink-0 overflow-hidden rounded-3xl border-4 border-card bg-muted shadow-raised sm:-mt-14 sm:size-28">
               {profile.logoUrl ? (
                 <Image src={profile.logoUrl} alt="" fill sizes="96px" className="object-cover" />
               ) : (
@@ -72,7 +73,7 @@ export function OrganizerProfileView({
             </div>
             <div className="min-w-0 pt-3 pb-1">
               <h1
-                className="flex flex-wrap items-center gap-2 text-2xl font-bold sm:text-3xl"
+                className="flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight sm:text-4xl"
                 data-testid="organizer-name"
               >
                 {profile.name}
@@ -86,22 +87,28 @@ export function OrganizerProfileView({
           {actions ? <div className="flex flex-wrap gap-2 pb-1">{actions}</div> : null}
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_16rem]">
-          <div className="min-w-0 space-y-6">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_17rem]">
+          <div className="min-w-0 space-y-8">
             {profile.bio ? (
               <section>
-                <h2 className="mb-2 font-sans text-base font-semibold">{t('about')}</h2>
-                <p dir="auto" className="text-start whitespace-pre-line text-foreground/90">
+                <h2 className="mb-2 font-sans text-lg font-semibold">{t('about')}</h2>
+                <p
+                  dir="auto"
+                  className="text-start leading-relaxed whitespace-pre-line text-foreground/90"
+                >
                   {profile.bio}
                 </p>
               </section>
             ) : null}
             {profile.categories.length > 0 ? (
               <section>
-                <h2 className="mb-2 font-sans text-base font-semibold">{t('organizes')}</h2>
+                <h2 className="mb-3 font-sans text-lg font-semibold">{t('organizes')}</h2>
                 <ul className="flex flex-wrap gap-2">
                   {profile.categories.map((c) => (
-                    <li key={c} className="rounded-full bg-secondary px-3 py-1 text-sm font-medium">
+                    <li
+                      key={c}
+                      className="rounded-full bg-primary-soft px-3.5 py-1 text-sm font-medium text-primary"
+                    >
                       {c}
                     </li>
                   ))}
@@ -109,7 +116,7 @@ export function OrganizerProfileView({
               </section>
             ) : null}
             <section>
-              <h2 className="mb-3 font-sans text-base font-semibold">{t('pastEvents')}</h2>
+              <h2 className="mb-3 font-sans text-lg font-semibold">{t('pastEvents')}</h2>
               {profile.photos.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('noPhotos')}</p>
               ) : (
@@ -120,14 +127,14 @@ export function OrganizerProfileView({
                   {profile.photos.map((photo) => (
                     <li
                       key={photo.id}
-                      className="relative aspect-square overflow-hidden rounded-xl bg-muted"
+                      className="group relative aspect-square overflow-hidden rounded-2xl bg-muted"
                     >
                       <Image
                         src={photo.url}
                         alt={photo.caption ?? ''}
                         fill
                         sizes="(min-width: 640px) 33vw, 50vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                       />
                     </li>
                   ))}

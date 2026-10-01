@@ -1,6 +1,6 @@
 import { formatEventDateTime } from '@doulisha/i18n';
 import { TRPCError } from '@trpc/server';
-import { CalendarDays, MapPin, Users } from 'lucide-react';
+import { CalendarDays, MapPin, PartyPopper, Sparkles, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -8,7 +8,9 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
 import { GroupChatButton } from '@/components/doulisha/chat';
-import { FriendsGoing } from '@/components/doulisha/friends-going';
+import { HillsBackdrop } from '@/components/doulisha/decor';
+import { FriendsGoing, initials } from '@/components/doulisha/friends-going';
+import { Badge } from '@/components/ui/badge';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { getSession } from '@/server/auth';
@@ -52,11 +54,19 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
     .filter(Boolean)
     .join(' · ');
 
+  const statusTone = {
+    going: 'success',
+    maybe: 'warning',
+    not_going: 'neutral',
+    invited: 'neutral',
+    seen: 'neutral',
+  } as const;
+
   return (
-    <article className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <div className="overflow-hidden rounded-2xl border-4 border-highlight bg-card">
-        {invitation.coverUrl ? (
-          <div className="relative aspect-[16/9] bg-muted">
+    <article className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-raised">
+        <div className="relative aspect-[16/9] bg-highlight-soft">
+          {invitation.coverUrl ? (
             <Image
               src={invitation.coverUrl}
               alt=""
@@ -65,36 +75,49 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
               sizes="(min-width: 672px) 672px, 100vw"
               className="object-cover"
             />
-          </div>
-        ) : null}
-        <div className="space-y-3 p-6 text-center">
-          <p className="inline-block rounded-full bg-highlight px-4 py-1 text-sm font-semibold text-white">
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <HillsBackdrop className="absolute inset-x-0 bottom-0 h-2/3" />
+              <PartyPopper className="relative size-16 text-highlight" aria-hidden="true" />
+            </div>
+          )}
+        </div>
+        <div className="relative space-y-4 px-6 pt-8 pb-8 text-center sm:px-10">
+          <p className="absolute -top-4 start-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-highlight px-4 py-1.5 text-sm font-semibold whitespace-nowrap text-highlight-foreground shadow-raised rtl:translate-x-1/2">
+            <Sparkles className="size-4" aria-hidden="true" />
             {t('invitedBy', { name: invitation.hostName })}
           </p>
-          <h1 className="text-3xl font-bold sm:text-4xl" data-testid="invite-title">
+          <h1
+            className="font-display text-3xl font-bold tracking-tight text-balance sm:text-5xl"
+            data-testid="invite-title"
+          >
             {invitation.title}
           </h1>
-          <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
-            <CalendarDays className="size-4" aria-hidden="true" />
-            {formatEventDateTime(invitation.startsAt, locale)}
-          </p>
-          {place ? (
-            <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
-              <MapPin className="size-4" aria-hidden="true" />
-              {place}
-            </p>
-          ) : null}
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3.5 py-1.5 font-medium text-primary">
+              <CalendarDays className="size-4" aria-hidden="true" />
+              {formatEventDateTime(invitation.startsAt, locale)}
+            </span>
+            {place ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1.5 font-medium">
+                <MapPin className="size-4" aria-hidden="true" />
+                {place}
+              </span>
+            ) : null}
+          </div>
           {invitation.addressHidden ? (
             <p className="text-sm text-muted-foreground">{t('addressHidden')}</p>
           ) : null}
           {invitation.description ? (
-            <p className="whitespace-pre-line text-start">{invitation.description}</p>
+            <p className="text-start leading-relaxed whitespace-pre-line text-foreground/90">
+              {invitation.description}
+            </p>
           ) : null}
           <p
-            className="flex items-center justify-center gap-1.5 text-sm font-medium"
+            className="flex items-center justify-center gap-1.5 text-sm font-semibold"
             data-testid="invite-counts"
           >
-            <Users className="size-4" aria-hidden="true" />
+            <Users className="size-4 text-primary" aria-hidden="true" />
             {t('counts', { going: invitation.counts.going, maybe: invitation.counts.maybe })}
           </p>
         </div>
@@ -102,9 +125,11 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
 
       <div className="mt-6">
         {cancelled ? (
-          <p className="rounded-lg bg-highlight-soft p-4 text-highlight">{t('cancelled')}</p>
+          <p className="rounded-2xl bg-destructive-soft px-5 py-4 text-destructive">
+            {t('cancelled')}
+          </p>
         ) : past ? (
-          <p className="rounded-lg bg-muted p-4 text-muted-foreground">{t('past')}</p>
+          <p className="rounded-2xl bg-muted px-5 py-4 text-muted-foreground">{t('past')}</p>
         ) : invitation.isHost ? (
           <p className="text-center text-sm">
             <Link href="/host" className="font-semibold text-primary hover:underline">
@@ -130,12 +155,14 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
         </div>
       ) : null}
 
-      <section aria-labelledby="guests-title" className="mt-8">
-        <h2 id="guests-title" className="mb-3 font-sans text-lg font-semibold">
+      <section aria-labelledby="guests-title" className="mt-10">
+        <h2 id="guests-title" className="mb-4 font-sans text-xl font-semibold">
           {t('guestList')}
         </h2>
         {invitation.guests.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('guestListHidden')}</p>
+          <p className="rounded-2xl border border-dashed border-border bg-card/60 px-5 py-6 text-sm text-muted-foreground">
+            {t('guestListHidden')}
+          </p>
         ) : (
           <>
             <FriendsGoing
@@ -145,22 +172,31 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
               count={invitation.counts.going}
             />
             <ul
-              className="mt-4 divide-y divide-border rounded-xl border border-border bg-card"
+              className="mt-4 divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card"
               data-testid="guest-list"
             >
               {invitation.guests.map((guest, index) => (
-                <li key={index} className="flex items-center justify-between gap-3 p-3 text-sm">
-                  <span className="font-medium">
+                <li
+                  key={index}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm"
+                >
+                  <span className="flex items-center gap-3 font-medium">
+                    <span className="flex size-9 items-center justify-center rounded-full bg-secondary text-xs font-semibold">
+                      {initials(guest.name)}
+                    </span>
                     {guest.name}
                     {guest.plusOnes > 0 ? (
                       <span className="ltr-nums text-muted-foreground"> +{guest.plusOnes}</span>
                     ) : null}
                   </span>
-                  <span className="text-muted-foreground">
+                  <Badge
+                    variant={statusTone[guest.status as keyof typeof statusTone] ?? 'neutral'}
+                    dot
+                  >
                     {t(`status.${guest.status as 'going'}`)}
-                  </span>
+                  </Badge>
                   {guest.dietaryNotes ? (
-                    <span className="w-full text-xs text-muted-foreground">
+                    <span className="w-full ps-12 text-xs text-muted-foreground">
                       {guest.dietaryNotes}
                     </span>
                   ) : null}

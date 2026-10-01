@@ -1,11 +1,15 @@
 import { formatDate, type Locale } from '@doulisha/i18n';
-import { MessagesSquare } from 'lucide-react';
+import { MessagesSquare, UsersRound } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
+import { initials } from '@/components/doulisha/friends-going';
+import { Container, PageHeader } from '@/components/doulisha/page';
+import { Button } from '@/components/ui/button';
 import { resolveLocale } from '@/i18n/locale';
 import { Link, redirect } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 
@@ -24,63 +28,96 @@ export default async function MessagesPage({ params }: PageProps<'/[locale]/mess
   if (!session) redirect({ href: `/sign-in?next=${encodeURIComponent('/messages')}`, locale });
   const inbox = await (await api()).chat.inbox();
   const t = await getTranslations('Chat');
+  const tNav = await getTranslations('Nav');
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <h1 className="text-3xl font-bold sm:text-4xl">{t('inboxTitle')}</h1>
-      <p className="mt-2 text-muted-foreground">{t('inboxIntro')}</p>
+    <Container size="narrow">
+      <PageHeader title={t('inboxTitle')} description={t('inboxIntro')} />
       {inbox.length === 0 ? (
-        <EmptyState className="mt-8" title={t('inboxEmpty')} hint={t('inboxEmptyHint')} />
+        <EmptyState
+          className="mt-8"
+          icon={MessagesSquare}
+          title={t('inboxEmpty')}
+          hint={t('inboxEmptyHint')}
+          action={
+            <Button asChild>
+              <Link href="/explore">{tNav('explore')}</Link>
+            </Button>
+          }
+        />
       ) : (
         <ul
-          className="mt-6 divide-y divide-border rounded-2xl border border-border bg-card"
+          className="mt-8 divide-y divide-border/70 overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card"
           data-testid="inbox"
         >
-          {inbox.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={`/messages/${item.id}`}
-                className="flex items-start gap-3 p-4 hover:bg-accent"
-                data-testid="inbox-item"
-              >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <MessagesSquare className="size-5 text-primary" aria-hidden="true" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="truncate font-semibold" dir="auto">
-                      {item.title}
-                    </span>
-                    {item.lastMessageAt ? (
-                      <span className="ltr-nums shrink-0 text-xs text-muted-foreground">
-                        {formatDate(item.lastMessageAt, locale)}
-                      </span>
-                    ) : null}
+          {inbox.map((item) => {
+            const unread = item.unread > 0;
+            return (
+              <li key={item.id}>
+                <Link
+                  href={`/messages/${item.id}`}
+                  className="flex items-start gap-3.5 p-4 transition-colors hover:bg-accent sm:p-5"
+                  data-testid="inbox-item"
+                >
+                  <span
+                    className={cn(
+                      'flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                      item.kind === 'group'
+                        ? 'bg-highlight-soft text-highlight'
+                        : 'bg-primary-soft text-primary',
+                    )}
+                  >
+                    {item.kind === 'group' ? (
+                      <UsersRound className="size-5" aria-hidden="true" />
+                    ) : (
+                      initials(item.title)
+                    )}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground" dir="auto">
-                    {item.kind === 'group'
-                      ? t('groupOf', { event: item.eventTitle })
-                      : t('about', { event: item.eventTitle })}
-                  </span>
-                  <span className="mt-1 flex items-center justify-between gap-2">
-                    <span className="truncate text-sm text-muted-foreground" dir="auto">
-                      {item.lastMessage ?? t('noMessagesYet')}
-                    </span>
-                    {item.unread > 0 ? (
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center justify-between gap-2">
                       <span
-                        className="ltr-nums shrink-0 rounded-full bg-highlight px-2 text-xs font-semibold text-white"
-                        data-testid="inbox-unread"
+                        className={cn('truncate', unread ? 'font-bold' : 'font-semibold')}
+                        dir="auto"
                       >
-                        {item.unread}
+                        {item.title}
                       </span>
-                    ) : null}
+                      {item.lastMessageAt ? (
+                        <span className="ltr-nums shrink-0 text-xs text-muted-foreground">
+                          {formatDate(item.lastMessageAt, locale)}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground" dir="auto">
+                      {item.kind === 'group'
+                        ? t('groupOf', { event: item.eventTitle })
+                        : t('about', { event: item.eventTitle })}
+                    </span>
+                    <span className="mt-1.5 flex items-center justify-between gap-2">
+                      <span
+                        className={cn(
+                          'truncate text-sm',
+                          unread ? 'font-medium text-foreground' : 'text-muted-foreground',
+                        )}
+                        dir="auto"
+                      >
+                        {item.lastMessage ?? t('noMessagesYet')}
+                      </span>
+                      {unread ? (
+                        <span
+                          className="ltr-nums inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-highlight px-1.5 text-xs leading-5 font-semibold text-highlight-foreground"
+                          data-testid="inbox-unread"
+                        >
+                          {item.unread}
+                        </span>
+                      ) : null}
+                    </span>
                   </span>
-                </span>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
-    </div>
+    </Container>
   );
 }

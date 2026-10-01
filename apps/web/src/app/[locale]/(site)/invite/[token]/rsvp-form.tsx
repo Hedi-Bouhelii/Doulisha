@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, CircleHelp, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -71,7 +71,7 @@ export function RsvpForm({
   if (!editing && answered) {
     return (
       <div
-        className="space-y-3 rounded-xl border border-border bg-card p-5 text-center"
+        className="space-y-3 rounded-2xl border border-border/70 bg-card shadow-card p-5 text-center"
         data-testid="rsvp-done"
       >
         <CheckCircle2 className="mx-auto size-10 text-success" aria-hidden="true" />
@@ -79,12 +79,7 @@ export function RsvpForm({
         <p className="text-muted-foreground">
           {t('yourAnswer', { status: t(`status.${current.status as Status}`) })}
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 rounded-full"
-          onClick={() => setEditing(true)}
-        >
+        <Button type="button" variant="outline" onClick={() => setEditing(true)}>
           {t('change')}
         </Button>
         {!isMember ? (
@@ -101,11 +96,11 @@ export function RsvpForm({
   return (
     <form
       onSubmit={(e) => void submit(e)}
-      className="space-y-5 rounded-xl border border-border bg-card p-5"
+      className="space-y-6 rounded-3xl border border-border/70 bg-card p-6 shadow-card sm:p-8"
     >
       <fieldset>
-        <legend className="mb-3 text-lg font-semibold">{t('question')}</legend>
-        <div className="grid grid-cols-3 gap-2" role="radiogroup">
+        <legend className="mb-4 font-display text-xl font-semibold">{t('question')}</legend>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3" role="radiogroup">
           {(['going', 'maybe', 'not_going'] as const).map((value) => (
             <button
               key={value}
@@ -115,12 +110,16 @@ export function RsvpForm({
               onClick={() => setStatus(value)}
               data-testid={`rsvp-${value}`}
               className={cn(
-                'min-h-12 rounded-xl border px-2 text-sm font-semibold transition',
+                'flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 text-sm font-semibold transition-[background-color,border-color,color,box-shadow] duration-150',
                 status === value
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border hover:bg-accent',
+                  ? 'border-primary bg-primary text-primary-foreground shadow-card'
+                  : 'border-border/80 bg-background hover:border-primary/40 hover:bg-primary-soft/50',
               )}
             >
+              {(() => {
+                const Icon = { going: CheckCircle2, maybe: CircleHelp, not_going: XCircle }[value];
+                return <Icon className="size-5" aria-hidden="true" />;
+              })()}
               {t(value === 'not_going' ? 'notGoing' : value)}
             </button>
           ))}
@@ -164,17 +163,14 @@ export function RsvpForm({
         />
       </Field>
       {error ? (
-        <p role="alert" className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+        <p
+          role="alert"
+          className="rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
           {error}
         </p>
       ) : null}
-      <Button
-        type="submit"
-        size="lg"
-        className="min-h-11 w-full rounded-full"
-        disabled={pending}
-        data-testid="rsvp-send"
-      >
+      <Button type="submit" size="lg" className="w-full" disabled={pending} data-testid="rsvp-send">
         {pending ? t('sending') : t('send')}
       </Button>
     </form>

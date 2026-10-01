@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { ItemMenu } from '@/components/doulisha/safety';
 import { Button } from '@/components/ui/button';
+import { fieldControlClass } from '@/components/ui/input';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { cn } from '@/lib/utils';
@@ -40,7 +41,7 @@ export function AskOrganizerButton({
 
   if (!signedIn) {
     return (
-      <Button asChild variant="outline" className={cn('min-h-11 rounded-full', className)}>
+      <Button asChild variant="outline" className={className}>
         <Link href={`/sign-in?next=${encodeURIComponent(eventPath)}`} data-testid="ask-organizer">
           <MessageCircle aria-hidden="true" />
           {t('askOrganizer')}
@@ -52,7 +53,7 @@ export function AskOrganizerButton({
     <div className={className}>
       <Button
         variant="outline"
-        className="min-h-11 w-full rounded-full"
+        className="w-full"
         disabled={open.isPending}
         onClick={() => {
           setError(null);
@@ -94,7 +95,6 @@ export function GroupChatButton({ eventId }: { eventId: string }) {
     <div>
       <Button
         variant="outline"
-        className="min-h-11 rounded-full"
         disabled={open.isPending}
         onClick={() => {
           setError(null);
@@ -150,11 +150,13 @@ export function ChatThread({
   const send = useMutation(trpc.chat.send.mutationOptions());
   const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const bottom = useRef<HTMLLIElement>(null);
+  const list = useRef<HTMLOListElement>(null);
   const count = thread.data?.messages.length ?? 0;
 
+  // Keep the newest message in view inside the conversation panel.
   useEffect(() => {
-    bottom.current?.scrollIntoView({ block: 'end' });
+    const element = list.current;
+    if (element) element.scrollTop = element.scrollHeight;
   }, [count]);
 
   async function submit(event?: FormEvent) {
@@ -175,17 +177,26 @@ export function ChatThread({
 
   if (thread.isPending) {
     return (
-      <div className="flex min-h-60 items-center justify-center" data-testid="chat-loading">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+      <div
+        className="flex h-[min(68dvh,40rem)] min-h-96 flex-col gap-3 rounded-3xl border border-border/70 bg-card p-4 shadow-card"
+        data-testid="chat-loading"
+        aria-busy="true"
+      >
         <span className="sr-only">{t('loading')}</span>
+        <div className="h-12 w-3/5 animate-pulse self-start rounded-2xl bg-muted" />
+        <div className="h-10 w-2/5 animate-pulse self-end rounded-2xl bg-primary-soft" />
+        <div className="h-16 w-1/2 animate-pulse self-start rounded-2xl bg-muted" />
       </div>
     );
   }
   if (thread.isError) {
     return (
-      <div role="alert" className="rounded-xl bg-muted p-4 text-sm">
-        <p>{errorMessage(thread.error)}</p>
-        <Button variant="outline" className="mt-3 min-h-11" onClick={() => void thread.refetch()}>
+      <div
+        role="alert"
+        className="flex flex-col items-center gap-3 rounded-3xl border border-border/70 bg-card px-6 py-12 text-center shadow-card"
+      >
+        <p className="text-sm text-muted-foreground">{errorMessage(thread.error)}</p>
+        <Button variant="outline" onClick={() => void thread.refetch()}>
           {t('retry')}
         </Button>
       </div>
@@ -201,17 +212,21 @@ export function ChatThread({
     return { ...message, day, showDay };
   });
   return (
-    <div className="flex flex-col">
+    <div className="flex h-[calc(100dvh-16rem)] min-h-[26rem] flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card sm:h-[min(70dvh,44rem)]">
       <ol
-        className="flex min-h-60 flex-col gap-2 rounded-2xl border border-border bg-card p-3 sm:p-4"
+        ref={list}
+        className="flex flex-1 flex-col gap-2 overflow-y-auto bg-background/40 p-4 sm:p-5"
         aria-live="polite"
         data-testid="chat-messages"
       >
         {messages.length === 0 ? (
           <li
-            className="m-auto max-w-sm text-center text-sm text-muted-foreground"
+            className="m-auto flex max-w-sm flex-col items-center gap-3 text-center text-sm text-muted-foreground"
             data-testid="chat-empty"
           >
+            <span className="flex size-12 items-center justify-center rounded-full bg-primary-soft text-primary">
+              <MessagesSquare className="size-5" aria-hidden="true" />
+            </span>
             {kind === 'group'
               ? t('emptyGroup')
               : role === 'member'
@@ -223,20 +238,22 @@ export function ChatThread({
           return (
             <li key={message.id} className="contents">
               {message.showDay ? (
-                <p className="my-2 text-center text-xs text-muted-foreground">{message.day}</p>
+                <p className="my-2 self-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {message.day}
+                </p>
               ) : null}
               <div
                 className={cn(
-                  'max-w-[85%] rounded-2xl px-3 py-2 text-sm',
+                  'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-xs sm:max-w-[75%]',
                   message.mine
-                    ? 'self-end rounded-ee-sm bg-primary text-primary-foreground'
-                    : 'self-start rounded-es-sm bg-muted',
+                    ? 'self-end rounded-ee-md bg-primary text-primary-foreground'
+                    : 'self-start rounded-es-md border border-border/60 bg-card',
                 )}
                 data-testid="chat-message"
                 data-mine={message.mine ? 'true' : 'false'}
               >
                 {!message.mine ? (
-                  <p className="mb-0.5 flex items-center gap-1 text-xs font-semibold" dir="auto">
+                  <p className="mb-1 flex items-center gap-1 text-xs font-semibold" dir="auto">
                     {message.senderIsGuest ? (
                       message.senderName
                     ) : (
@@ -245,7 +262,7 @@ export function ChatThread({
                       </Link>
                     )}
                     {message.fromOrganizer ? (
-                      <span className="ms-1.5 rounded-full bg-primary/10 px-1.5 font-normal text-primary">
+                      <span className="ms-1.5 rounded-full bg-primary-soft px-2 py-0.5 font-semibold text-primary">
                         {t('organizerBadge')}
                       </span>
                     ) : null}
@@ -263,13 +280,13 @@ export function ChatThread({
                     ) : null}
                   </p>
                 ) : null}
-                <p className="whitespace-pre-wrap break-words" dir="auto">
+                <p className="break-words whitespace-pre-wrap" dir="auto">
                   {message.body}
                 </p>
                 <p
                   className={cn(
-                    'ltr-nums mt-0.5 text-end text-[0.7rem]',
-                    message.mine ? 'text-primary-foreground/70' : 'text-muted-foreground',
+                    'ltr-nums mt-1 text-end text-[0.7rem]',
+                    message.mine ? 'text-primary-foreground/75' : 'text-muted-foreground',
                   )}
                 >
                   {formatTime(new Date(message.createdAt), locale)}
@@ -278,12 +295,11 @@ export function ChatThread({
             </li>
           );
         })}
-        <li ref={bottom} aria-hidden="true" className="h-0" />
       </ol>
 
       <form
         onSubmit={(e) => void submit(e)}
-        className="sticky bottom-0 mt-3 flex items-end gap-2 bg-background py-2"
+        className="flex items-end gap-2 border-t border-border/70 bg-card p-3 sm:p-4"
       >
         <label htmlFor="chat-body" className="sr-only">
           {t('placeholder')}
@@ -302,13 +318,13 @@ export function ChatThread({
           maxLength={2000}
           dir="auto"
           placeholder={t('placeholder')}
-          className="max-h-40 min-h-11 flex-1 resize-y rounded-2xl border border-input bg-card px-3 py-2.5 text-base focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className={cn(fieldControlClass, 'max-h-40 min-h-11 flex-1 resize-none px-4 py-2.5')}
           data-testid="chat-input"
         />
         <Button
           type="submit"
           size="icon"
-          className="size-11 shrink-0 rounded-full"
+          className="shrink-0"
           disabled={!body.trim() || send.isPending}
           aria-label={t('send')}
           data-testid="chat-send"
@@ -316,12 +332,15 @@ export function ChatThread({
           {send.isPending ? (
             <Loader2 className="animate-spin" aria-hidden="true" />
           ) : (
-            <SendHorizontal className="rtl:-scale-x-100" aria-hidden="true" />
+            <SendHorizontal className="rtl:rotate-180" aria-hidden="true" />
           )}
         </Button>
       </form>
       {error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p
+          role="alert"
+          className="border-t border-border/70 bg-destructive-soft px-4 py-2 text-sm text-destructive"
+        >
           {error}
         </p>
       ) : null}

@@ -25,18 +25,11 @@ export function InviteLinkActions({ url, title }: { url: string; title: string }
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="min-h-11 rounded-full"
-        onClick={() => void copy()}
-        data-testid="copy-invite"
-      >
+      <Button type="button" variant="outline" onClick={() => void copy()} data-testid="copy-invite">
         {copied ? <Check aria-hidden="true" /> : <Link2 aria-hidden="true" />}
         <span aria-live="polite">{copied ? tShare('copied') : t('copyInvite')}</span>
       </Button>
-      <Button asChild variant="outline" size="sm" className="min-h-11 rounded-full">
+      <Button asChild variant="outline">
         <a
           href={`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`}
           target="_blank"
@@ -46,7 +39,7 @@ export function InviteLinkActions({ url, title }: { url: string; title: string }
           {tShare('whatsapp')}
         </a>
       </Button>
-      <Button asChild size="sm" className="min-h-11 rounded-full">
+      <Button asChild>
         <a href={url} data-testid="open-invite">
           {tHost('openInvitation')}
         </a>

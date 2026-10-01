@@ -51,7 +51,7 @@ export default async function OrganizerPage({ params }: PageProps<'/[locale]/org
   const names = new Map(categories.map((c) => [c.slug, c.name]));
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
       <OrganizerProfileView
         profile={{
           ...organizer,
@@ -76,14 +76,16 @@ export default async function OrganizerPage({ params }: PageProps<'/[locale]/org
           </div>
         }
       >
-        <section aria-labelledby="upcoming" className="mt-8">
-          <h2 id="upcoming" className="mb-4 font-sans text-lg font-semibold">
+        <section aria-labelledby="upcoming" className="mt-10">
+          <h2 id="upcoming" className="mb-4 font-sans text-xl font-semibold">
             {t('upcoming')}
           </h2>
           {organizer.events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{tStates('emptyEventsHint')}</p>
+            <p className="rounded-2xl border border-dashed border-border bg-background/60 px-5 py-6 text-sm text-muted-foreground">
+              {tStates('emptyEventsHint')}
+            </p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {organizer.events.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -91,11 +93,11 @@ export default async function OrganizerPage({ params }: PageProps<'/[locale]/org
           )}
         </section>
         {organizer.pastEvents.length > 0 ? (
-          <section aria-labelledby="past" className="mt-10" data-testid="past-events">
-            <h2 id="past" className="mb-4 font-sans text-lg font-semibold">
+          <section aria-labelledby="past" className="mt-12" data-testid="past-events">
+            <h2 id="past" className="mb-4 font-sans text-xl font-semibold">
               {t('past', { count: organizer.pastEvents.length })}
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {organizer.pastEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}

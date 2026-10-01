@@ -35,7 +35,7 @@ export function FollowButton({
   const follow = useMutation(trpc.organizers.follow.mutationOptions());
   const unfollow = useMutation(trpc.organizers.unfollow.mutationOptions());
   const busy = follow.isPending || unfollow.isPending;
-  const size = compact ? 'min-h-11 rounded-full px-3' : 'min-h-11 rounded-full px-5';
+  const size = compact ? 'px-3.5' : 'px-5';
 
   if (!signedIn) {
     return (
