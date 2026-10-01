@@ -50,11 +50,10 @@ export function NearMeRail() {
 
   if (!position) {
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-border p-5">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-5">
         <Button
           type="button"
           variant="outline"
-          className="min-h-11 rounded-full"
           onClick={() => void start()}
           disabled={state === 'locating'}
         >
@@ -77,7 +76,11 @@ export function NearMeRail() {
     );
   }
   if (events.isError || !events.data?.length) {
-    return <p className="text-sm text-muted-foreground">{tStates('emptyEventsHint')}</p>;
+    return (
+      <p className="rounded-2xl border border-dashed border-border bg-card/60 p-5 text-sm text-muted-foreground">
+        {tStates('emptyEventsHint')}
+      </p>
+    );
   }
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

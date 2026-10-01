@@ -72,19 +72,25 @@ export default async function MockPayPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12">
-      <div className="rounded-2xl border-2 border-dashed border-highlight/60 bg-card p-6 text-center shadow-sm">
-        <CreditCard className="mx-auto size-10 text-highlight" aria-hidden="true" />
-        <h1 className="mt-3 font-sans text-xl font-bold">{t('title')}</h1>
+      <div className="rounded-3xl border-2 border-dashed border-highlight/50 bg-card p-6 text-center shadow-raised sm:p-8">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-highlight-soft text-highlight">
+          <CreditCard className="size-7" aria-hidden="true" />
+        </span>
+        <h1 className="mt-4 font-sans text-xl font-bold">{t('title')}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('hint')}</p>
-        <p className="mt-4 text-sm">{t('order', { reference })}</p>
-        <p className="mt-1 text-3xl font-bold">{formatPrice(amountMillimes, locale)}</p>
+        <div className="mt-6 rounded-2xl bg-muted/70 px-4 py-4">
+          <p className="ltr-nums text-sm text-muted-foreground">{t('order', { reference })}</p>
+          <p className="ltr-nums mt-1 text-3xl font-bold tracking-tight">
+            {formatPrice(amountMillimes, locale)}
+          </p>
+        </div>
         <form action={pay} className="mt-6">
-          <Button type="submit" className="h-12 w-full rounded-full" data-testid="mock-pay">
+          <Button type="submit" size="lg" className="w-full" data-testid="mock-pay">
             {t('pay', { amount: formatPrice(amountMillimes, locale) })}
           </Button>
         </form>
         <form action={fail} className="mt-2">
-          <Button type="submit" variant="ghost" className="min-h-11 w-full">
+          <Button type="submit" variant="ghost" className="w-full">
             {t('fail')}
           </Button>
         </form>

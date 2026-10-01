@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Check,
-  Download,
-  Image as ImageIcon,
-  Link2,
-  MessageCircle,
-  Send,
-  Share2,
-  ThumbsUp,
-} from 'lucide-react';
+import { Check, Download, Image as ImageIcon, Link2, Send, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -21,6 +12,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+
+import { FacebookIcon, WhatsAppIcon } from './social-icons';
 
 /** Adds the share channel to the link, so bookings can be traced back to it (SHR-04). */
 function withUtm(url: string, source: string): string {
@@ -119,66 +112,67 @@ export function ShareBar({
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${message} ${withUtm(url, 'whatsapp')}`)}`;
   const facebook = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(withUtm(url, 'facebook'))}`;
   const messenger = `fb-messenger://share/?link=${encodeURIComponent(withUtm(url, 'messenger'))}`;
-  const linkClass = 'min-h-11 rounded-full';
-
   return (
-    <section aria-labelledby="share-title" className="space-y-3">
-      <h2 id="share-title" className="font-sans text-base font-semibold">
+    <section aria-labelledby="share-title" className="space-y-4">
+      <h2 id="share-title" className="flex items-center gap-2 font-sans text-lg font-semibold">
+        <Share2 className="size-5 text-primary" aria-hidden="true" />
         {t('title')}
       </h2>
       <div className="flex flex-wrap gap-2" data-testid="share-bar">
-        <Button asChild variant="outline" className={linkClass}>
+        <Button asChild variant="outline">
           <a href={whatsapp} target="_blank" rel="noopener noreferrer" data-testid="share-whatsapp">
-            <MessageCircle aria-hidden="true" />
+            <WhatsAppIcon className="size-5 text-[#25A55F]" />
             {t('whatsapp')}
           </a>
         </Button>
-        <Button asChild variant="outline" className={linkClass}>
+        <Button asChild variant="outline">
           <a href={facebook} target="_blank" rel="noopener noreferrer">
-            <ThumbsUp aria-hidden="true" />
+            <FacebookIcon className="size-5 text-[#1877F2]" />
             {t('facebook')}
           </a>
         </Button>
-        <Button asChild variant="outline" className={`${linkClass} lg:hidden`}>
+        <Button asChild variant="outline" className="lg:hidden">
           <a href={messenger}>
             <Send aria-hidden="true" />
             {t('messenger')}
           </a>
         </Button>
-        <Button
-          variant="outline"
-          className={linkClass}
-          onClick={() => void copy()}
-          data-testid="share-copy"
-        >
+        <Button variant="outline" onClick={() => void copy()} data-testid="share-copy">
           {copied ? <Check aria-hidden="true" /> : <Link2 aria-hidden="true" />}
           <span aria-live="polite">{copied ? t('copied') : t('copy')}</span>
         </Button>
-        <Button variant="outline" className={linkClass} onClick={() => void nativeShare()}>
+        <Button variant="outline" onClick={() => void nativeShare()}>
           <Share2 aria-hidden="true" />
           {t('more')}
         </Button>
         <Dialog open={imagesOpen} onOpenChange={setImagesOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className={linkClass} data-testid="share-images">
+            <Button
+              variant="soft"
+              className="h-auto min-h-11 w-full py-2.5 whitespace-normal"
+              data-testid="share-images"
+            >
               <ImageIcon aria-hidden="true" />
               {t('images')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="sm:max-w-2xl">
             <DialogTitle>{t('images')}</DialogTitle>
             <DialogDescription>
               {shareFiles ? t('imagesShareHint') : t('imagesDownloadHint')}
             </DialogDescription>
             <ul className="grid grid-cols-3 gap-3">
               {FORMATS.map((format) => (
-                <li key={format} className="flex flex-col items-center gap-2 text-center text-sm">
+                <li
+                  key={format}
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-border/70 bg-background p-2 text-center text-sm font-medium"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element -- generated image, already sized and compressed by the route */}
                   <img
                     src={`${imageBase}&format=${format}`}
                     alt={t(format)}
                     loading="lazy"
-                    className="aspect-[4/5] w-full rounded-lg border border-border bg-muted object-contain"
+                    className="aspect-[4/5] w-full rounded-xl bg-muted object-contain"
                   />
                   <span>{t(format)}</span>
                   {shareFiles && files[format] ? (

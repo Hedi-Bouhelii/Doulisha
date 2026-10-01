@@ -21,11 +21,11 @@ export function CategoryTile({
   return (
     <Link
       href={href}
-      className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-3 text-center text-sm font-medium shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex min-h-28 flex-col items-center justify-center gap-2.5 rounded-2xl border border-border/70 bg-card p-3 text-center text-sm font-semibold shadow-card transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-raised"
     >
       <span
         className={cn(
-          'flex size-11 items-center justify-center rounded-full',
+          'flex size-12 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105',
           colors ? colors.tile : 'bg-muted text-foreground',
         )}
       >
