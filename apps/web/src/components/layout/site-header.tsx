@@ -2,19 +2,23 @@ import { Search } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 
-import { Logo } from '@/components/brand/logo';
+import { Logo, LogoMark } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
 
-import { CountBadge } from './count-badge';
 import { LocaleSwitcher } from './locale-switcher';
 import { MobileNav } from './mobile-nav';
+import { HeaderNav, type NavLink } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
 import { UserMenu } from './user-menu';
 
-/** Top bar from the template: logo, main links, search, language, theme, account. */
+/**
+ * Top bar (design system v2): logo, main links with the current page marked,
+ * search, language, theme and the account menu. The same bar serves public,
+ * member and organizer pages; each area adds its own navigation below it.
+ */
 export async function SiteHeader() {
   const t = await getTranslations('Nav');
   const session = await getSession();
@@ -26,7 +30,7 @@ export async function SiteHeader() {
 
   // Unread chat messages (ADR 0021), for members and for guests in a private event's chat.
   const unread = me ? await (await api()).chat.unread() : 0;
-  const links: { href: string; label: string; badge?: number }[] = [
+  const links: NavLink[] = [
     { href: '/', label: t('home') },
     { href: '/explore', label: t('explore') },
     // Visitors have no tickets; guests who booked on this device do.
@@ -34,7 +38,7 @@ export async function SiteHeader() {
     ...(me && !user ? [{ href: '/messages', label: t('messages'), badge: unread }] : []),
   ];
   // Member spaces: in the account menu on large screens, in the menu sheet on phones.
-  const spaces = user
+  const spaces: NavLink[] = user
     ? [
         { href: '/feed', label: t('feed') },
         { href: '/messages', label: t('messages'), badge: unread },
@@ -46,27 +50,18 @@ export async function SiteHeader() {
     : [];
 
   return (
-    <header className="sticky top-0 z-40 print:hidden border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:px-6">
-        <MobileNav
-          links={[...links, ...spaces, ...(me ? [] : [{ href: '/sign-in', label: t('signIn') }])]}
-        />
-        <Link href="/" className="me-auto rounded-lg md:me-6" aria-label="Doulisha">
-          <Logo />
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 print:hidden">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-1.5 px-4 sm:h-[4.25rem] sm:gap-2 sm:px-6">
+        <MobileNav links={links} spaces={spaces} signedOut={!me} />
+        <Link href="/" className="me-auto shrink-0 rounded-xl lg:me-4" aria-label={t('logoLabel')}>
+          {/* The symbol alone on the narrowest phones, so the bar never scrolls sideways. */}
+          <LogoMark className="h-9 min-[360px]:hidden" />
+          <Logo className="hidden h-9 min-[360px]:block sm:h-11" />
         </Link>
-        <nav aria-label={t('mainNavigation')} className="me-auto hidden items-center gap-1 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
-            >
-              {link.label}
-              <CountBadge count={link.badge} />
-            </Link>
-          ))}
-        </nav>
-        <Button asChild variant="ghost" size="icon" className="hidden size-11 sm:inline-flex">
+        <div className="me-auto hidden lg:block">
+          <HeaderNav links={links} label={t('mainNavigation')} />
+        </div>
+        <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex">
           <Link href="/explore" aria-label={t('search')}>
             <Search className="size-5" />
           </Link>
