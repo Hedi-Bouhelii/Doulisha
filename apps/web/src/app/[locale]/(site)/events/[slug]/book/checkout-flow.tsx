@@ -330,10 +330,7 @@ export function CheckoutFlow({
                   {stepLabels[i]}
                 </span>
                 {i < STEPS.length - 1 ? (
-                  <span
-                    aria-hidden="true"
-                    className="h-px min-w-3 flex-1 bg-border"
-                  />
+                  <span aria-hidden="true" className="h-px min-w-3 flex-1 bg-border" />
                 ) : null}
               </li>
             ))}

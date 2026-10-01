@@ -227,7 +227,7 @@ export function Wizard({
           aria-hidden="true"
           className="relative mt-10 hidden h-52 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] lg:block"
         >
-          <p className="relative z-10 max-w-40 -rotate-3 font-display text-lg leading-snug text-muted-foreground italic">
+          <p className="relative z-10 max-w-52 px-1 font-display text-lg leading-snug text-muted-foreground italic">
             {tOrganizer('thanksTitle')}
           </p>
           <LeafSprig className="absolute start-0 bottom-0 h-36 w-auto" />

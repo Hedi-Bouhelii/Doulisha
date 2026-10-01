@@ -191,7 +191,7 @@ export function Scanner({
         }}
       >
         <Label htmlFor="ticket-code">{t('codeLabel')}</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 min-[420px]:flex-row">
           <Input
             id="ticket-code"
             value={code}

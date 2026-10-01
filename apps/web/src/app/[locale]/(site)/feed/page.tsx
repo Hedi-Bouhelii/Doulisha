@@ -111,11 +111,11 @@ export default async function FeedPage({ params }: PageProps<'/[locale]/feed'>) 
             {feed.suggestions.map((organizer) => (
               <li
                 key={organizer.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card"
+                className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card"
               >
                 <Link
                   href={`/organizers/${organizer.slug}`}
-                  className="flex min-w-0 items-center gap-3"
+                  className="flex min-w-0 flex-1 items-center gap-3"
                 >
                   <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft text-sm font-semibold text-primary">
                     {organizer.logoUrl ? (
@@ -129,7 +129,7 @@ export default async function FeedPage({ params }: PageProps<'/[locale]/feed'>) 
                     <span className="block truncate font-semibold hover:underline" dir="auto">
                       {organizer.name}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="block truncate text-xs text-muted-foreground">
                       {t('upcomingCount', { count: organizer.upcoming })}
                     </span>
                   </span>

@@ -215,21 +215,18 @@ export function QuickInviteForm({ suggestedStart }: { suggestedStart: string }) 
         </Field>
       </FormSection>
 
-      <FormSection
-        title={t('when')}
-        hint={t('whenHint')}
-        className="rounded-2xl border border-border/70 bg-muted/40 p-5"
-      >
-        <Field id="host-when" label={t('when')} required>
+      <div className="rounded-2xl border border-border/70 bg-muted/40 p-5">
+        <Field id="host-when" label={t('when')} hint={t('whenHint')} required>
           <Input
             id="host-when"
             type="datetime-local"
             value={startsAt}
             onChange={(e) => setStartsAt(e.target.value)}
             required
+            aria-describedby="host-when-hint"
           />
         </Field>
-      </FormSection>
+      </div>
 
       <FormSection title={t('whereTitle')} hint={t('whereHint')}>
         <div className="grid gap-5 sm:grid-cols-2">
