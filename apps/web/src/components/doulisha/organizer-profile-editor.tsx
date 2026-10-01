@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { Check, ImagePlus, Loader2, Trash2 } from 'lucide-react';
+import { AlertCircle, Check, ImagePlus, Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
@@ -146,9 +146,9 @@ export function OrganizerProfileEditor({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[13rem_1fr]">
-      <nav aria-label={t('sections')} className="min-w-0">
-        <ol className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:flex-col lg:px-0">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+      <nav aria-label={t('sections')} className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+        <ol className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:px-0 lg:pb-0">
           {PROFILE_SECTIONS.map((name, i) => (
             <li key={name}>
               <button
@@ -157,14 +157,18 @@ export function OrganizerProfileEditor({
                 aria-current={name === section ? 'step' : undefined}
                 data-testid={`profile-section-${name}`}
                 className={cn(
-                  'flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-start text-sm font-medium whitespace-nowrap',
-                  name === section ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+                  'flex min-h-11 w-full items-center gap-2.5 rounded-full px-2 pe-4 text-start text-sm font-medium whitespace-nowrap transition-colors lg:min-h-12 lg:rounded-2xl',
+                  name === section
+                    ? 'bg-primary text-primary-foreground shadow-card'
+                    : 'text-foreground/80 hover:bg-accent hover:text-foreground',
                 )}
               >
                 <span
                   className={cn(
-                    'ltr-nums flex size-6 shrink-0 items-center justify-center rounded-full text-xs',
-                    name === section ? 'bg-primary-foreground/20' : 'bg-muted',
+                    'ltr-nums flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                    name === section
+                      ? 'bg-primary-foreground/20'
+                      : 'bg-muted text-muted-foreground',
                   )}
                 >
                   {i + 1}
@@ -176,9 +180,14 @@ export function OrganizerProfileEditor({
         </ol>
       </nav>
 
-      <div className="min-w-0 space-y-4">
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-          <p className="mb-5 text-sm text-muted-foreground">{t(`sectionHint.${section}`)}</p>
+      <div className="min-w-0 space-y-5">
+        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-card sm:p-6 lg:p-8">
+          <div className="mb-6">
+            <h2 className="font-sans text-xl font-semibold tracking-tight text-primary">
+              {t(`section.${section}`)}
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t(`sectionHint.${section}`)}</p>
+          </div>
           {section === 'identity' ? (
             <div className="space-y-5">
               <ImagePicker
@@ -252,10 +261,10 @@ export function OrganizerProfileEditor({
                         }
                         data-testid={`org-category-${c.slug}`}
                         className={cn(
-                          'flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition',
+                          'flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors',
                           on
                             ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border hover:bg-accent',
+                            : 'border-border/80 bg-card hover:border-primary/35 hover:bg-primary-soft/40',
                         )}
                       >
                         {on ? <Check className="size-4" aria-hidden="true" /> : null}
@@ -321,8 +330,8 @@ export function OrganizerProfileEditor({
                   />
                 </Field>
               </div>
-              <fieldset className="space-y-4 rounded-lg border border-border p-4">
-                <legend className="px-1 text-sm font-medium">{t('paymentTitle')}</legend>
+              <fieldset className="space-y-4 rounded-2xl border border-border/70 bg-muted/40 p-4 sm:p-5">
+                <legend className="px-1 text-sm font-semibold">{t('paymentTitle')}</legend>
                 <p className="text-xs text-muted-foreground">{t('paymentHint')}</p>
                 <Field id="org-d17" label={t('d17Number')}>
                   <Input
@@ -369,7 +378,11 @@ export function OrganizerProfileEditor({
         </div>
 
         {error ? (
-          <p role="alert" className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+          <p
+            role="alert"
+            className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {error}
           </p>
         ) : null}
@@ -379,19 +392,18 @@ export function OrganizerProfileEditor({
             <Button
               type="button"
               variant="outline"
-              className="min-h-11 rounded-full"
               onClick={() => setSection(PROFILE_SECTIONS[index - 1]!)}
             >
               {t('previous')}
             </Button>
           ) : (
-            <span aria-live="polite" className="text-sm text-success">
+            <span aria-live="polite" className="text-sm font-medium text-success">
               {saved ? tOrg('saved') : ''}
             </span>
           )}
           <Button
             type="button"
-            className="min-h-11 rounded-full px-6"
+            className="min-w-32"
             onClick={() => void next()}
             disabled={update.isPending || form.name.trim().length < 2}
             data-testid="profile-save"
@@ -464,8 +476,8 @@ function ImagePicker({
       <div className="flex flex-wrap items-center gap-3">
         <div
           className={cn(
-            'relative overflow-hidden rounded-xl bg-muted',
-            wide ? 'aspect-[3/1] w-full max-w-md' : 'size-20',
+            'relative overflow-hidden bg-muted ring-1 ring-border/70',
+            wide ? 'aspect-[3/1] w-full max-w-md rounded-2xl' : 'size-20 rounded-2xl',
           )}
         >
           {url ? (
@@ -487,8 +499,6 @@ function ImagePicker({
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="min-h-11 rounded-full"
             onClick={() => input.current?.click()}
             disabled={busy}
           >
@@ -503,8 +513,7 @@ function ImagePicker({
             <Button
               type="button"
               variant="ghost"
-              size="sm"
-              className="min-h-11 text-destructive"
+              className="text-destructive hover:bg-destructive-soft hover:text-destructive"
               onClick={onRemove}
             >
               {t('remove')}
@@ -513,7 +522,11 @@ function ImagePicker({
         </div>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-highlight">
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       ) : null}
@@ -577,14 +590,14 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
         {items.map((photo) => (
           <li
             key={photo.id}
-            className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
+            className="group relative aspect-square overflow-hidden rounded-xl bg-muted"
           >
             <Image src={photo.url} alt="" fill sizes="160px" className="object-cover" />
             <button
               type="button"
               onClick={() => void drop(photo.id)}
               aria-label={t('remove')}
-              className="absolute end-1 top-1 flex size-9 items-center justify-center rounded-full bg-black/60 text-white"
+              className="absolute end-1.5 top-1.5 flex size-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-destructive"
             >
               <Trash2 className="size-4" aria-hidden="true" />
             </button>
@@ -596,7 +609,7 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
               type="button"
               onClick={() => input.current?.click()}
               disabled={busy}
-              className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:bg-accent"
+              className="flex aspect-square w-full flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft/30 hover:text-primary"
             >
               {busy ? (
                 <Loader2 className="size-5 animate-spin" aria-hidden="true" />
@@ -620,7 +633,11 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
         }}
       />
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-highlight">
+        <p
+          role="alert"
+          className="mt-3 flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       ) : null}

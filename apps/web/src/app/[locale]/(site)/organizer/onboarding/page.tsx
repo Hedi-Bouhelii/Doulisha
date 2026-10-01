@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { PageHeader } from '@/components/doulisha/page';
 import { resolveLocale } from '@/i18n/locale';
 import { redirect } from '@/i18n/navigation';
 import { safeNext } from '@/lib/safe-next';
@@ -26,11 +27,8 @@ export default async function OrganizerOnboardingPage({
   const t = await getTranslations('OrganizerProfile');
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('onboardingTitle')}</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">{t('onboardingHint')}</p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader title={t('onboardingTitle')} description={t('onboardingHint')} />
       <Onboarding
         profile={profile!}
         categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}

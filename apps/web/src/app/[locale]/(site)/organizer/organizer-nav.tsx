@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
-/** Tabs of the organizer space; scrolls sideways on small screens. */
+/** Tabs of the organizer space (green underline on the current one); scrolls sideways on phones. */
 export function OrganizerNav({
   links,
 }: {
@@ -14,8 +14,8 @@ export function OrganizerNav({
   const pathname = usePathname();
   const t = useTranslations('Organizer');
   return (
-    <nav aria-label={t('title')} className="-mx-4 mt-2 overflow-x-auto px-4 print:hidden">
-      <ul className="flex gap-1 border-b border-border">
+    <nav aria-label={t('title')} className="no-scrollbar -mx-4 overflow-x-auto px-4 print:hidden">
+      <ul className="flex gap-1">
         {links.map((link) => {
           const active =
             link.href === '/organizer' ? pathname === link.href : pathname.startsWith(link.href);
@@ -25,16 +25,17 @@ export function OrganizerNav({
                 href={link.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  '-mb-px flex min-h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap',
+                  'relative flex min-h-12 items-center gap-2 px-3 text-sm font-medium whitespace-nowrap transition-colors',
+                  'after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors',
                   active
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                    ? 'text-primary after:bg-primary'
+                    : 'text-muted-foreground after:bg-transparent hover:text-foreground',
                 )}
               >
                 {link.label}
                 {link.badge ? (
                   <span
-                    className="ltr-nums ms-1.5 rounded-full bg-highlight px-1.5 text-xs text-white"
+                    className="ltr-nums inline-flex min-w-5 items-center justify-center rounded-full bg-highlight px-1.5 text-xs leading-5 font-semibold text-highlight-foreground"
                     data-testid="payments-badge"
                   >
                     {link.badge}

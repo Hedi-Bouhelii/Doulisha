@@ -17,7 +17,6 @@ export function BecomeOrganizerButton({ icon }: { icon?: ReactNode }) {
   return (
     <Button
       type="button"
-      className="min-h-11 rounded-full"
       disabled={become.isPending}
       onClick={() =>
         void become.mutateAsync().then(() => {

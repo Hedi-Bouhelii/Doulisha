@@ -3,11 +3,27 @@
 import type { Locale } from '@doulisha/i18n';
 import type { TemplateField } from '@doulisha/templates';
 import { useMutation } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2, ImagePlus, Plus, Trash2 } from 'lucide-react';
+import {
+  AlertCircle,
+  CalendarDays,
+  CheckCircle2,
+  FileText,
+  ImagePlus,
+  Layers,
+  ListChecks,
+  Plus,
+  Send,
+  Ticket,
+  Trash2,
+  Truck,
+  Upload,
+  type LucideIcon,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRef, useState, type ReactNode } from 'react';
 
+import { HillsBackdrop } from '@/components/doulisha/decor';
 import { Field, NativeSelect } from '@/components/doulisha/form-field';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Link } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { putFile } from '@/lib/upload';
+import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 
 import {
@@ -42,12 +59,64 @@ interface StepProps {
 
 const inputClass = 'h-11';
 
-function Heading({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
+type StepName = 'basics' | 'place' | 'details' | 'tickets' | 'logistics' | 'brief' | 'publish';
+
+/** One icon per wizard step, in the step list and at the top of each step. */
+export const STEP_ICONS: Record<StepName, LucideIcon> = {
+  basics: Layers,
+  place: CalendarDays,
+  details: FileText,
+  tickets: Ticket,
+  logistics: Truck,
+  brief: ListChecks,
+  publish: Send,
+};
+
+function StepHeading({ step }: { step: StepName }) {
+  const t = useTranslations('Wizard');
+  const Icon = STEP_ICONS[step];
   return (
-    <div className="mb-4">
-      <h2 className="font-sans text-xl font-semibold">{children}</h2>
-      {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
+    <div className="mb-6 flex items-start gap-3">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+        <Icon className="size-5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="font-sans text-xl font-semibold tracking-tight text-primary">
+          {t(`steps.${step}`)}
+        </h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">{t(`stepHints.${step}`)}</p>
+      </div>
     </div>
+  );
+}
+
+/** A radio option drawn as a selectable card. */
+function OptionCard({
+  id,
+  value,
+  selected,
+  testId,
+  children,
+}: {
+  id: string;
+  value: string;
+  selected: boolean;
+  testId?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Label
+      htmlFor={id}
+      className={cn(
+        'flex min-h-12 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 leading-snug font-normal transition-[background-color,border-color] duration-150',
+        selected
+          ? 'border-primary bg-primary-soft/50'
+          : 'border-border/80 hover:border-primary/35 hover:bg-primary-soft/25',
+      )}
+    >
+      <RadioGroupItem id={id} value={value} data-testid={testId} />
+      {children}
+    </Label>
   );
 }
 
@@ -63,7 +132,7 @@ function SwitchRow({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-11 items-center justify-between gap-4">
+    <div className="flex min-h-14 items-center justify-between gap-4 rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
       <Label htmlFor={id} className="leading-snug">
         {label}
       </Label>
@@ -83,7 +152,7 @@ export function BasicsStep({
   const tLang = useTranslations('Languages');
   return (
     <div className="space-y-5">
-      <Heading>{t('steps.basics')}</Heading>
+      <StepHeading step="basics" />
       <Field id="title" label={t('title')} hint={t('titleHint')}>
         <Input
           id="title"
@@ -151,6 +220,7 @@ function CoverUpload({
   onUploaded: (url: string) => void;
 }) {
   const t = useTranslations('Wizard');
+  const tHost = useTranslations('Host');
   const trpc = useTRPC();
   const errorMessage = useErrorMessage();
   const input = useRef<HTMLInputElement>(null);
@@ -181,36 +251,47 @@ function CoverUpload({
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium">{t('cover')}</p>
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative aspect-[16/9] w-48 overflow-hidden rounded-lg bg-muted">
+      <div className="grid gap-4 rounded-2xl border-2 border-dashed border-border p-3 sm:grid-cols-[14rem_1fr] sm:items-center">
+        <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl bg-muted">
           {coverUrl ? (
-            <Image src={coverUrl} alt="" fill sizes="192px" className="object-cover" />
-          ) : null}
+            <Image src={coverUrl} alt="" fill sizes="224px" className="object-cover" />
+          ) : (
+            <>
+              <HillsBackdrop className="absolute inset-x-0 bottom-0 h-2/3" />
+              <ImagePlus className="relative size-7 text-muted-foreground" aria-hidden="true" />
+            </>
+          )}
         </div>
-        <input
-          ref={input}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="sr-only"
-          aria-label={t('uploadCover')}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void upload(file);
-          }}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 rounded-full"
-          onClick={() => input.current?.click()}
-          disabled={busy}
-        >
-          <ImagePlus aria-hidden="true" />
-          {coverUrl ? t('changeCover') : t('uploadCover')}
-        </Button>
+        <div className="space-y-3 px-1 pb-1 sm:p-0">
+          <p className="text-xs text-muted-foreground">{tHost('coverFormats')}</p>
+          <input
+            ref={input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            aria-label={t('uploadCover')}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void upload(file);
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => input.current?.click()}
+            disabled={busy}
+          >
+            <Upload aria-hidden="true" />
+            {coverUrl ? t('changeCover') : t('uploadCover')}
+          </Button>
+        </div>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-highlight">
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       ) : null}
@@ -223,7 +304,7 @@ export function PlaceStep({ form, patchForm }: StepProps) {
   const t = useTranslations('Wizard');
   return (
     <div className="space-y-5">
-      <Heading>{t('steps.place')}</Heading>
+      <StepHeading step="place" />
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="starts" label={t('startsAt')}>
           <Input
@@ -296,19 +377,19 @@ export function DetailsStep({ form, patchForm, fields }: StepProps & { fields: T
 
   return (
     <div className="space-y-6">
-      <Heading>{t('steps.details')}</Heading>
+      <StepHeading step="details" />
 
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-medium">{t('visibility')}</legend>
         <RadioGroup
           value={form.visibility}
           onValueChange={(v) => patchForm({ visibility: v as Visibility })}
+          className="grid gap-2 sm:grid-cols-2"
         >
           {(['public', 'unlisted'] as const).map((v) => (
-            <div key={v} className="flex min-h-11 items-center gap-3">
-              <RadioGroupItem id={`vis-${v}`} value={v} />
-              <Label htmlFor={`vis-${v}`}>{t(`visibilityOptions.${v}`)}</Label>
-            </div>
+            <OptionCard key={v} id={`vis-${v}`} value={v} selected={form.visibility === v}>
+              {t(`visibilityOptions.${v}`)}
+            </OptionCard>
           ))}
         </RadioGroup>
       </fieldset>
@@ -490,23 +571,24 @@ export function TicketsStep({
 
   return (
     <div className="space-y-6">
-      <Heading>{t('steps.tickets')}</Heading>
+      <StepHeading step="tickets" />
       <fieldset>
         <legend className="mb-2 text-sm font-medium">{t('registration')}</legend>
         <RadioGroup
           value={form.registrationType}
           onValueChange={(v) => patchForm({ registrationType: v as RegistrationType })}
-          className="grid gap-1 sm:grid-cols-2"
+          className="grid gap-2 sm:grid-cols-2"
         >
           {registrationTypes.map((type) => (
-            <div key={type} className="flex min-h-11 items-center gap-3">
-              <RadioGroupItem
-                id={`reg-${type}`}
-                value={type}
-                data-testid={`wizard-registration-${type}`}
-              />
-              <Label htmlFor={`reg-${type}`}>{t(`registrationOptions.${type}`)}</Label>
-            </div>
+            <OptionCard
+              key={type}
+              id={`reg-${type}`}
+              value={type}
+              selected={form.registrationType === type}
+              testId={`wizard-registration-${type}`}
+            >
+              {t(`registrationOptions.${type}`)}
+            </OptionCard>
           ))}
         </RadioGroup>
       </fieldset>
@@ -545,7 +627,7 @@ export function TicketsStep({
 
       {free ? (
         <p
-          className="rounded-xl bg-muted p-4 text-sm text-muted-foreground"
+          className="rounded-2xl bg-muted/70 p-4 text-sm text-muted-foreground"
           data-testid="free-no-tickets"
         >
           {t('freeNoTickets')}
@@ -559,7 +641,7 @@ export function TicketsStep({
           {tickets.map((ticket, index) => (
             <div
               key={ticket.id ?? `new-${index}`}
-              className="space-y-3 rounded-xl border border-border p-4"
+              className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs"
             >
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field id={`t-price-${index}`} label={t('price')}>
@@ -601,7 +683,7 @@ export function TicketsStep({
               </div>
               {/* Kind, quantity and people per ticket: rarely needed, folded away. */}
               <details className="group">
-                <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary">
+                <summary className="flex min-h-11 w-fit cursor-pointer items-center text-sm font-medium text-primary underline-offset-4 hover:underline">
                   {t('moreTicketOptions')}
                 </summary>
                 <div className="mt-2 grid gap-3 sm:grid-cols-3">
@@ -647,7 +729,7 @@ export function TicketsStep({
                 <Button
                   type="button"
                   variant="ghost"
-                  className="min-h-11 text-destructive"
+                  className="text-destructive hover:bg-destructive-soft hover:text-destructive"
                   onClick={() => setTickets(tickets.filter((_, i) => i !== index))}
                   data-testid={`remove-ticket-${index}`}
                 >
@@ -660,8 +742,7 @@ export function TicketsStep({
           {tickets.length < 10 ? (
             <Button
               type="button"
-              variant="outline"
-              className="min-h-11 rounded-full"
+              variant="soft"
               onClick={() =>
                 setTickets([
                   ...tickets,
@@ -706,7 +787,7 @@ export function LogisticsStep({
       type="button"
       variant="ghost"
       size="icon"
-      className="size-11 shrink-0 text-destructive"
+      className="size-11 shrink-0 text-destructive hover:bg-destructive-soft hover:text-destructive"
       onClick={onClick}
       aria-label={label ? `${t('removeTicket')}: ${label}` : t('removeTicket')}
     >
@@ -716,11 +797,11 @@ export function LogisticsStep({
 
   return (
     <div className="space-y-8">
-      <Heading>{t('steps.logistics')}</Heading>
+      <StepHeading step="logistics" />
 
       {showPoints ? (
         <fieldset className="space-y-3">
-          <legend className="mb-1 font-medium">{t('meetingPoints')}</legend>
+          <legend className="mb-1 font-semibold">{t('meetingPoints')}</legend>
           {points.map((point, index) => (
             <div key={index} className="flex flex-wrap items-end gap-3">
               <Field id={`p-name-${index}`} label={t('pointName')} className="min-w-48 flex-1">
@@ -754,8 +835,7 @@ export function LogisticsStep({
           ))}
           <Button
             type="button"
-            variant="outline"
-            className="min-h-11 rounded-full"
+            variant="soft"
             onClick={() => setPoints([...points, { name: '', meetAt: '' }])}
           >
             <Plus aria-hidden="true" />
@@ -766,7 +846,7 @@ export function LogisticsStep({
 
       {showProgramme ? (
         <fieldset className="space-y-3">
-          <legend className="mb-1 font-medium">{t('programme')}</legend>
+          <legend className="mb-1 font-semibold">{t('programme')}</legend>
           {programme.map((step, index) => (
             <div key={index} className="flex flex-wrap items-end gap-3">
               <Field id={`s-day-${index}`} label={t('stepDay')} className="w-20">
@@ -818,8 +898,7 @@ export function LogisticsStep({
           ))}
           <Button
             type="button"
-            variant="outline"
-            className="min-h-11 rounded-full"
+            variant="soft"
             onClick={() =>
               setProgramme([
                 ...programme,
@@ -834,12 +913,15 @@ export function LogisticsStep({
       ) : null}
 
       <fieldset className="space-y-3">
-        <legend className="mb-1 font-medium">{t('questions')}</legend>
+        <legend className="mb-1 font-semibold">{t('questions')}</legend>
         {questions.map((question, index) => {
           const set = (patch: Partial<QuestionForm>) =>
             setQuestions(questions.map((q, i) => (i === index ? { ...q, ...patch } : q)));
           return (
-            <div key={index} className="space-y-3 rounded-lg border border-border p-3">
+            <div
+              key={index}
+              className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs"
+            >
               <div className="flex flex-wrap items-end gap-3">
                 <Field
                   id={`q-label-${index}`}
@@ -895,8 +977,7 @@ export function LogisticsStep({
         {questions.length < 10 ? (
           <Button
             type="button"
-            variant="outline"
-            className="min-h-11 rounded-full"
+            variant="soft"
             onClick={() =>
               setQuestions([
                 ...questions,
@@ -919,7 +1000,7 @@ export function BriefStep({ form, patchForm }: StepProps) {
   const tEvent = useTranslations('Event');
   return (
     <div className="space-y-5">
-      <Heading>{t('steps.brief')}</Heading>
+      <StepHeading step="brief" />
       <Field id="bring" label={t('whatToBring')}>
         <Textarea
           id="bring"
@@ -958,14 +1039,17 @@ export function BriefStep({ form, patchForm }: StepProps) {
         <RadioGroup
           value={form.cancellationPolicy}
           onValueChange={(v) => patchForm({ cancellationPolicy: v as Policy })}
+          className="gap-2"
         >
           {(['flexible', 'moderate', 'strict'] as const).map((policy) => (
-            <div key={policy} className="flex min-h-11 items-center gap-3">
-              <RadioGroupItem id={`policy-${policy}`} value={policy} />
-              <Label htmlFor={`policy-${policy}`} className="leading-snug">
-                {tEvent(`policy.${policy}`)}
-              </Label>
-            </div>
+            <OptionCard
+              key={policy}
+              id={`policy-${policy}`}
+              value={policy}
+              selected={form.cancellationPolicy === policy}
+            >
+              {tEvent(`policy.${policy}`)}
+            </OptionCard>
           ))}
         </RadioGroup>
       </fieldset>
@@ -1023,17 +1107,19 @@ export function PublishStep({
 
   if (slug || !isDraft) {
     return (
-      <div className="space-y-4 text-center" data-testid="wizard-published">
-        <CheckCircle2 className="mx-auto size-12 text-success" aria-hidden="true" />
-        <h2 className="font-sans text-xl font-semibold">{t('published')}</h2>
+      <div className="space-y-5 py-6 text-center" data-testid="wizard-published">
+        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-success-soft text-success">
+          <CheckCircle2 className="size-8" aria-hidden="true" />
+        </span>
+        <h2 className="font-display text-2xl font-semibold">{t('published')}</h2>
         <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild className="min-h-11 rounded-full">
+          <Button asChild>
             <Link href={`/organizer/events/${eventId}`} data-testid="manage-published">
               {tOrg('open')}
             </Link>
           </Button>
           {slug ? (
-            <Button asChild variant="outline" className="min-h-11 rounded-full">
+            <Button asChild variant="outline">
               <Link href={`/events/${slug}`} data-testid="view-published">
                 {tOrg('view')}
               </Link>
@@ -1046,19 +1132,19 @@ export function PublishStep({
 
   return (
     <div className="space-y-5">
-      <Heading>{t('steps.publish')}</Heading>
+      <StepHeading step="publish" />
       {list.length > 0 ? (
-        <div className="rounded-lg border border-highlight/30 bg-highlight-soft p-4">
-          <p className="mb-2 font-medium text-highlight">{t('missingTitle')}</p>
+        <div className="rounded-2xl border border-warning/20 bg-warning-soft p-4 sm:p-5">
+          <p className="mb-2 font-semibold text-warning">{t('missingTitle')}</p>
           <ul className="space-y-1" data-testid="publish-problems">
             {list.map((problem) => (
               <li key={problem}>
                 <button
                   type="button"
                   onClick={() => goTo(stepForProblem(problem))}
-                  className="flex min-h-11 items-center gap-2 text-start text-sm underline-offset-2 hover:underline"
+                  className="flex min-h-11 items-center gap-2 text-start text-sm text-foreground underline-offset-2 hover:underline"
                 >
-                  <AlertCircle className="size-4 shrink-0 text-highlight" aria-hidden="true" />
+                  <AlertCircle className="size-4 shrink-0 text-warning" aria-hidden="true" />
                   {describe(problem)}
                 </button>
               </li>
@@ -1066,20 +1152,24 @@ export function PublishStep({
           </ul>
         </div>
       ) : (
-        <p className="flex items-center gap-2 text-success">
-          <CheckCircle2 className="size-5" aria-hidden="true" />
+        <p className="flex items-center gap-2 rounded-2xl bg-success-soft px-4 py-3 font-medium text-success">
+          <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
           {t('ready')}
         </p>
       )}
       {error ? (
-        <p role="alert" className="text-sm text-highlight">
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       ) : null}
       <Button
         type="button"
         size="lg"
-        className="min-h-11 rounded-full px-8"
+        className="w-full sm:w-auto sm:min-w-48"
         onClick={() => void submit()}
         disabled={publish.isPending}
         data-testid="publish-event"

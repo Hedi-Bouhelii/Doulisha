@@ -1,4 +1,4 @@
-import { CalendarPlus } from 'lucide-react';
+import { CalendarPlus, UsersRound } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
@@ -23,6 +23,7 @@ export default async function OrganizerProfilePage({
   if (!profile) {
     return (
       <EmptyState
+        icon={UsersRound}
         title={t('becomeTitle')}
         hint={t('becomeHint')}
         action={<BecomeOrganizerButton icon={<CalendarPlus aria-hidden="true" />} />}

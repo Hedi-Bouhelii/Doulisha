@@ -146,29 +146,45 @@ export function Scanner({
           : XCircle;
 
   return (
-    <div className="space-y-4">
-      <p className="ltr-nums text-lg font-semibold" data-testid="checkin-count">
-        {t('present', { count: present })} / {total}
-      </p>
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5">
+        <p className="ltr-nums text-2xl font-bold tracking-tight" data-testid="checkin-count">
+          {t('present', { count: present })} / {total}
+        </p>
+        <div aria-hidden="true" className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-success transition-[width] duration-300"
+            style={{ width: `${total > 0 ? Math.round((present / total) * 100) : 0}%` }}
+          />
+        </div>
+      </div>
 
-      <div className={cn('overflow-hidden rounded-xl bg-black', scanning ? 'block' : 'hidden')}>
+      <div
+        className={cn(
+          'overflow-hidden rounded-3xl bg-black shadow-raised',
+          scanning ? 'block' : 'hidden',
+        )}
+      >
         <video ref={video} muted playsInline className="aspect-square w-full object-cover" />
       </div>
       <Button
         type="button"
+        size="lg"
         variant={scanning ? 'outline' : 'default'}
-        className="min-h-11 w-full rounded-full"
+        className="w-full"
         onClick={() => (scanning ? stop() : void start())}
       >
         {scanning ? <CameraOff aria-hidden="true" /> : <Camera aria-hidden="true" />}
         {scanning ? t('stopScan') : t('scan')}
       </Button>
       {cameraError ? (
-        <p className="text-sm text-muted-foreground">{t('cameraUnavailable')}</p>
+        <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
+          {t('cameraUnavailable')}
+        </p>
       ) : null}
 
       <form
-        className="space-y-2"
+        className="space-y-2 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5"
         onSubmit={(e) => {
           e.preventDefault();
           void submit(code);
@@ -183,15 +199,10 @@ export function Scanner({
             autoComplete="off"
             autoCapitalize="characters"
             dir="ltr"
-            className="ltr-nums h-12 text-lg tracking-widest uppercase"
+            className="ltr-nums h-12 font-mono text-lg tracking-widest uppercase"
             data-testid="checkin-code"
           />
-          <Button
-            type="submit"
-            className="min-h-12 px-6"
-            disabled={checkIn.isPending}
-            data-testid="checkin-submit"
-          >
+          <Button type="submit" size="lg" disabled={checkIn.isPending} data-testid="checkin-submit">
             {t('checkInButton')}
           </Button>
         </div>
@@ -203,11 +214,11 @@ export function Scanner({
           data-testid="checkin-result"
           data-tone={result.tone}
           className={cn(
-            'flex items-center gap-3 rounded-xl p-4 text-lg font-semibold',
-            result.tone === 'ok' && 'bg-cat-outdoor-bg text-cat-outdoor-fg',
+            'flex items-start gap-3 rounded-2xl border p-4 text-lg font-semibold sm:p-5',
+            result.tone === 'ok' && 'border-success/20 bg-success-soft text-success',
             (result.tone === 'warn' || result.tone === 'collect') &&
-              'bg-cat-sports-bg text-cat-sports-fg',
-            result.tone === 'error' && 'bg-highlight-soft text-highlight',
+              'border-warning/20 bg-warning-soft text-warning',
+            result.tone === 'error' && 'border-destructive/20 bg-destructive-soft text-destructive',
           )}
         >
           <Icon className="size-7 shrink-0" aria-hidden="true" />
@@ -216,7 +227,8 @@ export function Scanner({
             {result.tone === 'collect' ? (
               <Button
                 type="button"
-                className="min-h-12 w-full rounded-full text-base"
+                size="lg"
+                className="w-full"
                 disabled={checkIn.isPending}
                 onClick={() => void submit(result.code, true)}
                 data-testid="collect-and-check-in"
