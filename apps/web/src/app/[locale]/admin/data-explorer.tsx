@@ -39,7 +39,10 @@ export function DataExplorer() {
 
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr]">
-      <nav aria-label={t('tables')} className="min-w-0 rounded-xl border border-border bg-card p-2">
+      <nav
+        aria-label={t('tables')}
+        className="min-w-0 rounded-2xl border border-border/70 bg-card p-2 shadow-card lg:sticky lg:top-24 lg:self-start"
+      >
         <p className="px-2 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {t('tables')}
         </p>
@@ -50,7 +53,10 @@ export function DataExplorer() {
             ))}
           </div>
         ) : (
-          <ul className="flex gap-1 overflow-x-auto lg:flex-col" data-testid="admin-tables">
+          <ul
+            className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col"
+            data-testid="admin-tables"
+          >
             {tables.data?.map((entry) => (
               // On phones the list scrolls sideways: items keep their width instead of overlapping.
               <li key={entry.table} className="shrink-0 lg:shrink">
@@ -59,7 +65,7 @@ export function DataExplorer() {
                   onClick={() => setTable(entry.table)}
                   aria-current={entry.table === table ? 'true' : undefined}
                   className={cn(
-                    'flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-3 text-start text-sm whitespace-nowrap',
+                    'flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 text-start text-sm whitespace-nowrap transition-colors',
                     entry.table === table
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-accent',
@@ -74,8 +80,8 @@ export function DataExplorer() {
         )}
       </nav>
 
-      <section className="min-w-0 rounded-xl border border-border bg-card">
-        <h2 className="flex items-center gap-2 border-b border-border px-4 py-3 font-sans text-base font-semibold">
+      <section className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
+        <h2 className="flex items-center gap-2 border-b border-border/70 px-4 py-3.5 font-sans text-base font-semibold">
           <Database className="size-4 text-primary" aria-hidden="true" />
           {t('latestRows', { table })}
         </h2>
@@ -88,12 +94,13 @@ export function DataExplorer() {
         ) : rows.isError ? (
           <EmptyState
             tone="alert"
+            size="compact"
             className="m-4"
             title={tStates('errorTitle')}
             hint={tStates('errorHint')}
           />
         ) : rows.data.rows.length === 0 ? (
-          <EmptyState className="m-4" title={t('noRows')} />
+          <EmptyState size="compact" className="m-4" title={t('noRows')} />
         ) : (
           <div className="overflow-x-auto" dir="ltr">
             <Table data-testid="admin-rows">

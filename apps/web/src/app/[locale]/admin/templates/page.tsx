@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { BackLink, PageHeader } from '@/components/doulisha/page';
 import { resolveLocale } from '@/i18n/locale';
 import { api } from '@/trpc/server';
 
@@ -11,12 +12,13 @@ export default async function AdminTemplatesPage({
 }: PageProps<'/[locale]/admin/templates'>) {
   await resolveLocale(params);
   const t = await getTranslations('AdminTemplates');
+  const tAdmin = await getTranslations('Admin');
   const templates = await (await api()).admin.templates();
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="text-3xl font-bold">{t('title')}</h1>
-      <p className="mt-1 text-muted-foreground">{t('hint')}</p>
-      <ul className="mt-6 space-y-3">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <BackLink href="/admin">{tAdmin('title')}</BackLink>
+      <PageHeader title={t('title')} description={t('hint')} />
+      <ul className="mt-8 space-y-3">
         {templates.map((template) => (
           <li key={template.key}>
             <TemplateEditor

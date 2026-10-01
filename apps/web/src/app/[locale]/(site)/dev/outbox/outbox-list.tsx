@@ -2,7 +2,7 @@
 
 import type { OutboxEntry } from '@doulisha/notifications';
 import { useQuery } from '@tanstack/react-query';
-import { Mail, MessageSquare, RefreshCw } from 'lucide-react';
+import { Inbox, Mail, MessageSquare, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
@@ -22,14 +22,19 @@ export function OutboxList() {
 
   return (
     <div className="mt-6 space-y-3">
-      <Button variant="outline" className="min-h-11" onClick={() => void refetch()}>
+      <Button variant="outline" onClick={() => void refetch()}>
         <RefreshCw className={isFetching ? 'animate-spin' : ''} aria-hidden="true" />
         {t('refresh')}
       </Button>
-      {data && data.length === 0 ? <EmptyState title={t('outboxEmpty')} /> : null}
+      {data && data.length === 0 ? (
+        <EmptyState size="compact" icon={Inbox} title={t('outboxEmpty')} />
+      ) : null}
       <ul className="space-y-3" data-testid="outbox">
         {data?.map((m) => (
-          <li key={`${m.sentAt}-${m.to}`} className="rounded-xl border border-border bg-card p-4">
+          <li
+            key={`${m.sentAt}-${m.to}`}
+            className="rounded-2xl border border-border/70 bg-card p-4 shadow-card"
+          >
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               {m.channel === 'sms' ? (
                 <MessageSquare className="size-4" aria-hidden="true" />
@@ -40,7 +45,10 @@ export function OutboxList() {
               <time className="ltr-nums">{new Date(m.sentAt).toLocaleTimeString()}</time>
             </p>
             {m.channel === 'sms' ? (
-              <p className="ltr-nums mt-2 font-mono text-lg" data-testid="outbox-sms">
+              <p
+                className="ltr-nums mt-2 rounded-xl bg-muted/70 px-3 py-2 font-mono text-lg"
+                data-testid="outbox-sms"
+              >
                 {m.body}
               </p>
             ) : (
