@@ -24,7 +24,10 @@
     "createEvent": "Créer un événement",
     "signUp": "Créer un compte",
     "feed": "Mon fil",
-    "messages": "Messages"
+    "messages": "Messages",
+    "logoLabel": "Doulisha, accueil",
+    "mySpace": "Mon espace",
+    "signUpShort": "S’inscrire"
   },
   "Home": {
     "heroLine1": "Découvrir",
@@ -46,7 +49,14 @@
     "organizeTitle": "Organisez quelque chose",
     "organizeHint": "Une randonnée, un atelier ou un anniversaire : créez-le en quelques minutes et partagez-le sur WhatsApp.",
     "organizePublic": "Créer un événement public",
-    "organizePrivate": "Inviter des amis à un événement privé"
+    "organizePrivate": "Inviter des amis à un événement privé",
+    "heroEyebrow": "Sorties, ateliers et fêtes en Tunisie",
+    "searchButton": "Rechercher",
+    "trustSecure": "Réservation sécurisée",
+    "trustPayments": "D17, virement ou sur place",
+    "trustTickets": "Billet avec QR code",
+    "trendingEyebrow": "À ne pas manquer",
+    "organizeEyebrow": "Pour les organisateurs et les hôtes"
   },
   "Explore": {
     "title": "Explorer",
@@ -80,7 +90,9 @@
     "locating": "Recherche de votre position…",
     "locationDenied": "Position indisponible. Choisissez plutôt une ville.",
     "apply": "Voir les résultats",
-    "reset": "Réinitialiser"
+    "reset": "Réinitialiser",
+    "eyebrow": "Tout Doulisha",
+    "searchButton": "Rechercher"
   },
   "Event": {
     "going": "{count, plural, one {# participant} other {# participants}}",
@@ -132,7 +144,9 @@
     "manage": "Gérer cet événement",
     "organizerEvents": "Organisateur",
     "unlisted": "Seules les personnes ayant le lien peuvent voir cet événement.",
-    "seeOrganizer": "Voir l’organisateur"
+    "seeOrganizer": "Voir l’organisateur",
+    "byOrganizer": "Par {name}",
+    "secureBooking": "Réservation sécurisée, billet avec QR code"
   },
   "Auth": {
     "title": "Bon retour",
@@ -140,7 +154,7 @@
     "phoneTab": "Téléphone",
     "emailTab": "E-mail",
     "phoneLabel": "Numéro de téléphone",
-    "phoneHint": "Numéros tunisiens : 8 chiffres. Autres pays : ajoutez l’indicatif, par exemple ⁦+33⁩.",
+    "phoneHint": "Numéros tunisiens : 8 chiffres. Autres pays : ajoutez l’indicatif, par exemple \u2066+33\u2069.",
     "sendCode": "Recevoir un code",
     "codeLabel": "Code à 6 chiffres",
     "codeSentTo": "Nous avons envoyé un code au {phone}.",
@@ -210,7 +224,8 @@
     "retry": "Réessayer",
     "notFoundTitle": "Page introuvable",
     "notFoundHint": "Cette page n’existe pas ou n’est plus disponible.",
-    "backHome": "Retour à l’accueil"
+    "backHome": "Retour à l’accueil",
+    "close": "Fermer"
   },
   "Errors": {
     "forbidden": "Vous n’avez pas le droit de faire cela.",
@@ -491,7 +506,8 @@
       "upcoming": "Événements à venir",
       "fillRate": "Taux de remplissage",
       "revenue": "Encaissé",
-      "pending": "Paiements en attente"
+      "pending": "Paiements en attente",
+      "pendingOrders": "{count, plural, one {# réservation} other {# réservations}}"
     },
     "sources": "D’où viennent les réservations",
     "direct": "Direct",
@@ -564,7 +580,18 @@
     "keepEvent": "Garder l’événement",
     "refunds": "Remboursements",
     "collectFirst": "Encaissez {amount} auprès de {name}.",
-    "collectedCheckIn": "Encaissé, valider l’entrée"
+    "collectedCheckIn": "Encaissé, valider l’entrée",
+    "moreActions": "Plus d’actions",
+    "stats": {
+      "capacity": "Places",
+      "booked": "Réservées",
+      "checkedIn": "Présents",
+      "unlimited": "Illimité"
+    },
+    "noSources": "Dès les premières réservations, vous verrez ici d’où elles viennent.",
+    "noWaitlist": "Personne sur la liste d’attente",
+    "thanksTitle": "Les belles expériences rassemblent",
+    "thanksHint": "Merci d’organiser avec Doulisha."
   },
   "Wizard": {
     "newTitle": "Qu’organisez-vous ?",
@@ -687,7 +714,18 @@
     "ticketsHint": "Indiquez le prix par personne. Ajoutez d’autres types seulement si les prix diffèrent (VIP, étudiant, prévente…).",
     "moreTicketOptions": "Plus d’options (type, quantité, personnes par billet)",
     "quantityHint": "Vide : jusqu’à la capacité de l’événement.",
-    "addAnotherTicket": "Ajouter un autre type de billet"
+    "addAnotherTicket": "Ajouter un autre type de billet",
+    "stepsLabel": "Étapes",
+    "stepOf": "Étape {current} sur {total}",
+    "stepHints": {
+      "basics": "Donnez un nom à votre événement et une courte description.",
+      "place": "Quand ça commence, et où se retrouver.",
+      "details": "Qui peut le voir, pour qui, et ce que demande la catégorie.",
+      "tickets": "Comment s’inscrire, combien de places et à quel prix.",
+      "logistics": "Points de rendez-vous, programme et questions à la réservation.",
+      "brief": "Ce que les participants doivent savoir avant de venir.",
+      "publish": "Vérifiez ce qui manque, puis mettez votre événement en ligne."
+    }
   },
   "Host": {
     "newTitle": "Invitez vos amis",
@@ -711,7 +749,25 @@
     "openInvitation": "Ouvrir l’invitation",
     "myEvents": "Mes événements privés",
     "noEvents": "Aucun événement privé pour l’instant",
-    "guests": "Invités"
+    "guests": "Invités",
+    "kindHint": "Choisissez le type d’invitation.",
+    "kindHints": {
+      "birthday": "Fêter un jour spécial",
+      "private_gathering": "Un moment entre vos proches"
+    },
+    "eventDetails": "L’invitation",
+    "eventDetailsHint": "Un titre clair et quelques mots pour vos invités.",
+    "messagePlaceholder": "Dites à vos invités ce qui rend ce moment spécial.",
+    "whenHint": "Le jour et l’heure du début.",
+    "whereTitle": "Où ça se passe ?",
+    "whereHint": "Une adresse ou une description du lieu.",
+    "wherePlaceholder": "ex. Dar El Jeld",
+    "cityPlaceholder": "ex. Tunis",
+    "locationHint": "Les invités voient la ville, mais pas l’adresse exacte.",
+    "coverPhoto": "Photo de couverture (facultatif)",
+    "coverPhotoHint": "Donnez une image à votre invitation.",
+    "coverFormats": "JPG, PNG ou WebP · 5 Mo maximum",
+    "createHint": "Vous recevez ensuite un lien à partager sur WhatsApp."
   },
   "Invite": {
     "invitedBy": "{name} vous invite",
@@ -748,7 +804,8 @@
     "privacy": "Politique de confidentialité",
     "draft": "Version provisoire, rédigée d’après le fonctionnement réel de Doulisha. Elle sera relue avant le lancement public.",
     "updated": "Dernière mise à jour : {date}",
-    "dataDeletion": "Suppression des données"
+    "dataDeletion": "Suppression des données",
+    "onThisPage": "Sur cette page"
   },
   "AdminTemplates": {
     "title": "Modèles de catégories",
@@ -764,7 +821,11 @@
     "terms": "Conditions",
     "privacy": "Confidentialité",
     "legal": "Informations légales",
-    "dataDeletion": "Suppression des données"
+    "dataDeletion": "Suppression des données",
+    "about": "Doulisha réunit les gens autour d’expériences en Tunisie : sorties, ateliers, fêtes et voyages.",
+    "discover": "Découvrir",
+    "organize": "Organiser",
+    "copyright": "© {year} Doulisha"
   },
   "OrganizerProfile": {
     "about": "À propos",

@@ -24,7 +24,10 @@
     "createEvent": "أنشئ فعالية",
     "signUp": "إنشاء حساب",
     "feed": "آخر الأخبار",
-    "messages": "الرسائل"
+    "messages": "الرسائل",
+    "logoLabel": "دوليشة، الصفحة الرئيسية",
+    "mySpace": "مساحتي",
+    "signUpShort": "التسجيل"
   },
   "Home": {
     "heroLine1": "اكتشف",
@@ -46,7 +49,14 @@
     "organizeTitle": "نظّم شيئًا",
     "organizeHint": "رحلة أو ورشة أو عيد ميلاد: أنشئه في دقائق وشاركه على واتساب.",
     "organizePublic": "أنشئ فعالية عامة",
-    "organizePrivate": "ادعُ أصدقاءك إلى مناسبة خاصة"
+    "organizePrivate": "ادعُ أصدقاءك إلى مناسبة خاصة",
+    "heroEyebrow": "خرجات وورشات وحفلات في تونس",
+    "searchButton": "بحث",
+    "trustSecure": "حجز آمن",
+    "trustPayments": "D17 أو تحويل أو الدفع في المكان",
+    "trustTickets": "تذكرة برمز QR",
+    "trendingEyebrow": "لا تفوّتها",
+    "organizeEyebrow": "للمنظّمين والمضيفين"
   },
   "Explore": {
     "title": "استكشف",
@@ -80,7 +90,9 @@
     "locating": "جارٍ تحديد موقعك…",
     "locationDenied": "الموقع غير متاح. اختر مدينة بدلًا من ذلك.",
     "apply": "عرض النتائج",
-    "reset": "إعادة الضبط"
+    "reset": "إعادة الضبط",
+    "eyebrow": "كل دوليشة",
+    "searchButton": "بحث"
   },
   "Event": {
     "going": "{count, plural, zero {لا مشاركين} one {مشارك واحد} two {مشاركان} few {# مشاركين} many {# مشاركًا} other {# مشارك}}",
@@ -132,7 +144,9 @@
     "manage": "إدارة هذه الفعالية",
     "organizerEvents": "المنظّم",
     "unlisted": "لا يرى هذه الفعالية إلا من لديه الرابط.",
-    "seeOrganizer": "عرض المنظّم"
+    "seeOrganizer": "عرض المنظّم",
+    "byOrganizer": "مع {name}",
+    "secureBooking": "حجز آمن وتذكرة برمز QR"
   },
   "Auth": {
     "title": "مرحبًا بعودتك",
@@ -140,7 +154,7 @@
     "phoneTab": "الهاتف",
     "emailTab": "البريد الإلكتروني",
     "phoneLabel": "رقم الهاتف",
-    "phoneHint": "الأرقام التونسية: 8 أرقام. للبلدان الأخرى أضف رمز البلد، مثلًا ⁦+33⁩.",
+    "phoneHint": "الأرقام التونسية: 8 أرقام. للبلدان الأخرى أضف رمز البلد، مثلًا \u2066+33\u2069.",
     "sendCode": "أرسل الرمز",
     "codeLabel": "رمز من 6 أرقام",
     "codeSentTo": "أرسلنا رمزًا إلى {phone}.",
@@ -210,7 +224,8 @@
     "retry": "إعادة المحاولة",
     "notFoundTitle": "الصفحة غير موجودة",
     "notFoundHint": "هذه الصفحة غير موجودة أو لم تعد متاحة.",
-    "backHome": "العودة إلى الرئيسية"
+    "backHome": "العودة إلى الرئيسية",
+    "close": "إغلاق"
   },
   "Errors": {
     "forbidden": "لا تملك صلاحية القيام بذلك.",
@@ -491,7 +506,8 @@
       "upcoming": "الفعاليات القادمة",
       "fillRate": "نسبة الامتلاء",
       "revenue": "المبالغ المحصّلة",
-      "pending": "مدفوعات معلّقة"
+      "pending": "مدفوعات معلّقة",
+      "pendingOrders": "{count, plural, one {حجز واحد} two {حجزان} few {# حجوزات} many {# حجزًا} other {# حجز}}"
     },
     "sources": "من أين تأتي الحجوزات",
     "direct": "مباشر",
@@ -564,7 +580,18 @@
     "keepEvent": "الإبقاء على الفعالية",
     "refunds": "الاستردادات",
     "collectFirst": "حصّل {amount} من {name}.",
-    "collectedCheckIn": "تم الاستلام، تأكيد الدخول"
+    "collectedCheckIn": "تم الاستلام، تأكيد الدخول",
+    "moreActions": "إجراءات أخرى",
+    "stats": {
+      "capacity": "الأماكن",
+      "booked": "محجوزة",
+      "checkedIn": "الحاضرون",
+      "unlimited": "غير محدود"
+    },
+    "noSources": "مع أول الحجوزات، سترى هنا من أين جاءت.",
+    "noWaitlist": "لا أحد في قائمة الانتظار",
+    "thanksTitle": "التجارب الجميلة تجمع الناس",
+    "thanksHint": "شكرًا لأنك تنظّم مع دوليشة."
   },
   "Wizard": {
     "newTitle": "ماذا تنظّم؟",
@@ -687,7 +714,18 @@
     "ticketsHint": "حدّد السعر للشخص الواحد. أضف أنواعًا أخرى فقط إذا اختلفت الأسعار (VIP، طالب، حجز مبكر…).",
     "moreTicketOptions": "خيارات إضافية (النوع، الكمية، عدد الأشخاص لكل تذكرة)",
     "quantityHint": "فارغ: حتى سعة الفعالية.",
-    "addAnotherTicket": "إضافة نوع تذكرة آخر"
+    "addAnotherTicket": "إضافة نوع تذكرة آخر",
+    "stepsLabel": "الخطوات",
+    "stepOf": "الخطوة {current} من {total}",
+    "stepHints": {
+      "basics": "أعطِ فعاليتك اسمًا ووصفًا قصيرًا.",
+      "place": "متى تبدأ، وأين يلتقي المشاركون.",
+      "details": "من يمكنه رؤيتها، لمن هي، وما تطلبه الفئة.",
+      "tickets": "كيف يسجّل المشاركون، كم مكانًا وبأي سعر.",
+      "logistics": "نقاط الالتقاء، البرنامج وأسئلة الحجز.",
+      "brief": "ما يجب أن يعرفه المشاركون قبل القدوم.",
+      "publish": "تحقّق مما ينقص، ثم انشر فعاليتك."
+    }
   },
   "Host": {
     "newTitle": "ادعُ أصدقاءك",
@@ -711,7 +749,25 @@
     "openInvitation": "افتح الدعوة",
     "myEvents": "مناسباتي الخاصة",
     "noEvents": "لا توجد مناسبات خاصة بعد",
-    "guests": "الضيوف"
+    "guests": "الضيوف",
+    "kindHint": "اختر نوع الدعوة.",
+    "kindHints": {
+      "birthday": "احتفل بيوم مميّز",
+      "private_gathering": "لحظة مع المقرّبين منك"
+    },
+    "eventDetails": "الدعوة",
+    "eventDetailsHint": "عنوان واضح وبضع كلمات لمدعوّيك.",
+    "messagePlaceholder": "قل لمدعوّيك ما الذي يجعل هذه اللحظة مميّزة.",
+    "whenHint": "اليوم وساعة البداية.",
+    "whereTitle": "أين ستكون؟",
+    "whereHint": "عنوان أو وصف للمكان.",
+    "wherePlaceholder": "مثلًا: دار الجلد",
+    "cityPlaceholder": "مثلًا: تونس",
+    "locationHint": "يرى المدعوون المدينة، لكن ليس العنوان الدقيق.",
+    "coverPhoto": "صورة الغلاف (اختياري)",
+    "coverPhotoHint": "أعطِ دعوتك صورة.",
+    "coverFormats": "JPG أو PNG أو WebP · 5 ميغابايت كحدّ أقصى",
+    "createHint": "ستحصل بعدها على رابط تشاركه عبر واتساب."
   },
   "Invite": {
     "invitedBy": "{name} يدعوك",
@@ -748,7 +804,8 @@
     "privacy": "سياسة الخصوصية",
     "draft": "نسخة مؤقتة كُتبت حسب طريقة عمل دوليشة الفعلية، وستُراجع قبل الإطلاق العام.",
     "updated": "آخر تحديث: {date}",
-    "dataDeletion": "حذف البيانات"
+    "dataDeletion": "حذف البيانات",
+    "onThisPage": "في هذه الصفحة"
   },
   "AdminTemplates": {
     "title": "نماذج الأصناف",
@@ -764,7 +821,11 @@
     "terms": "الشروط",
     "privacy": "الخصوصية",
     "legal": "معلومات قانونية",
-    "dataDeletion": "حذف البيانات"
+    "dataDeletion": "حذف البيانات",
+    "about": "تجمع دوليشة الناس حول تجارب في تونس: خرجات، ورشات، حفلات ورحلات.",
+    "discover": "اكتشف",
+    "organize": "نظّم",
+    "copyright": "© {year} دوليشة"
   },
   "OrganizerProfile": {
     "about": "نبذة",
