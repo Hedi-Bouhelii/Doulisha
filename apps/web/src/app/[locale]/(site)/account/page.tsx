@@ -2,6 +2,7 @@ import { canRemoveProvider, type SocialProvider } from '@doulisha/api';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { PageHeader } from '@/components/doulisha/page';
 import { getServerEnv, socialProviderList } from '@/env';
 import { resolveLocale } from '@/i18n/locale';
 import { redirect } from '@/i18n/navigation';
@@ -52,9 +53,8 @@ export default async function AccountPage({
   const t = await getTranslations('Account');
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
-      <h1 className="text-3xl font-bold sm:text-4xl">{t('title')}</h1>
-      <p className="mt-2 text-muted-foreground">{t('intro')}</p>
+    <div className="mx-auto w-full max-w-3xl space-y-10 px-4 py-8 sm:px-6 sm:py-12">
+      <PageHeader title={t('title')} description={t('intro')} />
       <ConnectedAccounts
         phone={methods.phone}
         email={methods.email}

@@ -7,13 +7,16 @@ import {
 } from '@doulisha/i18n';
 import { TRPCError } from '@trpc/server';
 import {
-  ArrowLeft,
   Banknote,
   CalendarDays,
   CheckCircle2,
   Clock,
+  FileDown,
+  Hourglass,
+  Info,
   MapPin,
   PartyPopper,
+  type LucideIcon,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -21,7 +24,12 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { HillsBackdrop } from '@/components/doulisha/decor';
+import { BackLink } from '@/components/doulisha/page';
+import { toneOf } from '@/components/doulisha/status-badge';
 import { TicketQR } from '@/components/doulisha/ticket-qr';
+import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -49,15 +57,13 @@ type Status =
   | 'expired'
   | 'refunded';
 
-const statusTone: Record<Status, string> = {
-  confirmed: 'bg-cat-outdoor-bg text-cat-outdoor-fg',
-  reserved: 'bg-cat-sports-bg text-cat-sports-fg',
-  awaiting_payment: 'bg-highlight-soft text-highlight',
-  waitlisted: 'bg-secondary text-secondary-foreground',
-  offered: 'bg-cat-sports-bg text-cat-sports-fg',
-  cancelled: 'bg-muted text-muted-foreground',
-  expired: 'bg-muted text-muted-foreground',
-  refunded: 'bg-muted text-muted-foreground',
+/** The icon of the "what to do next" card, by status. */
+const nextIcon: Partial<Record<Status, { icon: LucideIcon; tone: string }>> = {
+  confirmed: { icon: CheckCircle2, tone: 'bg-success-soft text-success' },
+  reserved: { icon: Clock, tone: 'bg-warning-soft text-warning' },
+  awaiting_payment: { icon: Clock, tone: 'bg-warning-soft text-warning' },
+  waitlisted: { icon: Hourglass, tone: 'bg-info-soft text-info' },
+  offered: { icon: Hourglass, tone: 'bg-info-soft text-info' },
 };
 
 /**
@@ -104,31 +110,34 @@ export default async function TicketPage({
   const session = await getSession();
   const isGuest = !session || session.user.isAnonymous === true;
   const hasQr = !closed && order.tickets.some((ticket) => ticket.ticketCode);
+  const next = nextIcon[status] ?? nextIcon.confirmed;
+  const NextIcon = next?.icon ?? CheckCircle2;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
-      <Link
-        href="/tickets"
-        className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        {t('title')}
-      </Link>
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <BackLink href="/tickets">{t('title')}</BackLink>
 
       {justBooked && !closed ? (
         <p
           role="status"
-          className="mt-2 flex items-center gap-2 rounded-xl bg-cat-outdoor-bg p-3 font-medium text-cat-outdoor-fg"
+          className="mb-4 flex items-center gap-3 rounded-2xl border border-success/15 bg-success-soft px-4 py-3 font-semibold text-success"
           data-testid="booked-banner"
         >
-          <PartyPopper className="size-5 shrink-0" aria-hidden="true" />
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card/70">
+            <PartyPopper className="size-5" aria-hidden="true" />
+          </span>
           {t('bookedTitle')}
         </p>
       ) : null}
 
       {/* Event header. */}
-      <header className="mt-3 overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="relative aspect-[3/1] bg-muted">
+      <header className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card">
+        <div
+          className={cn(
+            'relative aspect-[5/2] sm:aspect-[3/1]',
+            order.event.coverUrl ? 'bg-muted' : 'bg-primary',
+          )}
+        >
           {order.event.coverUrl ? (
             <Image
               src={order.event.coverUrl}
@@ -138,33 +147,39 @@ export default async function TicketPage({
               sizes="(min-width: 768px) 768px, 100vw"
               className="object-cover"
             />
-          ) : null}
-          <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-            <h1 className="text-2xl font-bold sm:text-3xl">{order.event.title}</h1>
+          ) : (
+            <HillsBackdrop className="absolute inset-x-0 bottom-0 h-3/4 opacity-80" />
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
+            <h1
+              dir="auto"
+              className="font-display text-2xl leading-tight font-bold tracking-tight text-balance sm:text-3xl"
+            >
+              {order.event.title}
+            </h1>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4 text-sm">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 p-4 text-sm sm:px-6">
           <span className="flex items-center gap-1.5">
-            <CalendarDays className="size-4 text-primary" aria-hidden="true" />
+            <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden="true" />
             {formatEventDateTime(order.event.startsAt, locale)}
           </span>
           {place ? (
-            <span className="flex items-center gap-1.5">
-              <MapPin className="size-4 text-primary" aria-hidden="true" />
-              {place}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              <span className="truncate">{place}</span>
             </span>
           ) : null}
-          <span
-            className={cn(
-              'ms-auto rounded-full px-3 py-1 text-sm font-semibold',
-              statusTone[status],
-            )}
+          <Badge
+            variant={toneOf(status)}
+            dot
+            className="ms-auto px-3 py-1 text-sm"
             data-testid="ticket-status"
             data-status={status}
           >
             {t(`status.${status}`)}
-          </span>
+          </Badge>
         </div>
       </header>
 
@@ -172,11 +187,21 @@ export default async function TicketPage({
       {!closed ? (
         <section
           aria-labelledby="next-step"
-          className="mt-4 space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5"
+          className="mt-5 space-y-4 rounded-3xl border border-primary/15 bg-primary-soft/45 p-5 sm:p-6"
         >
-          <h2 id="next-step" className="font-sans text-lg font-semibold">
-            {nextTitle(t, status, manual, order.dueMillimes, order.proofStatus)}
-          </h2>
+          <div className="flex items-start gap-3">
+            <span
+              className={cn(
+                'flex size-10 shrink-0 items-center justify-center rounded-full',
+                next?.tone,
+              )}
+            >
+              <NextIcon className="size-5" aria-hidden="true" />
+            </span>
+            <h2 id="next-step" className="pt-1.5 font-sans text-lg leading-snug font-semibold">
+              {nextTitle(t, status, manual, order.dueMillimes, order.proofStatus)}
+            </h2>
+          </div>
           <NextStepBody
             status={status}
             manual={manual}
@@ -197,11 +222,16 @@ export default async function TicketPage({
           ) : null}
         </section>
       ) : status === 'expired' ? (
-        <p className="mt-4 rounded-xl bg-muted p-4 text-sm" data-testid="expired-hint">
+        <p
+          className="mt-5 flex items-start gap-3 rounded-2xl bg-muted/70 p-4 text-sm"
+          data-testid="expired-hint"
+        >
+          <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           {t('expiredHint')}
         </p>
       ) : order.refund ? (
-        <p className="mt-4 rounded-xl bg-muted p-4 text-sm">
+        <p className="mt-5 flex items-start gap-3 rounded-2xl bg-info-soft p-4 text-sm text-info">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {t(`refund.${order.refund.status}`, {
             amount: formatPrice(order.refund.amountMillimes, locale),
           })}
@@ -212,29 +242,35 @@ export default async function TicketPage({
           as soon as the places are confirmed (at booking, or when the organizer
           confirms a D17 or transfer payment). */}
       {hasQr && isGuest ? (
-        <section className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
-          <p className="max-w-md text-sm">{t('guestPdfHint')}</p>
+        <section className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5">
+          <p className="flex max-w-md items-start gap-3 text-sm">
+            <FileDown className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+            {t('guestPdfHint')}
+          </p>
           <PdfTicketButton reference={order.reference} autoDownload prominent />
         </section>
       ) : null}
 
       {/* Tickets. */}
       {!closed ? (
-        <section aria-labelledby="your-tickets" className="mt-6">
-          <h2 id="your-tickets" className="mb-3 font-sans text-lg font-semibold">
+        <section aria-labelledby="your-tickets" className="mt-8">
+          <h2 id="your-tickets" className="mb-4 font-sans text-xl font-semibold tracking-tight">
             {t('yourTickets', { count: order.tickets.length })}
           </h2>
-          <ul className="grid gap-4 sm:grid-cols-2">
+          <ul className="grid gap-5 sm:grid-cols-2">
             {order.tickets.map((ticket) => (
               <li
                 key={ticket.id}
-                className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+                className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card"
               >
-                <div className="bg-primary px-4 py-3 text-primary-foreground">
-                  <p className="truncate text-xs opacity-80">{order.event.title}</p>
-                  <p className="truncate font-semibold">{ticket.fullName}</p>
+                <div className="relative overflow-hidden bg-primary px-5 py-4 text-primary-foreground">
+                  <HillsBackdrop className="absolute inset-x-0 bottom-0 h-10 opacity-60" />
+                  <p dir="auto" className="relative truncate text-xs opacity-85">
+                    {order.event.title}
+                  </p>
+                  <p className="relative truncate text-lg font-semibold">{ticket.fullName}</p>
                   {ticket.ticketName ? (
-                    <p className="truncate text-xs opacity-80">{ticket.ticketName}</p>
+                    <p className="relative truncate text-xs opacity-85">{ticket.ticketName}</p>
                   ) : null}
                 </div>
                 {/* Perforation between the stub and the ticket. */}
@@ -245,7 +281,7 @@ export default async function TicketPage({
                   <span className="absolute -start-2 -top-0 size-4 rounded-full bg-background" />
                   <span className="absolute -end-2 -top-0 size-4 rounded-full bg-background" />
                 </div>
-                <div className="flex flex-col items-center gap-3 p-4 text-center">
+                <div className="flex flex-col items-center gap-3 p-5 text-center">
                   {ticket.ticketCode ? (
                     <TicketQR
                       code={ticket.ticketCode}
@@ -254,7 +290,7 @@ export default async function TicketPage({
                     />
                   ) : (
                     <p
-                      className="flex min-h-40 items-center rounded-xl bg-muted p-4 text-sm text-muted-foreground"
+                      className="flex min-h-40 items-center rounded-2xl bg-muted/70 p-4 text-sm text-muted-foreground"
                       data-testid="qr-pending"
                     >
                       {status === 'reserved' ? t('qrAfterPayment') : t('qrLater')}
@@ -283,15 +319,20 @@ export default async function TicketPage({
       ) : null}
 
       <section
-        aria-label={t('manageBooking')}
-        className="mt-6 space-y-3 border-t border-border pt-4"
+        aria-labelledby="manage-booking"
+        className="mt-8 space-y-4 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5"
       >
-        <p className="ltr-nums text-sm text-muted-foreground">
-          {t('reference')} · {order.reference}
-          {order.totalMillimes > 0
-            ? ` · ${formatPrice(order.paidMillimes, locale)} / ${formatPrice(order.totalMillimes, locale)}`
-            : ''}
-        </p>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="manage-booking" className="font-sans text-base font-semibold">
+            {t('manageBooking')}
+          </h2>
+          <p className="ltr-nums text-sm text-muted-foreground">
+            {t('reference')} · <span className="font-mono text-foreground">{order.reference}</span>
+            {order.totalMillimes > 0
+              ? ` · ${formatPrice(order.paidMillimes, locale)} / ${formatPrice(order.totalMillimes, locale)}`
+              : ''}
+          </p>
+        </div>
         <BookingActions
           reference={order.reference}
           canCancel={order.canCancel}
@@ -311,7 +352,7 @@ export default async function TicketPage({
               ) : null}
               <Link
                 href={`/events/${order.event.slug}`}
-                className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium hover:bg-accent"
+                className={buttonVariants({ variant: 'outline' })}
               >
                 {t('viewEvent')}
               </Link>
@@ -389,7 +430,7 @@ function NextStepBody({
         {order.proofRejection ? (
           <div
             role="alert"
-            className="rounded-xl border border-highlight/30 bg-highlight-soft p-3 text-sm text-highlight"
+            className="rounded-2xl border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
             data-testid="proof-rejected"
           >
             <p className="font-semibold">

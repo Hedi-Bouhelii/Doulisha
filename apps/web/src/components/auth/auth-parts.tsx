@@ -1,12 +1,26 @@
 'use client';
 
 import { phoneInputSchema } from '@doulisha/validators';
-import { CalendarPlus, Eye, EyeOff, Mail, Phone, Ticket } from 'lucide-react';
+import {
+  AlertCircle,
+  CalendarPlus,
+  Check,
+  Eye,
+  EyeOff,
+  Mail,
+  Phone,
+  QrCode,
+  ShieldCheck,
+  Terminal,
+  Ticket,
+  Wallet,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { z } from 'zod';
 
 import { LogoMark } from '@/components/brand/logo';
+import { HillsBackdrop, LeafSprig } from '@/components/doulisha/decor';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
@@ -16,7 +30,11 @@ import { cn } from '@/lib/utils';
 export type Method = 'phone' | 'email';
 export type AccountType = 'participant' | 'organizer';
 
-/** The card every auth screen sits in: logo, title, subtitle, content, footer. */
+/**
+ * The card every auth screen sits in: logo, title, subtitle, content, footer.
+ * On large screens a brand panel (tagline and what Doulisha offers) sits
+ * beside the form; phones get the form alone.
+ */
 export function AuthCard({
   title,
   subtitle,
@@ -28,17 +46,55 @@ export function AuthCard({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const tHome = useTranslations('Home');
+  const promises = [
+    { icon: ShieldCheck, text: tHome('trustSecure') },
+    { icon: Wallet, text: tHome('trustPayments') },
+    { icon: QrCode, text: tHome('trustTickets') },
+  ];
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <LogoMark className="mx-auto h-14" />
-        <h1 className="mt-4 text-center text-3xl font-bold">{title}</h1>
-        {subtitle ? (
-          <p className="mt-2 text-center text-sm text-muted-foreground">{subtitle}</p>
-        ) : null}
-        <div className="mt-6">{children}</div>
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:py-12 lg:max-w-5xl lg:px-6">
+      <div className="grid overflow-hidden rounded-3xl border border-border/70 bg-card shadow-raised lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="relative hidden flex-col overflow-hidden bg-primary p-10 text-primary-foreground lg:flex">
+          <span className="w-fit rounded-2xl bg-background px-2.5 py-2">
+            <LogoMark className="h-9" />
+          </span>
+          <p className="mt-10 font-display text-4xl leading-tight font-bold text-balance">
+            {tHome('tagline')}
+          </p>
+          <p className="mt-4 max-w-xs leading-relaxed text-primary-foreground/80">
+            {tHome('heroSubtitle')}
+          </p>
+          <ul className="relative z-10 mt-10 space-y-3 text-sm font-medium">
+            {promises.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-foreground/12">
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                {text}
+              </li>
+            ))}
+          </ul>
+          <LeafSprig className="absolute end-8 bottom-20 h-36 w-auto text-primary-foreground opacity-40" />
+          <HillsBackdrop className="pointer-events-none absolute inset-x-0 bottom-0 mt-auto h-28" />
+          <div className="min-h-24 flex-1" />
+        </div>
+        <div className="p-6 sm:p-10">
+          <LogoMark className="mx-auto h-14 lg:hidden" />
+          <h1 className="mt-4 text-center font-display text-3xl font-bold tracking-tight lg:mt-0 lg:text-start">
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground lg:text-start">
+              {subtitle}
+            </p>
+          ) : null}
+          <div className="mt-7">{children}</div>
+          {footer ? (
+            <div className="mt-7 border-t border-border/70 pt-5 text-center text-sm">{footer}</div>
+          ) : null}
+        </div>
       </div>
-      {footer ? <div className="mt-5 text-center text-sm">{footer}</div> : null}
     </div>
   );
 }
@@ -56,7 +112,7 @@ export function MethodSwitch({
     <div
       role="radiogroup"
       aria-label={t('methodLabel')}
-      className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1"
+      className="grid grid-cols-2 gap-1 rounded-full border border-border/60 bg-muted p-1"
     >
       {(['phone', 'email'] as const).map((m) => (
         <button
@@ -67,9 +123,9 @@ export function MethodSwitch({
           onClick={() => onChange(m)}
           data-testid={`method-${m}`}
           className={cn(
-            'flex min-h-10 items-center justify-center gap-2 rounded-full text-sm font-medium transition',
+            'flex min-h-10 items-center justify-center gap-2 rounded-full text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none',
             value === m
-              ? 'bg-card text-foreground shadow-sm'
+              ? 'bg-card font-semibold text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground',
           )}
         >
@@ -109,7 +165,7 @@ export function IdentifierField({
         placeholder="20 123 456"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 text-start"
+        className="text-start"
         aria-describedby="phone-hint"
       />
       <p id="phone-hint" className="text-xs text-muted-foreground">
@@ -127,7 +183,7 @@ export function IdentifierField({
         dir="ltr"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 text-start"
+        className="text-start"
       />
     </div>
   );
@@ -173,14 +229,14 @@ export function PasswordField({
           dir="ltr"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 pe-12 text-start"
+          className="pe-12 text-start"
           aria-describedby={hint ? `${id}-hint` : undefined}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? t('hidePassword') : t('showPassword')}
-          className="absolute inset-y-0 end-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+          className="absolute inset-y-0 end-0 flex w-11 items-center justify-center rounded-e-xl text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
         >
           {visible ? (
             <EyeOff className="size-4" aria-hidden="true" />
@@ -222,7 +278,7 @@ export function CodeField({
         >
           <InputOTPGroup>
             {Array.from({ length: 6 }, (_, i) => (
-              <InputOTPSlot key={i} index={i} className="size-11 text-lg" />
+              <InputOTPSlot key={i} index={i} className="size-12 text-lg font-semibold" />
             ))}
           </InputOTPGroup>
         </InputOTP>
@@ -234,7 +290,11 @@ export function CodeField({
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+    <p
+      role="alert"
+      className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+    >
+      <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       {message}
     </p>
   );
@@ -245,11 +305,18 @@ export function DevOutboxNote({ show }: { show: boolean }) {
   const t = useTranslations('Auth');
   if (!show) return null;
   return (
-    <p className="mt-6 rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-      {t('devOutbox')}{' '}
-      <Link href="/dev/outbox" className="font-medium text-primary underline" target="_blank">
-        {t('openOutbox')}
-      </Link>
+    <p className="mt-6 flex items-start gap-2 rounded-2xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+      <Terminal className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+      <span>
+        {t('devOutbox')}{' '}
+        <Link
+          href="/dev/outbox"
+          className="font-medium text-primary underline underline-offset-2"
+          target="_blank"
+        >
+          {t('openOutbox')}
+        </Link>
+      </span>
     </p>
   );
 }
@@ -296,7 +363,7 @@ export function AccountTypeCards({
     },
   ];
   return (
-    <div role="radiogroup" className="grid grid-cols-2 gap-2">
+    <div role="radiogroup" className="grid grid-cols-2 gap-3">
       {options.map(({ type, icon: Icon, title, hint }) => (
         <button
           key={type}
@@ -306,18 +373,27 @@ export function AccountTypeCards({
           onClick={() => onChange(type)}
           data-testid={`account-type-${type}`}
           className={cn(
-            'flex flex-col items-start gap-1.5 rounded-xl border p-3 text-start transition',
+            'relative flex flex-col items-start gap-2 rounded-2xl border p-3.5 text-start transition-[background-color,border-color,box-shadow] duration-150 focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none',
             value === type
-              ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
-              : 'border-border hover:bg-accent',
+              ? 'border-primary bg-primary-soft/50 ring-1 ring-primary/20'
+              : 'border-border/80 hover:border-primary/35 hover:bg-primary-soft/25',
           )}
         >
-          <Icon
-            className={cn('size-5', value === type ? 'text-primary' : 'text-muted-foreground')}
-            aria-hidden="true"
-          />
+          <span
+            className={cn(
+              'flex size-9 items-center justify-center rounded-xl transition-colors',
+              value === type
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground',
+            )}
+          >
+            <Icon className="size-5" aria-hidden="true" />
+          </span>
+          {value === type ? (
+            <Check className="absolute end-3 top-3 size-4 text-primary" aria-hidden="true" />
+          ) : null}
           <span className="text-sm font-semibold">{title}</span>
-          <span className="text-xs text-muted-foreground">{hint}</span>
+          <span className="text-xs leading-snug text-muted-foreground">{hint}</span>
         </button>
       ))}
     </div>

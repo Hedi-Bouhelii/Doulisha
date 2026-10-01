@@ -79,7 +79,6 @@ export function SetupForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
-          className="h-11"
           data-testid="setup-name"
           autoFocus
         />
@@ -92,7 +91,6 @@ export function SetupForm({
           value={city}
           onChange={(e) => setCity(e.target.value)}
           maxLength={60}
-          className="h-11"
         />
         <datalist id="city-options">
           {cities.map((c) => (
@@ -119,7 +117,7 @@ export function SetupForm({
       <FormError message={error} />
       <Button
         type="submit"
-        className="h-11 w-full rounded-full"
+        className="w-full"
         disabled={!ready || complete.isPending}
         data-testid="setup-submit"
       >

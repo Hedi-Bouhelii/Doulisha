@@ -166,18 +166,13 @@ export function SignInForm({
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="min-h-11 content-center text-sm font-medium text-primary hover:underline"
+              className="min-h-11 content-center text-sm font-medium text-primary underline-offset-4 hover:underline"
             >
               {t('forgotPassword')}
             </Link>
           </div>
           <FormError message={error} />
-          <Button
-            type="submit"
-            className="h-11 w-full rounded-full"
-            disabled={busy}
-            data-testid="sign-in-submit"
-          >
+          <Button type="submit" className="w-full" disabled={busy} data-testid="sign-in-submit">
             {t('signIn')}
           </Button>
           <button
@@ -186,7 +181,7 @@ export function SignInForm({
               setMode('code');
               setError(null);
             }}
-            className="min-h-11 w-full text-sm font-medium text-primary hover:underline"
+            className="min-h-11 w-full text-sm font-medium text-primary underline-offset-4 hover:underline"
             data-testid="use-code"
           >
             {t('useCodeInstead')}
@@ -198,18 +193,13 @@ export function SignInForm({
         <form onSubmit={(e) => void sendCode(e)} className="space-y-4" noValidate>
           <IdentifierField method={method} value={identifier} onChange={setIdentifier} />
           <FormError message={error} />
-          <Button
-            type="submit"
-            className="h-11 w-full rounded-full"
-            disabled={busy}
-            data-testid="send-code"
-          >
+          <Button type="submit" className="w-full" disabled={busy} data-testid="send-code">
             {t('sendCode')}
           </Button>
           <button
             type="button"
             onClick={() => setMode('password')}
-            className="min-h-11 w-full text-sm font-medium text-primary hover:underline"
+            className="min-h-11 w-full text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             {t('usePasswordInstead')}
           </button>
@@ -226,7 +216,7 @@ export function SignInForm({
           <FormError message={error} />
           <Button
             type="submit"
-            className="h-11 w-full rounded-full"
+            className="w-full"
             disabled={busy || code.length < 6}
             data-testid="verify-code"
           >
@@ -235,14 +225,14 @@ export function SignInForm({
           <div className="flex justify-between gap-2 text-sm">
             <button
               type="button"
-              className="min-h-11 text-primary hover:underline"
+              className="min-h-11 font-medium text-primary underline-offset-4 hover:underline"
               onClick={() => setMode('code')}
             >
               {t('changeNumber')}
             </button>
             <button
               type="button"
-              className="min-h-11 text-primary hover:underline"
+              className="min-h-11 font-medium text-primary underline-offset-4 hover:underline"
               onClick={() => void sendCode()}
               disabled={busy}
             >

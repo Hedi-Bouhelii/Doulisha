@@ -5,6 +5,9 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
+import { PageHeader } from '@/components/doulisha/page';
+import { toneOf } from '@/components/doulisha/status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
@@ -14,21 +17,18 @@ import { api } from '@/trpc/server';
 
 export const metadata: Metadata = { robots: { index: false } };
 
-/** Order status → ticket status label and colour. */
+/** Order status → ticket status label (its tone comes from the one status palette). */
 const STATUS: Record<
   string,
-  {
-    key: 'confirmed' | 'awaiting_payment' | 'waitlisted' | 'cancelled' | 'expired' | 'refunded';
-    tone: string;
-  }
+  'confirmed' | 'awaiting_payment' | 'waitlisted' | 'cancelled' | 'expired' | 'refunded'
 > = {
-  paid: { key: 'confirmed', tone: 'bg-cat-outdoor-bg text-cat-outdoor-fg' },
-  partially_paid: { key: 'confirmed', tone: 'bg-cat-outdoor-bg text-cat-outdoor-fg' },
-  awaiting_payment: { key: 'awaiting_payment', tone: 'bg-highlight-soft text-highlight' },
-  pending: { key: 'waitlisted', tone: 'bg-secondary text-secondary-foreground' },
-  cancelled: { key: 'cancelled', tone: 'bg-muted text-muted-foreground' },
-  expired: { key: 'expired', tone: 'bg-muted text-muted-foreground' },
-  refunded: { key: 'refunded', tone: 'bg-muted text-muted-foreground' },
+  paid: 'confirmed',
+  partially_paid: 'confirmed',
+  awaiting_payment: 'awaiting_payment',
+  pending: 'waitlisted',
+  cancelled: 'cancelled',
+  expired: 'expired',
+  refunded: 'refunded',
 };
 
 const dayFormat = (locale: Locale) =>
@@ -61,10 +61,11 @@ export default async function TicketsPage({
     return (
       <div className="mx-auto w-full max-w-xl px-4 py-16">
         <EmptyState
+          icon={Ticket}
           title={t('title')}
           hint={t('signIn')}
           action={
-            <Button asChild className="min-h-11">
+            <Button asChild>
               <Link href="/sign-in?next=/tickets">{t('signInButton')}</Link>
             </Button>
           }
@@ -77,22 +78,32 @@ export default async function TicketsPage({
   const list = tab === 'past' ? past : upcoming;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
-      <h1 className="text-3xl font-bold">{t('title')}</h1>
-      <nav aria-label={t('title')} className="mt-4 flex gap-1 rounded-full bg-muted p-1">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+      <PageHeader title={t('title')} />
+      <nav
+        aria-label={t('title')}
+        className="mt-6 flex gap-1 rounded-full border border-border/60 bg-muted p-1"
+      >
         {(['upcoming', 'past'] as const).map((name) => (
           <Link
             key={name}
             href={name === 'past' ? '/tickets?tab=past' : '/tickets'}
             aria-current={tab === name ? 'page' : undefined}
             className={cn(
-              'flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium',
-              tab === name ? 'bg-card shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              'flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full text-sm font-medium transition-colors',
+              tab === name
+                ? 'bg-card font-semibold text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {t(name)}
-            <span className="ltr-nums text-xs text-muted-foreground">
-              ({name === 'past' ? past.length : upcoming.length})
+            <span
+              className={cn(
+                'ltr-nums min-w-6 rounded-full px-1.5 text-xs leading-5',
+                tab === name ? 'bg-primary-soft text-primary' : 'bg-background/70',
+              )}
+            >
+              {name === 'past' ? past.length : upcoming.length}
             </span>
           </Link>
         ))}
@@ -101,10 +112,11 @@ export default async function TicketsPage({
       {list.length === 0 ? (
         <EmptyState
           className="mt-6"
+          icon={Ticket}
           title={tab === 'past' ? t('noPast') : t('empty')}
           hint={t('emptyHint')}
           action={
-            <Button asChild className="min-h-11">
+            <Button asChild>
               <Link href="/explore">{t('findEvents')}</Link>
             </Button>
           }
@@ -118,65 +130,72 @@ export default async function TicketsPage({
               <li key={order.reference}>
                 <Link
                   href={`/tickets/${order.reference}`}
-                  className={cn(
-                    'flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:shadow-md',
-                    tab === 'past' && 'opacity-80',
-                  )}
+                  className="group flex items-stretch overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-[box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:shadow-raised"
                 >
-                  <div className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-secondary py-2 text-center">
-                    <span className="ltr-nums text-xl leading-none font-bold">
+                  {/* Ticket stub: the date, then a perforation. */}
+                  <div
+                    className={cn(
+                      'flex w-16 shrink-0 flex-col items-center justify-center py-3 text-center sm:w-20',
+                      tab === 'past'
+                        ? 'bg-muted text-muted-foreground'
+                        : 'bg-primary-soft text-primary',
+                    )}
+                  >
+                    <span className="ltr-nums text-2xl leading-none font-bold">
                       {dayFormat(locale).format(order.event.startsAt)}
                     </span>
-                    <span className="mt-1 text-xs uppercase">
+                    <span className="mt-1 text-xs font-semibold uppercase">
                       {monthFormat(locale).format(order.event.startsAt)}
                     </span>
                   </div>
-                  <div className="relative hidden size-16 shrink-0 overflow-hidden rounded-xl bg-muted sm:block">
-                    {order.event.coverUrl ? (
-                      <Image
-                        src={order.event.coverUrl}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <Ticket
-                        className="m-auto mt-5 size-6 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p dir="auto" className="truncate text-start font-semibold">
-                      {order.event.title}
-                    </p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {formatTime(order.event.startsAt, locale)}
-                      {order.event.city ? ` · ${order.event.city}` : ''}
-                    </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      {status ? (
-                        <span
-                          className={cn(
-                            'rounded-full px-2 py-0.5 text-xs font-semibold',
-                            status.tone,
-                          )}
-                        >
-                          {t(`status.${status.key}`)}
-                        </span>
-                      ) : null}
-                      {due > 0 && ['awaiting_payment', 'partially_paid'].includes(order.status) ? (
-                        <span className="text-xs font-semibold text-highlight">
-                          {t('amountDue', { amount: formatPrice(due, locale) })}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <ChevronRight
-                    className="size-5 shrink-0 text-muted-foreground rtl:rotate-180"
+                  <span
                     aria-hidden="true"
-                  />
+                    className="relative w-0 border-s-2 border-dashed border-border/80"
+                  >
+                    <span className="absolute -top-2 -start-[9px] size-4 rounded-full border border-border/70 bg-background" />
+                    <span className="absolute -bottom-2 -start-[9px] size-4 rounded-full border border-border/70 bg-background" />
+                  </span>
+                  <div className="flex min-w-0 flex-1 items-center gap-3 p-3 sm:gap-4 sm:p-4">
+                    <div className="relative hidden size-16 shrink-0 overflow-hidden rounded-xl bg-muted sm:flex sm:items-center sm:justify-center">
+                      {order.event.coverUrl ? (
+                        <Image
+                          src={order.event.coverUrl}
+                          alt=""
+                          fill
+                          sizes="64px"
+                          className={cn('object-cover', tab === 'past' && 'grayscale-[0.4]')}
+                        />
+                      ) : (
+                        <Ticket className="size-6 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p dir="auto" className="truncate text-start font-semibold">
+                        {order.event.title}
+                      </p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {formatTime(order.event.startsAt, locale)}
+                        {order.event.city ? ` · ${order.event.city}` : ''}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {status ? (
+                          <Badge variant={toneOf(status)} dot>
+                            {t(`status.${status}`)}
+                          </Badge>
+                        ) : null}
+                        {due > 0 &&
+                        ['awaiting_payment', 'partially_paid'].includes(order.status) ? (
+                          <span className="ltr-nums text-xs font-semibold text-warning">
+                            {t('amountDue', { amount: formatPrice(due, locale) })}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <ChevronRight
+                      className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </div>
                 </Link>
               </li>
             );
