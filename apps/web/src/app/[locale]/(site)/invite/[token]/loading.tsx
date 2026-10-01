@@ -1,6 +1,6 @@
 import { PageSkeleton } from '@/components/doulisha/page-skeleton';
 
-/** Loading state of the conversations list. */
+/** Loading state of an invitation. */
 export default function Loading() {
-  return <PageSkeleton variant="list" />;
+  return <PageSkeleton variant="detail" />;
 }
