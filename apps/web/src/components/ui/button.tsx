@@ -3,29 +3,40 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Slot } from 'radix-ui';
 
+/**
+ * Doulisha buttons (design system v2, docs/UX_GUIDELINES.md): pill-shaped,
+ * 44 px tall by default (touch target), one hierarchy everywhere:
+ * `default` forest green for the main action, `accent` terracotta for a warm
+ * secondary highlight, `outline` / `secondary` / `soft` for the rest,
+ * `destructive` for irreversible actions, `ghost` and `link` inside content.
+ */
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full text-sm font-semibold whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-(--ease-standard) outline-none select-none focus-visible:ring-4 focus-visible:ring-ring/25 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default:
+          'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 hover:shadow-card',
+        accent:
+          'bg-highlight text-highlight-foreground shadow-xs hover:bg-highlight/90 hover:shadow-card',
         destructive:
-          'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40',
+          'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/25',
         outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'border border-input bg-card text-foreground shadow-xs hover:border-primary/40 hover:bg-primary-soft/50 dark:bg-card dark:hover:bg-primary-soft/40',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/75',
+        soft: 'bg-primary-soft text-primary hover:bg-primary-soft/70',
+        ghost: 'text-foreground/85 hover:bg-accent hover:text-foreground',
+        link: 'rounded-md text-primary underline-offset-4 hover:underline active:scale-100',
       },
       size: {
-        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
-        xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: 'h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5',
-        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
-        icon: 'size-9',
-        'icon-xs': "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3",
-        'icon-sm': 'size-8',
-        'icon-lg': 'size-10',
+        default: 'h-11 px-5 has-[>svg]:px-4',
+        xs: "h-7 gap-1 px-2.5 text-xs has-[>svg]:px-2 [&_svg:not([class*='size-'])]:size-3",
+        sm: 'h-9 gap-1.5 px-3.5 has-[>svg]:px-3',
+        lg: 'h-12 px-7 text-base has-[>svg]:px-6',
+        icon: 'size-11',
+        'icon-xs': "size-7 [&_svg:not([class*='size-'])]:size-3",
+        'icon-sm': 'size-9',
+        'icon-lg': 'size-12',
       },
     },
     defaultVariants: {

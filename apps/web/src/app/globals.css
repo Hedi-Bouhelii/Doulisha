@@ -25,11 +25,19 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
   h1,
   h2,
   h3 {
-    @apply font-display;
+    @apply font-display tracking-tight;
     text-wrap: balance;
+  }
+
+  a {
+    @apply transition-colors duration-150;
   }
 
   /* Arabic reads better slightly larger and with more line height. */
@@ -46,6 +54,14 @@
   .ltr-nums {
     direction: ltr;
     unicode-bidi: isolate;
+  }
+}
+
+/* Horizontal scrollers (tabs, chips) without a visible scrollbar; still scrollable. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
