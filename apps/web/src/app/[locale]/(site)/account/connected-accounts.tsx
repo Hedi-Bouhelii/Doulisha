@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogTitle,
+  DialogTitle, 
 } from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
@@ -30,6 +30,7 @@ const MIN_PASSWORD = 8;
 const providerNames: Record<SocialProvider, string> = {
   google: 'Google',
   facebook: 'Facebook',
+  
   apple: 'Apple',
 };
 
