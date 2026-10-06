@@ -3,6 +3,7 @@
 import { formatEventDateTime, formatPrice, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
 import {
+  AlertCircle,
   Banknote,
   CalendarClock,
   CheckCircle2,
@@ -18,6 +19,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
+import { initials } from '@/components/doulisha/friends-going';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -75,7 +77,11 @@ function useRun() {
 function ErrorLine({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-lg bg-highlight-soft p-2 text-sm text-highlight">
+    <p
+      role="alert"
+      className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+    >
+      <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       {message}
     </p>
   );
@@ -98,19 +104,16 @@ export function PaymentsInbox({ inbox, showEvent }: { inbox: Inbox; showEvent: b
       defaultValue={counts.toVerify > 0 || counts.awaiting === 0 ? 'toVerify' : 'awaiting'}
       className="min-w-0"
     >
-      <TabsList className="h-11 w-full justify-start overflow-x-auto sm:w-auto">
+      <TabsList className="w-full sm:w-auto">
         {(['toVerify', 'awaiting', 'confirmed'] as const).map((tab) => (
-          <TabsTrigger
-            key={tab}
-            value={tab}
-            className="min-h-9 gap-1.5 px-3"
-            data-testid={`payments-tab-${tab}`}
-          >
+          <TabsTrigger key={tab} value={tab} data-testid={`payments-tab-${tab}`}>
             {t(`tabs.${tab}`)}
             <span
               className={cn(
-                'ltr-nums rounded-full px-1.5 text-xs',
-                tab === 'toVerify' && counts.toVerify > 0 ? 'bg-highlight text-white' : 'bg-muted',
+                'ltr-nums min-w-5 rounded-full px-1.5 text-xs leading-5 font-semibold',
+                tab === 'toVerify' && counts.toVerify > 0
+                  ? 'bg-highlight text-highlight-foreground'
+                  : 'bg-background text-muted-foreground',
               )}
             >
               {counts[tab]}
@@ -121,7 +124,12 @@ export function PaymentsInbox({ inbox, showEvent }: { inbox: Inbox; showEvent: b
 
       <TabsContent value="toVerify" className="mt-4 space-y-3">
         {inbox.toVerify.length === 0 ? (
-          <EmptyState title={t('nothingToVerify')} hint={t('nothingToVerifyHint')} />
+          <EmptyState
+            size="compact"
+            icon={FileText}
+            title={t('nothingToVerify')}
+            hint={t('nothingToVerifyHint')}
+          />
         ) : (
           inbox.toVerify.map((item) => (
             <ItemCard key={item.orderId} item={item} showEvent={showEvent}>
@@ -133,7 +141,12 @@ export function PaymentsInbox({ inbox, showEvent }: { inbox: Inbox; showEvent: b
 
       <TabsContent value="awaiting" className="mt-4 space-y-3">
         {inbox.awaiting.length === 0 ? (
-          <EmptyState title={t('nothingAwaiting')} hint={t('nothingAwaitingHint')} />
+          <EmptyState
+            size="compact"
+            icon={Clock}
+            title={t('nothingAwaiting')}
+            hint={t('nothingAwaitingHint')}
+          />
         ) : (
           inbox.awaiting.map((item) => (
             <ItemCard key={item.orderId} item={item} showEvent={showEvent}>
@@ -145,7 +158,9 @@ export function PaymentsInbox({ inbox, showEvent }: { inbox: Inbox; showEvent: b
 
       <TabsContent value="confirmed" className="mt-4">
         {inbox.confirmed.length === 0 ? (
-          <p className="text-sm text-muted-foreground">–</p>
+          <p className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+            –
+          </p>
         ) : (
           <ConfirmedList rows={inbox.confirmed} showEvent={showEvent} />
         )}
@@ -170,35 +185,46 @@ function ItemCard({
   const Icon = methodIcons[item.method];
   return (
     <article
-      className="rounded-2xl border border-border bg-card p-4"
+      className="rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5"
       data-testid="payment-item"
       data-reference={item.reference}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-semibold">{item.buyer.name}</p>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            {item.buyer.phone ? (
-              <a
-                href={`tel:${item.buyer.phone}`}
-                dir="ltr"
-                className="ltr-nums inline-flex items-center gap-1 hover:underline"
-              >
-                <Phone className="size-3.5" aria-hidden="true" />
-                {item.buyer.phone}
-              </a>
-            ) : null}
-            <span className="ltr-nums">{item.reference}</span>
-            <span>{t('places', { count: item.places })}</span>
-          </p>
-          {showEvent ? (
-            <p className="mt-1 text-sm">
-              {item.event.title} · {formatEventDateTime(item.event.startsAt, locale)}
+        <div className="flex min-w-0 gap-3">
+          <span
+            aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary"
+          >
+            {initials(item.buyer.name)}
+          </span>
+          <div className="min-w-0">
+            <p className="font-semibold" dir="auto">
+              {item.buyer.name}
             </p>
-          ) : null}
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {item.buyer.phone ? (
+                <a
+                  href={`tel:${item.buyer.phone}`}
+                  dir="ltr"
+                  className="ltr-nums inline-flex items-center gap-1 hover:underline"
+                >
+                  <Phone className="size-3.5" aria-hidden="true" />
+                  {item.buyer.phone}
+                </a>
+              ) : null}
+              <span className="ltr-nums font-mono">{item.reference}</span>
+              <span>{t('places', { count: item.places })}</span>
+            </p>
+            {showEvent ? (
+              <p className="mt-1 text-sm">
+                <span dir="auto">{item.event.title}</span> ·{' '}
+                {formatEventDateTime(item.event.startsAt, locale)}
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className="text-end">
-          <p className="ltr-nums text-xl font-bold" data-testid="expected-amount">
+          <p className="ltr-nums text-xl font-bold tracking-tight" data-testid="expected-amount">
             {formatPrice(item.expectedMillimes, locale)}
           </p>
           <p className="flex items-center justify-end gap-1 text-sm text-muted-foreground">
@@ -208,12 +234,12 @@ function ItemCard({
         </div>
       </div>
       {item.deadline ? (
-        <p className="mt-2 flex items-center gap-1.5 text-sm">
-          <CalendarClock className="size-4 text-primary" aria-hidden="true" />
+        <p className="mt-3 flex w-fit items-center gap-1.5 rounded-full bg-warning-soft px-3 py-1 text-sm font-medium text-warning">
+          <CalendarClock className="size-4 shrink-0" aria-hidden="true" />
           {t('deadline', { time: formatEventDateTime(item.deadline, locale) })}
         </p>
       ) : null}
-      <div className="mt-3 border-t border-border pt-3">{children}</div>
+      <div className="mt-4 border-t border-border/70 pt-4">{children}</div>
     </article>
   );
 }
@@ -237,7 +263,7 @@ export function ReceiptReview({ item }: { item: Item }) {
           href={src}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted text-sm font-medium hover:bg-accent"
+          className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-muted text-sm font-medium transition-colors hover:bg-accent"
         >
           <FileText className="size-8 text-primary" aria-hidden="true" />
           {t('openPdf')}
@@ -247,7 +273,7 @@ export function ReceiptReview({ item }: { item: Item }) {
           <DialogTrigger asChild>
             <button
               type="button"
-              className="overflow-hidden rounded-xl border border-border bg-muted"
+              className="overflow-hidden rounded-2xl border border-border/70 bg-muted transition-shadow hover:shadow-raised focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none"
               aria-label={t('enlarge')}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- private receipt served by an authenticated route, not optimisable */}
@@ -285,14 +311,13 @@ export function ReceiptReview({ item }: { item: Item }) {
             onChange={(e) => setTransactionRef(e.target.value)}
             maxLength={60}
             dir="ltr"
-            className="h-11 max-w-xs text-start"
+            className="max-w-xs text-start"
           />
         </div>
         <ErrorLine message={error} />
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
-            className="min-h-11 rounded-full"
             disabled={busy}
             onClick={() =>
               void run(() =>
@@ -328,12 +353,7 @@ function RejectDialog({ eventId, proofId }: { eventId: string; proofId: string }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 rounded-full"
-          data-testid="reject-proof"
-        >
+        <Button type="button" variant="outline" data-testid="reject-proof">
           <XCircle aria-hidden="true" />
           {t('reject')}
         </Button>
@@ -341,12 +361,12 @@ function RejectDialog({ eventId, proofId }: { eventId: string; proofId: string }
       <DialogContent>
         <DialogTitle>{t('rejectTitle')}</DialogTitle>
         <DialogDescription>{t('rejectHint')}</DialogDescription>
-        <fieldset className="space-y-1">
+        <fieldset className="space-y-2">
           <legend className="sr-only">{t('reason')}</legend>
           {REASONS.map((r) => (
             <label
               key={r}
-              className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-2 hover:bg-accent"
+              className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-border/70 px-3 transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary-soft/50"
             >
               <input
                 type="radio"
@@ -375,14 +395,13 @@ function RejectDialog({ eventId, proofId }: { eventId: string; proofId: string }
         <ErrorLine message={error} />
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="min-h-11">
+            <Button type="button" variant="outline">
               {t('back')}
             </Button>
           </DialogClose>
           <Button
             type="button"
             variant="destructive"
-            className="min-h-11"
             disabled={busy}
             onClick={() =>
               void run(() =>
@@ -428,7 +447,6 @@ function AwaitingActions({ item }: { item: Item }) {
         <Button
           type="button"
           variant="outline"
-          className="min-h-11 rounded-full"
           disabled={busy}
           onClick={() => void run(() => extend.mutateAsync({ orderId: item.orderId }))}
           data-testid="extend-reservation"
@@ -441,7 +459,7 @@ function AwaitingActions({ item }: { item: Item }) {
             <Button
               type="button"
               variant="ghost"
-              className="min-h-11 rounded-full text-destructive"
+              className="text-destructive hover:bg-destructive-soft hover:text-destructive"
             >
               <XCircle aria-hidden="true" />
               {t('cancelReservation')}
@@ -454,7 +472,7 @@ function AwaitingActions({ item }: { item: Item }) {
             </DialogDescription>
             <DialogFooter className="gap-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline" className="min-h-11">
+                <Button type="button" variant="outline">
                   {t('back')}
                 </Button>
               </DialogClose>
@@ -462,7 +480,6 @@ function AwaitingActions({ item }: { item: Item }) {
                 <Button
                   type="button"
                   variant="destructive"
-                  className="min-h-11"
                   onClick={() => void run(() => cancel.mutateAsync({ orderId: item.orderId }))}
                 >
                   {t('cancelReservation')}
@@ -485,12 +502,10 @@ export function MarkPaidDialog({
   orderId,
   method,
   amount,
-  compact = false,
 }: {
   orderId: string;
   method: Method;
   amount: string;
-  compact?: boolean;
 }) {
   const t = useTranslations('Payments');
   const tCheckout = useTranslations('Checkout');
@@ -503,12 +518,7 @@ export function MarkPaidDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          size={compact ? 'sm' : 'default'}
-          className="min-h-11 rounded-full"
-          data-testid="mark-paid"
-        >
+        <Button type="button" data-testid="mark-paid">
           <CheckCircle2 aria-hidden="true" />
           {t('paymentReceived')}
         </Button>
@@ -527,20 +537,19 @@ export function MarkPaidDialog({
               onChange={(e) => setTransactionRef(e.target.value)}
               maxLength={60}
               dir="ltr"
-              className="h-11 text-start"
+              className="text-start"
             />
           </div>
         ) : null}
         <ErrorLine message={error} />
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="min-h-11">
+            <Button type="button" variant="outline">
               {t('back')}
             </Button>
           </DialogClose>
           <Button
             type="button"
-            className="min-h-11"
             disabled={busy}
             onClick={() =>
               void run(() =>
@@ -566,17 +575,22 @@ function ConfirmedList({ rows, showEvent }: { rows: Inbox['confirmed']; showEven
   const tCheckout = useTranslations('Checkout');
   const locale = useLocale() as Locale;
   return (
-    <ul className="divide-y divide-border rounded-2xl border border-border bg-card">
+    <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
       {rows.map((row) => (
         <li
           key={`${row.orderId}-${String(row.paidAt)}`}
-          className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm"
+          className="flex flex-wrap items-center justify-between gap-2 p-4 text-sm"
           data-testid="confirmed-payment"
           data-reference={row.reference}
         >
           <span className="min-w-0">
-            <span className="ltr-nums font-medium">{row.reference}</span>
-            {showEvent ? <span className="text-muted-foreground"> · {row.eventTitle}</span> : null}
+            <span className="ltr-nums font-mono font-medium">{row.reference}</span>
+            {showEvent ? (
+              <span className="text-muted-foreground">
+                {' · '}
+                <span dir="auto">{row.eventTitle}</span>
+              </span>
+            ) : null}
             <span className="block text-xs text-muted-foreground">
               {tCheckout(`methods.${row.method as Method}`)}
               {row.transactionRef ? ` · ${t('transactionShort', { ref: row.transactionRef })}` : ''}

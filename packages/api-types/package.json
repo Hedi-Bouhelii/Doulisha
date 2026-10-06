@@ -1,0 +1,31 @@
+{
+  "name": "@doulisha/api-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Type declarations of the tRPC API (AppRouter), bundled into one file for the mobile app",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@doulisha/api": "workspace:*",
+    "@doulisha/config": "workspace:*",
+    "@trpc/server": "^11.19.0",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "rollup": "^4.63.5",
+    "rollup-plugin-dts": "^6.5.1",
+    "typescript": "catalog:"
+  }
+}

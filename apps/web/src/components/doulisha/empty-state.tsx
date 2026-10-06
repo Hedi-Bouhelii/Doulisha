@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -32,34 +33,62 @@ function Illustration({ tone }: { tone: 'calm' | 'alert' }) {
 }
 
 /**
- * Empty and error states: friendly illustration, a clear title, a hint and
- * one next action (UX_GUIDELINES.md, "Required states").
+ * Empty and error states: an illustration (or an icon that says what is
+ * missing), a clear title, a hint and the next action (UX_GUIDELINES.md,
+ * "Required states"). Every text comes from the translations.
  */
 export function EmptyState({
   title,
   hint,
   action,
+  secondaryAction,
+  icon: Icon,
   tone = 'calm',
+  size = 'default',
   className,
 }: {
   title: string;
   hint?: string;
   action?: ReactNode;
+  secondaryAction?: ReactNode;
+  /** Replaces the illustration with an icon in a soft circle. */
+  icon?: LucideIcon;
   tone?: 'calm' | 'alert';
+  /** `compact` for states inside cards and side panels. */
+  size?: 'default' | 'compact';
   className?: string;
 }) {
   return (
     <div
       role={tone === 'alert' ? 'alert' : 'status'}
       className={cn(
-        'flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card/60 px-6 py-10 text-center',
+        'flex flex-col items-center gap-3 rounded-3xl border border-border/70 bg-card/70 text-center',
+        size === 'compact' ? 'px-5 py-8' : 'px-6 py-12 sm:py-14',
         className,
       )}
     >
-      <Illustration tone={tone} />
-      <h2 className="font-sans text-lg font-semibold">{title}</h2>
-      {hint ? <p className="max-w-sm text-sm text-muted-foreground">{hint}</p> : null}
-      {action ? <div className="mt-1">{action}</div> : null}
+      {Icon ? (
+        <span
+          className={cn(
+            'flex size-14 items-center justify-center rounded-full',
+            tone === 'alert' ? 'bg-highlight-soft text-highlight' : 'bg-primary-soft text-primary',
+          )}
+        >
+          <Icon className="size-6" aria-hidden="true" />
+        </span>
+      ) : (
+        <Illustration tone={tone} />
+      )}
+      <h2 className="font-sans text-lg font-semibold text-balance">{title}</h2>
+      {hint ? (
+        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{hint}</p>
+      ) : null}
+      {action || secondaryAction ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+          {action}
+          {secondaryAction}
+        </div>
+      ) : null}
     </div>
   );
 }

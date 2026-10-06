@@ -3,11 +3,14 @@ import { formatDate, formatEventDateTime, formatTime, type Locale, locales } fro
 import { TRPCError } from '@trpc/server';
 import {
   ArrowLeft,
+  BadgeCheck,
   CalendarDays,
   Check,
   EyeOff,
   MapPin,
   Settings2,
+  ShieldCheck,
+  Star,
   Ticket,
   Users,
 } from 'lucide-react';
@@ -137,8 +140,12 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
   const isFree = event.registrationType === 'free_rsvp';
   const soldOut = event.placesLeft === 0;
 
+  const taken = event.capacity ? Math.min(event.placesTaken, event.capacity) : null;
+  const fillPercent =
+    event.capacity && taken !== null ? Math.round((taken / event.capacity) * 100) : null;
+
   return (
-    <article className="pb-28 lg:pb-12">
+    <article className="pb-28 lg:pb-16">
       {event.visibility === 'public' ? (
         <script
           type="application/ld+json"
@@ -146,8 +153,8 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
           dangerouslySetInnerHTML={{ __html: jsonLdScript(eventJsonLd(event, locale)) }}
         />
       ) : null}
-      {/* Hero with the title over the photo (template). */}
-      <header className="relative isolate flex min-h-[22rem] items-end overflow-hidden bg-foreground sm:min-h-[26rem]">
+      {/* Immersive hero: the cover, then category, title, date and place over it. */}
+      <header className="relative isolate flex min-h-[24rem] items-end overflow-hidden bg-foreground sm:min-h-[30rem]">
         {event.coverUrl ? (
           <Image
             src={event.coverUrl}
@@ -155,23 +162,33 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
             fill
             priority
             sizes="100vw"
-            className="-z-10 object-cover opacity-90"
+            className="-z-10 object-cover"
           />
-        ) : null}
-        <div className="absolute inset-0 -z-10 bg-linear-to-t from-black/80 via-black/30 to-black/10" />
-        <div className="absolute inset-x-0 top-0 mx-auto flex max-w-5xl items-center justify-between px-4 pt-4 sm:px-6">
+        ) : (
+          <div
+            className={cn('absolute inset-0 -z-10 flex items-center justify-center', accent.tile)}
+          >
+            <CategoryIcon name={event.category.icon} className="size-24 opacity-40" />
+          </div>
+        )}
+        <div className="absolute inset-0 -z-10 bg-linear-to-t from-black/85 via-black/35 to-black/15" />
+        <div className="absolute inset-x-0 top-0 mx-auto flex max-w-6xl items-center justify-between px-4 pt-4 sm:px-6">
           <Button
             asChild
             variant="secondary"
             size="icon"
-            className="size-11 rounded-full bg-card/90"
+            className="bg-card/90 shadow-xs backdrop-blur-sm hover:bg-card"
           >
             <Link href="/explore" aria-label={t('backToExplore')}>
               <ArrowLeft className="size-5 rtl:rotate-180" />
             </Link>
           </Button>
           {event.canManage ? (
-            <Button asChild variant="secondary" className="min-h-11 rounded-full bg-card/90">
+            <Button
+              asChild
+              variant="secondary"
+              className="bg-card/90 shadow-xs backdrop-blur-sm hover:bg-card"
+            >
               <Link href={`/organizer/events/${event.id}`} data-testid="manage-event">
                 <Settings2 className="size-4" aria-hidden="true" />
                 {t('manage')}
@@ -179,32 +196,47 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
             </Button>
           ) : null}
         </div>
-        <div className="mx-auto w-full max-w-5xl px-4 pb-6 text-white sm:px-6">
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold',
-              accent.tile,
-            )}
-          >
+        <div className="mx-auto w-full max-w-6xl px-4 pb-8 text-white sm:px-6 sm:pb-10">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
             <CategoryIcon name={event.category.icon} className="size-3.5" />
             {event.category.name}
           </span>
-          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">{event.title}</h1>
-          <p className="mt-2 flex items-center gap-1.5 text-white/90">
-            <MapPin className="size-4" aria-hidden="true" />
-            {[event.city, event.venueName].filter(Boolean).join(' · ')}
-          </p>
+          <h1 className="mt-3 max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            {event.title}
+          </h1>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:text-base">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="size-4" aria-hidden="true" />
+              <time dateTime={event.startsAt.toISOString()}>
+                {formatEventDateTime(event.startsAt, locale)}
+              </time>
+            </span>
+            {event.city || event.venueName ? (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-4" aria-hidden="true" />
+                {[event.venueName, event.city].filter(Boolean).join(' · ')}
+              </span>
+            ) : null}
+            {event.organizer ? (
+              <span className="flex items-center gap-1.5">
+                {t('byOrganizer', { name: event.organizer.name })}
+                {event.organizer.verified ? (
+                  <BadgeCheck className="size-4" aria-label={t('verified')} />
+                ) : null}
+              </span>
+            ) : null}
+          </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-5xl gap-8 px-4 pt-6 sm:px-6 lg:grid-cols-[1fr_20rem]">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 sm:px-6 lg:grid-cols-[1fr_22rem] lg:gap-10">
         <div className="min-w-0">
-          <dl className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Fact icon={<CalendarDays className="size-5" />} label={t('date')}>
               <DateRange start={event.startsAt} end={event.endsAt} />
             </Fact>
             <Fact icon={<Ticket className="size-5" />} label={t('price')}>
-              <PriceTag millimes={event.priceFromMillimes} />
+              <PriceTag millimes={event.priceFromMillimes} className="text-base" />
               <span className="block text-xs text-muted-foreground">
                 {event.registrationType === 'pay_at_door'
                   ? t('payAtDoor')
@@ -232,41 +264,39 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
             </p>
           ) : null}
 
-          <Tabs defaultValue="about" className="mt-6">
-            <TabsList className="h-11 w-full justify-start overflow-x-auto sm:w-auto">
-              <TabsTrigger value="about" className="min-h-9 px-4">
-                {t('about')}
-              </TabsTrigger>
-              <TabsTrigger value="details" className="min-h-9 px-4">
-                {t('details')}
-              </TabsTrigger>
-              <TabsTrigger value="organizer" className="min-h-9 px-4">
-                {t('organizer')}
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="min-h-9 px-4">
-                {t('reviews')}
-              </TabsTrigger>
+          <Tabs defaultValue="about" className="mt-8">
+            <TabsList className="w-full sm:w-auto">
+              <TabsTrigger value="about">{t('about')}</TabsTrigger>
+              <TabsTrigger value="details">{t('details')}</TabsTrigger>
+              <TabsTrigger value="organizer">{t('organizer')}</TabsTrigger>
+              <TabsTrigger value="reviews">{t('reviews')}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="about" className="mt-4 space-y-6">
+            <TabsContent value="about" className="mt-6 space-y-8">
               {event.description ? (
-                <p lang={event.language} className="text-base leading-relaxed whitespace-pre-line">
+                <p
+                  lang={event.language}
+                  className="text-base leading-relaxed whitespace-pre-line text-foreground/90 sm:text-[1.0625rem]"
+                >
                   {event.description}
                 </p>
               ) : null}
               {event.facts.length > 0 ? (
                 <dl
-                  className="grid gap-x-6 gap-y-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border/70 bg-card p-5 shadow-card sm:grid-cols-2"
                   data-testid="event-facts"
                 >
                   {event.facts.map((fact) => (
                     <div
                       key={fact.key}
-                      className={fact.value && fact.value.length > 40 ? 'sm:col-span-2' : undefined}
+                      className={cn(
+                        'rounded-xl bg-muted/60 px-3.5 py-3',
+                        fact.value && fact.value.length > 40 ? 'sm:col-span-2' : undefined,
+                      )}
                     >
-                      <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                         {fact.value === null ? (
-                          <span className="flex items-center gap-1.5 text-sm tracking-normal text-foreground normal-case">
+                          <span className="flex items-center gap-1.5 text-sm font-medium tracking-normal text-foreground normal-case">
                             <Check className="size-4 text-primary" aria-hidden="true" />
                             {fact.label}
                           </span>
@@ -275,7 +305,7 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
                         )}
                       </dt>
                       {fact.value !== null ? (
-                        <dd lang={event.language} className="mt-0.5 whitespace-pre-line">
+                        <dd lang={event.language} className="mt-1 font-medium whitespace-pre-line">
                           {fact.value}
                         </dd>
                       ) : null}
@@ -287,23 +317,26 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
                 {t('writtenIn', { language: tLang(event.language) })}
                 {event.minAge ? ` · ${t('minAge', { age: event.minAge })}` : ''}
               </p>
-              <section>
-                <h2 className="mb-3 font-sans text-lg font-semibold">{t('peopleGoing')}</h2>
+              <section aria-labelledby="people-going">
+                <h2 id="people-going" className="mb-3 font-sans text-lg font-semibold">
+                  {t('peopleGoing')}
+                </h2>
                 <FriendsGoing people={event.publicAttendees} count={event.placesTaken} />
               </section>
             </TabsContent>
 
-            <TabsContent value="details" className="mt-4 space-y-6">
+            <TabsContent value="details" className="mt-6 space-y-8">
               <Brief event={event} />
               {event.meetingPoints.length > 0 ? (
                 <Section title={t('meetingPoints')}>
-                  <ul className="space-y-2">
+                  <ul className="grid gap-2 sm:grid-cols-2">
                     {event.meetingPoints.map((p) => (
                       <li
                         key={p.id}
-                        className="flex justify-between gap-4 rounded-lg bg-muted px-3 py-2"
+                        className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3"
                       >
-                        <span>{p.name}</span>
+                        <MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                        <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
                         <TimeOf date={p.meetAt} />
                       </li>
                     ))}
@@ -312,39 +345,54 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               ) : null}
               {event.programme.length > 0 ? (
                 <Section title={t('programme')}>
-                  <ol className="space-y-2 border-s-2 border-primary/30 ps-4">
+                  <ol className="relative space-y-4 ps-6 before:absolute before:inset-y-2 before:start-[0.3125rem] before:w-0.5 before:rounded-full before:bg-primary/20">
                     {event.programme.map((step) => (
-                      <li key={step.id} className="flex justify-between gap-4">
-                        <span>{step.title}</span>
-                        {step.startsAt ? <TimeOf date={step.startsAt} /> : null}
+                      <li key={step.id} className="relative">
+                        <span
+                          aria-hidden="true"
+                          className="absolute -start-6 top-1.5 size-3 rounded-full border-2 border-primary bg-background"
+                        />
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                          <span className="font-medium">{step.title}</span>
+                          {step.startsAt ? <TimeOf date={step.startsAt} /> : null}
+                        </div>
                       </li>
                     ))}
                   </ol>
                 </Section>
               ) : null}
               <Section title={t('cancellationPolicy')}>
-                <p className="text-muted-foreground">{t(`policy.${event.cancellationPolicy}`)}</p>
+                <p className="flex items-start gap-3 rounded-2xl bg-info-soft px-4 py-3 text-sm text-info">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  {t(`policy.${event.cancellationPolicy}`)}
+                </p>
               </Section>
               {event.locationHidden ? (
-                <p className="text-sm text-muted-foreground">{t('locationHidden')}</p>
+                <p className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                  <EyeOff className="size-4 shrink-0" aria-hidden="true" />
+                  {t('locationHidden')}
+                </p>
               ) : event.address ? (
                 <Section title={t('location')}>
-                  <p>{event.address}</p>
+                  <p className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3">
+                    <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {event.address}
+                  </p>
                 </Section>
               ) : null}
             </TabsContent>
 
-            <TabsContent value="organizer" className="mt-4">
+            <TabsContent value="organizer" className="mt-6 space-y-4">
               {event.organizer ? <OrganizerCard organizer={event.organizer} /> : null}
-              {ask ? <div className="mt-4">{ask}</div> : null}
+              {ask}
             </TabsContent>
 
-            <TabsContent value="reviews" className="mt-4">
-              <EmptyState title={t('reviews')} hint={t('noReviews')} />
+            <TabsContent value="reviews" className="mt-6">
+              <EmptyState icon={Star} size="compact" title={t('reviews')} hint={t('noReviews')} />
             </TabsContent>
           </Tabs>
 
-          <div className="mt-8 border-t border-border pt-6">
+          <section className="mt-10 rounded-3xl border border-border/70 bg-card p-5 shadow-card sm:p-6">
             <ShareBar
               url={absoluteUrl(`/${locale}/events/${event.slug}`)}
               message={tShare('message', {
@@ -353,10 +401,10 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
               })}
               imageBase={shareImage(event.slug, locale)}
             />
-          </div>
+          </section>
 
           {/* SOC-04: questions, news and photos about the event. */}
-          <div className="mt-8 border-t border-border pt-6">
+          <div className="mt-10">
             <EventWall
               eventId={event.id}
               viewerId={signedIn ? session!.user.id : null}
@@ -375,18 +423,60 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
           <StickyCTA
             summary={
               <>
-                <PriceTag millimes={event.priceFromMillimes} className="block text-base" />
-                <PlacesLeft capacity={event.capacity} left={event.placesLeft} className="text-xs" />
+                <p className="hidden text-xs font-semibold tracking-wide text-muted-foreground uppercase lg:block">
+                  {t('price')}
+                </p>
+                <PriceTag
+                  millimes={event.priceFromMillimes}
+                  className="block text-base lg:mt-1 lg:text-3xl lg:tracking-tight"
+                />
+                <PlacesLeft
+                  capacity={event.capacity}
+                  left={event.placesLeft}
+                  className="text-xs lg:text-sm"
+                />
               </>
+            }
+            details={
+              <div className="space-y-3 text-sm">
+                {fillPercent !== null ? (
+                  <div>
+                    <div
+                      className="h-2 overflow-hidden rounded-full bg-muted"
+                      role="progressbar"
+                      aria-label={t('spots')}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={fillPercent}
+                    >
+                      <div
+                        className={cn(
+                          'h-full rounded-full',
+                          fillPercent >= 80 ? 'bg-highlight' : 'bg-primary',
+                        )}
+                        style={{ width: `${Math.max(fillPercent, 3)}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                <p className="flex items-center gap-2 text-muted-foreground">
+                  <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  {formatEventDateTime(event.startsAt, locale)}
+                </p>
+                <p className="flex items-center gap-2 text-muted-foreground">
+                  <ShieldCheck className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  {t('secureBooking')}
+                </p>
+              </div>
             }
             action={
               !event.bookingOpen || (soldOut && !event.waitlistEnabled) ? (
-                <Button size="lg" disabled className="min-h-11 rounded-full px-6">
+                <Button size="lg" disabled className="w-full px-6">
                   {event.bookingOpen ? t('full') : t('bookingClosed')}
                 </Button>
               ) : (
                 <div className="flex flex-col items-end gap-1 lg:items-stretch">
-                  <Button asChild size="lg" className="min-h-11 rounded-full px-6">
+                  <Button asChild size="lg" className="px-6 lg:w-full">
                     <Link href={`/events/${event.slug}/book`} data-testid="book-cta">
                       {soldOut ? t('joinWaitlist') : isFree ? t('rsvp') : t('getTicket')}
                     </Link>
@@ -409,13 +499,18 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
 
 function Fact({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 text-primary" aria-hidden="true">
+    <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card">
+      <span
+        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"
+        aria-hidden="true"
+      >
         {icon}
       </span>
       <div className="min-w-0">
-        <dt className="sr-only">{label}</dt>
-        <dd className="text-sm">{children}</dd>
+        <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          {label}
+        </dt>
+        <dd className="mt-0.5 text-sm">{children}</dd>
       </div>
     </div>
   );
@@ -424,7 +519,7 @@ function Fact({ icon, label, children }: { icon: ReactNode; label: string; child
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="mb-2 font-sans text-base font-semibold">{title}</h2>
+      <h2 className="mb-3 font-sans text-lg font-semibold">{title}</h2>
       {children}
     </section>
   );
@@ -448,7 +543,10 @@ async function DateRange({ start, end }: { start: Date; end: Date | null }) {
 async function TimeOf({ date }: { date: Date }) {
   const locale = (await getLocale()) as Locale;
   return (
-    <time dateTime={date.toISOString()} className="ltr-nums shrink-0 text-muted-foreground">
+    <time
+      dateTime={date.toISOString()}
+      className="ltr-nums shrink-0 rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary"
+    >
       {formatTime(date, locale)}
     </time>
   );
@@ -473,11 +571,15 @@ async function Brief({ event }: { event: EventDetailDto }) {
   if (brief.safety) items.push([t('safety'), <p key="safety">{brief.safety}</p>]);
   if (items.length === 0) return null;
   return (
-    <div lang={event.language} className="space-y-4">
+    <div lang={event.language} className="grid gap-3 sm:grid-cols-2">
       {items.map(([title, body]) => (
-        <Section key={title} title={title}>
+        <section
+          key={title}
+          className="rounded-2xl border border-border/70 bg-card p-4 text-sm leading-relaxed shadow-card"
+        >
+          <h2 className="mb-2 font-sans text-base font-semibold">{title}</h2>
           {body}
-        </Section>
+        </section>
       ))}
     </div>
   );

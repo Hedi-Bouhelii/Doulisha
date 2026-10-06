@@ -2,15 +2,17 @@
 
 import { formatDate, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
-import { CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, UserX } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { SectionHeading } from '@/components/doulisha/page';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
+import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 
 type Visibility = 'public' | 'private';
@@ -31,15 +33,30 @@ function Choice({
   options: Record<Visibility, string>;
 }) {
   return (
-    <fieldset className="space-y-2">
-      <legend className="font-medium">{label}</legend>
-      <p className="text-sm text-muted-foreground">{hint}</p>
-      <RadioGroup value={value} onValueChange={(v) => onChange(v as Visibility)} className="gap-1">
+    <fieldset className="space-y-3">
+      <div>
+        <legend className="font-semibold">{label}</legend>
+        <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>
+      </div>
+      <RadioGroup
+        value={value}
+        onValueChange={(v) => onChange(v as Visibility)}
+        className="grid gap-2 sm:grid-cols-2"
+      >
         {(['public', 'private'] as const).map((option) => (
-          <div key={option} className="flex min-h-11 items-center gap-3">
+          <Label
+            key={option}
+            htmlFor={`${id}-${option}`}
+            className={cn(
+              'flex min-h-12 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 font-normal transition-[background-color,border-color] duration-150',
+              value === option
+                ? 'border-primary bg-primary-soft/50'
+                : 'border-border/80 hover:border-primary/35 hover:bg-primary-soft/25',
+            )}
+          >
             <RadioGroupItem id={`${id}-${option}`} value={option} data-testid={`${id}-${option}`} />
-            <Label htmlFor={`${id}-${option}`}>{options[option]}</Label>
-          </div>
+            {options[option]}
+          </Label>
         ))}
       </RadioGroup>
     </fieldset>
@@ -66,11 +83,9 @@ export function PrivacySettings({
   const changed = visibility !== initial.visibility || attendance !== initial.attendanceVisibility;
 
   return (
-    <section aria-labelledby="privacy-title" className="mt-10" data-testid="privacy-settings">
-      <h2 id="privacy-title" className="font-sans text-lg font-semibold">
-        {t('title')}
-      </h2>
-      <div className="mt-4 space-y-6 rounded-2xl border border-border bg-card p-4">
+    <section aria-labelledby="privacy-title" data-testid="privacy-settings">
+      <SectionHeading id="privacy-title" icon={Eye} title={t('title')} />
+      <div className="space-y-6 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5">
         <Choice
           id="profile"
           label={t('profile')}
@@ -93,9 +108,8 @@ export function PrivacySettings({
           }}
           options={{ public: t('attendancePublic'), private: t('attendancePrivate') }}
         />
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 border-t border-border/70 pt-5">
           <Button
-            className="min-h-11 rounded-full"
             disabled={!changed || save.isPending}
             onClick={() =>
               save.mutate(
@@ -115,14 +129,14 @@ export function PrivacySettings({
           </Button>
           <Link
             href={`/members/${userId}`}
-            className="min-h-11 content-center text-sm font-medium text-primary hover:underline"
+            className="min-h-11 content-center text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             {t('seeMyPage')}
           </Link>
           {saved ? (
             <span
               role="status"
-              className="inline-flex items-center gap-1 text-sm text-success"
+              className="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-3 py-1 text-sm font-medium text-success"
               data-testid="privacy-saved"
             >
               <CheckCircle2 className="size-4" aria-hidden="true" />
@@ -131,7 +145,11 @@ export function PrivacySettings({
           ) : null}
         </div>
         {error ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p
+            role="alert"
+            className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {error}
           </p>
         ) : null}
@@ -148,16 +166,19 @@ export function BlockedList({ people }: { people: { id: string; name: string; si
   const router = useRouter();
   const unblock = useMutation(trpc.safety.unblock.mutationOptions());
   return (
-    <section aria-labelledby="blocked-title" className="mt-10" data-testid="blocked-list">
-      <h2 id="blocked-title" className="font-sans text-lg font-semibold">
-        {t('blockedTitle')}
-      </h2>
+    <section aria-labelledby="blocked-title" data-testid="blocked-list">
+      <SectionHeading id="blocked-title" icon={UserX} title={t('blockedTitle')} />
       {people.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">{t('blockedNone')}</p>
+        <p className="rounded-2xl border border-dashed border-border px-4 py-5 text-center text-sm text-muted-foreground">
+          {t('blockedNone')}
+        </p>
       ) : (
-        <ul className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">
+        <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
           {people.map((person) => (
-            <li key={person.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
+            <li
+              key={person.id}
+              className="flex flex-wrap items-center justify-between gap-2 p-4 sm:px-5"
+            >
               <div className="min-w-0">
                 <p className="truncate font-medium" dir="auto">
                   {person.name}
@@ -168,7 +189,6 @@ export function BlockedList({ people }: { people: { id: string; name: string; si
               </div>
               <Button
                 variant="outline"
-                className="min-h-11 rounded-full"
                 disabled={unblock.isPending}
                 onClick={() =>
                   unblock.mutate({ userId: person.id }, { onSuccess: () => router.refresh() })

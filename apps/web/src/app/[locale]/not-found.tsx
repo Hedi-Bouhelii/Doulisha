@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 /** Localized 404 (spec section 4 quick win: no dead links). */
 export default function NotFound() {
   const t = useTranslations('States');
+  const tNav = useTranslations('Nav');
   return (
     <main id="main" className="mx-auto flex w-full max-w-xl flex-1 items-center px-4 py-16">
       <EmptyState
@@ -14,8 +15,13 @@ export default function NotFound() {
         title={t('notFoundTitle')}
         hint={t('notFoundHint')}
         action={
-          <Button asChild className="min-h-11">
+          <Button asChild>
             <Link href="/">{t('backHome')}</Link>
+          </Button>
+        }
+        secondaryAction={
+          <Button asChild variant="outline">
+            <Link href="/explore">{tNav('explore')}</Link>
           </Button>
         }
       />

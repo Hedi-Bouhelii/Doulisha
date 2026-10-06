@@ -4,6 +4,32 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: design system v2 and full UI redesign (2026-09-30)
+
+- **One design system on every screen** (ADR 0025), on the same palette: warm white cards, a radius scale (inputs 14 px, cards 20 px, hero and dialogs 28 px, pill buttons), soft warm shadows, and one status palette (`Badge` tones and `statusTone`) for events, bookings and payments in both themes. New contrast tests for every status on its tint.
+- **Shared building blocks:** page header, container widths, back link, section heading, stat cards, card, filters panel, page skeletons, inline leaf and hills decorations; pill buttons with `accent` and `soft` variants; one field style for inputs, textareas and selects; dialogs as bottom sheets on phones.
+- **Redesigned screens:**
+  - shell: header with the current page highlighted, mobile menu, footer;
+  - public pages: home, explore (filters folded behind a button on phones), the event page (fact tiles, a ticket-like booking card), checkout (numbered steps);
+  - after booking: "My tickets" (ticket stubs), the ticket page;
+  - accounts: sign-in and sign-up (a brand panel beside the form on large screens), "Mon compte";
+  - social: the feed, invitations and RSVP, messages and chat, member and organizer pages, the event wall;
+  - legal pages, with an "On this page" list.
+- **Organizer space:**
+  - the dashboard, with stat cards;
+  - event management, after the founder's mockup: cover, stat tiles, fill bar, a "⋯" menu for exports, duplicate and cancel, attendee cards, booking sources and sharing;
+  - the create-event wizard, after the founder's mockup: side stepper, "Step 2 of 7", option cards, cover drop zone;
+  - payments inbox, check-in, profile editor and template picker.
+- **States:** loading skeletons shaped like the page on Explore, the feed, messages and the list of private invitations; error and 404 pages offer a way home; empty states with icons.
+- **Private invitation form:** the founder's draft layout, with every text translated (fr, en, ar).
+- The radio dot is centred in Arabic too; the dialog and sheet close buttons and the logo link have translated labels.
+
+### Added: mobile app sign-in (2026-09-29)
+
+- The auth endpoints accept the mobile app (Better Auth's Expo plugin, ADR 0023): sessions for the app, and Google or Facebook sign-in that returns to the app through `doulisha://`.
+- Better Auth 1.7.6.
+- **`packages/api-types`** (ADR 0024): the API types (`AppRouter`, `RouterInputs`, `RouterOutputs`) bundled into one committed file for the mobile app; CI checks it matches the routers.
+
 ### Added: Phase 4b, event wall and safety (2026-09-29)
 
 - **Event wall** (SOC-04, SOC-05) on public and unlisted events: posts with up to 4 photos, comments and reactions (👍 ❤️ 🔥 👏 😂); authors and organizers can delete. Visitors read it; members take part.

@@ -1,3 +1,4 @@
+import { ShieldAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -36,10 +37,11 @@ export default async function AdminLayout({ children, params }: LayoutProps<'/[l
           <div className="mx-auto w-full max-w-xl px-4 py-16">
             <EmptyState
               tone="alert"
+              icon={ShieldAlert}
               title={t('forbiddenTitle')}
               hint={t('forbiddenHint')}
               action={
-                <Button asChild className="min-h-11">
+                <Button asChild>
                   <Link href="/">{tStates('backHome')}</Link>
                 </Button>
               }

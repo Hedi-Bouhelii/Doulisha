@@ -1,4 +1,4 @@
-import { BadgeCheck } from 'lucide-react';
+import { ArrowRight, BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,32 +20,38 @@ export function OrganizerCard({
 }) {
   const t = useTranslations('Event');
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-      <Avatar className="size-12">
+    <div className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card">
+      <Avatar className="size-14 ring-2 ring-background shadow-xs">
         {organizer.logoUrl ? <AvatarImage src={organizer.logoUrl} alt="" /> : null}
-        <AvatarFallback className="bg-primary font-semibold text-primary-foreground">
+        <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
           {initials(organizer.name)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {t('organizer')}
         </p>
-        <p className="flex items-center gap-1.5 font-semibold">
+        <p className="mt-0.5 flex items-center gap-1.5 text-lg font-semibold" dir="auto">
           {organizer.name}
           {organizer.verified ? (
-            <BadgeCheck className="size-4 text-primary" aria-label={t('verified')} />
+            <BadgeCheck className="size-5 shrink-0 text-primary" aria-label={t('verified')} />
           ) : null}
         </p>
         {organizer.bio ? (
-          <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{organizer.bio}</p>
+          <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+            {organizer.bio}
+          </p>
         ) : null}
         <Link
           href={`/organizers/${organizer.slug}`}
-          className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline"
+          className="group mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary"
           data-testid="organizer-link"
         >
           {t('seeOrganizer')}
+          <ArrowRight
+            className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+            aria-hidden="true"
+          />
         </Link>
       </div>
     </div>

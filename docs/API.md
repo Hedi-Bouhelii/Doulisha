@@ -8,6 +8,7 @@ The Doulisha API is **tRPC** (`packages/api`), served by the Next.js app at `/ap
 - **Transformer:** superjson (dates arrive as `Date`).
 - **Locale:** clients send `x-doulisha-locale: ar | fr | en`; services return names in that language.
 - **Auth context:** `ctx.session` (Better Auth) and `ctx.actor` `{ userId, roles, isAnonymous }`.
+- **Mobile app:** signs in through Better Auth's Expo plugin (ADR 0023) and sends its session in the `Cookie` header of every call; the `doulisha://` origin is trusted. It gets the procedure types from `packages/api-types/dist/index.d.ts` (ADR 0024): after changing a procedure, run `pnpm --filter @doulisha/api-types build` and commit the file.
 - **Procedures:** `publicProcedure`, `protectedProcedure` (signed-in members; guests refused), `roleProcedure(...roles)` (admins pass every role check).
 
 ## Error format

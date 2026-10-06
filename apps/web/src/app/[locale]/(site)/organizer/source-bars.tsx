@@ -9,14 +9,16 @@ export function SourceBars({
   direct: string;
 }) {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3.5">
       {sources.map((s) => (
         <li key={s.source} className="text-sm">
           <div className="flex justify-between gap-2">
-            <span className="capitalize">{s.source === 'direct' ? direct : s.source}</span>
-            <span className="ltr-nums text-muted-foreground">{s.orders}</span>
+            <span className="font-medium capitalize">
+              {s.source === 'direct' ? direct : s.source}
+            </span>
+            <span className="ltr-nums font-semibold text-primary">{s.orders}</span>
           </div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary"
               style={{

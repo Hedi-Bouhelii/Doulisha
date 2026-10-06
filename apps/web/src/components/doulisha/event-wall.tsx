@@ -2,13 +2,15 @@
 
 import { formatDate, formatTime, type Locale } from '@doulisha/i18n';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Loader2, MessageSquare, X } from 'lucide-react';
+import { AlertCircle, ImagePlus, Loader2, LogIn, MessageSquare, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, type FormEvent } from 'react';
 
+import { EmptyState } from '@/components/doulisha/empty-state';
 import { initials } from '@/components/doulisha/friends-going';
 import { ItemMenu } from '@/components/doulisha/safety';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { fieldControlClass } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { putFile } from '@/lib/upload';
@@ -49,8 +51,8 @@ function AuthorLine({ author, date }: { author: Author; date: Date }) {
   const t = useTranslations('Wall');
   const locale = useLocale() as Locale;
   return (
-    <div className="flex min-w-0 items-center gap-2">
-      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+    <div className="flex min-w-0 items-center gap-2.5">
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-xs font-semibold text-primary">
         {author.image ? (
           // eslint-disable-next-line @next/next/no-img-element -- avatar from Google, Facebook or uploads, any size
           <img src={author.image} alt="" className="size-full object-cover" />
@@ -64,7 +66,7 @@ function AuthorLine({ author, date }: { author: Author; date: Date }) {
             {author.name}
           </Link>
           {author.isOrganizer ? (
-            <span className="shrink-0 rounded-full bg-primary/10 px-1.5 text-xs font-normal text-primary">
+            <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-semibold text-primary">
               {t('organizer')}
             </span>
           ) : null}
@@ -110,8 +112,10 @@ function ReactionBar({
               )
             }
             className={cn(
-              'ltr-nums inline-flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-sm',
-              mine ? 'border-primary bg-primary/10' : 'border-border bg-card hover:bg-accent',
+              'ltr-nums inline-flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2.5 text-sm transition-colors disabled:cursor-default',
+              mine
+                ? 'border-primary/40 bg-primary-soft text-primary'
+                : 'border-border/80 bg-card hover:bg-accent',
             )}
             data-testid={`react-${kind}`}
           >
@@ -150,29 +154,30 @@ function CommentForm({ postId }: { postId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-2">
-      <label htmlFor={`comment-${postId}`} className="sr-only">
-        {t('commentPlaceholder')}
-      </label>
-      <input
-        id={`comment-${postId}`}
-        value={body}
-        maxLength={1000}
-        dir="auto"
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={t('commentPlaceholder')}
-        className="min-h-11 flex-1 rounded-full border border-input bg-card px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        data-testid="comment-input"
-      />
-      <Button
-        type="submit"
-        variant="outline"
-        className="min-h-11 rounded-full"
-        disabled={!body.trim() || comment.isPending}
-        data-testid="comment-send"
-      >
-        {t('reply')}
-      </Button>
+    <form onSubmit={submit} className="space-y-2">
+      <div className="flex items-center gap-2">
+        <label htmlFor={`comment-${postId}`} className="sr-only">
+          {t('commentPlaceholder')}
+        </label>
+        <input
+          id={`comment-${postId}`}
+          value={body}
+          maxLength={1000}
+          dir="auto"
+          onChange={(e) => setBody(e.target.value)}
+          placeholder={t('commentPlaceholder')}
+          className={cn(fieldControlClass, 'h-11 min-w-0 flex-1 rounded-full px-4')}
+          data-testid="comment-input"
+        />
+        <Button
+          type="submit"
+          variant="soft"
+          disabled={!body.trim() || comment.isPending}
+          data-testid="comment-send"
+        >
+          {t('reply')}
+        </Button>
+      </div>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -200,7 +205,10 @@ function PostCard({
     author.id === viewerId ? null : { id: author.id, name: author.name };
 
   return (
-    <li className="space-y-3 rounded-2xl border border-border bg-card p-4" data-testid="wall-post">
+    <li
+      className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5"
+      data-testid="wall-post"
+    >
       <div className="flex items-start justify-between gap-2">
         <AuthorLine author={post.author} date={post.createdAt} />
         {signedIn ? (
@@ -218,14 +226,14 @@ function PostCard({
         ) : null}
       </div>
       {post.body ? (
-        <p className="whitespace-pre-wrap break-words" dir="auto">
+        <p className="leading-relaxed break-words whitespace-pre-wrap" dir="auto">
           {post.body}
         </p>
       ) : null}
       {post.photos.length ? (
         <div
           className={cn(
-            'grid gap-2 overflow-hidden rounded-xl',
+            'grid gap-1.5 overflow-hidden rounded-2xl',
             post.photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1',
           )}
         >
@@ -236,7 +244,7 @@ function PostCard({
                 src={photo.url}
                 alt=""
                 loading="lazy"
-                className="aspect-square w-full bg-muted object-cover"
+                className="aspect-square w-full bg-muted object-cover transition-opacity hover:opacity-90"
                 data-testid="wall-photo"
               />
             </a>
@@ -249,11 +257,15 @@ function PostCard({
         signedIn={signedIn}
       />
       {post.comments.length || signedIn ? (
-        <div className="space-y-3 border-t border-border pt-3">
+        <div className="space-y-3 border-t border-border/70 pt-4">
           {post.comments.length ? (
-            <ul className="space-y-3" aria-label={t('comments')}>
+            <ul className="space-y-2.5" aria-label={t('comments')}>
               {post.comments.map((comment) => (
-                <li key={comment.id} className="space-y-1.5 ps-4" data-testid="wall-comment">
+                <li
+                  key={comment.id}
+                  className="space-y-2 rounded-2xl bg-muted/50 p-3"
+                  data-testid="wall-comment"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <AuthorLine author={comment.author} date={comment.createdAt} />
                     {signedIn ? (
@@ -274,7 +286,7 @@ function PostCard({
                       />
                     ) : null}
                   </div>
-                  <p className="whitespace-pre-wrap break-words text-sm" dir="auto">
+                  <p className="text-sm leading-relaxed break-words whitespace-pre-wrap" dir="auto">
                     {comment.body}
                   </p>
                   <ReactionBar
@@ -334,7 +346,7 @@ function Composer({ eventId }: { eventId: string }) {
   return (
     <form
       onSubmit={(e) => void submit(e)}
-      className="space-y-3 rounded-2xl border border-border bg-card p-4"
+      className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5"
     >
       <label htmlFor="wall-body" className="sr-only">
         {t('placeholder')}
@@ -347,7 +359,7 @@ function Composer({ eventId }: { eventId: string }) {
         dir="auto"
         onChange={(e) => setBody(e.target.value)}
         placeholder={t('placeholder')}
-        className="w-full resize-y rounded-xl border border-input bg-background px-3 py-2 text-base focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className={cn(fieldControlClass, 'min-h-24 resize-y px-3.5 py-2.5 text-base')}
         data-testid="wall-input"
       />
       {files.length ? (
@@ -355,12 +367,12 @@ function Composer({ eventId }: { eventId: string }) {
           {files.map((file, index) => (
             <li
               key={`${file.name}-${index}`}
-              className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs"
+              className="flex items-center gap-1 rounded-full bg-primary-soft py-1 ps-3 pe-1 text-xs font-medium text-primary"
             >
               <span className="max-w-40 truncate">{file.name}</span>
               <button
                 type="button"
-                className="rounded-full p-1 hover:bg-background"
+                className="flex size-7 items-center justify-center rounded-full hover:bg-card"
                 aria-label={t('removePhoto')}
                 onClick={() => setFiles(files.filter((_, i) => i !== index))}
               >
@@ -373,7 +385,8 @@ function Composer({ eventId }: { eventId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <label
           className={cn(
-            'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-border px-4 text-sm font-medium hover:bg-accent',
+            buttonVariants({ variant: 'outline' }),
+            'cursor-pointer has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring/25',
             files.length >= MAX_PHOTOS && 'pointer-events-none opacity-50',
           )}
         >
@@ -394,7 +407,7 @@ function Composer({ eventId }: { eventId: string }) {
         </label>
         <Button
           type="submit"
-          className="min-h-11 rounded-full px-6"
+          className="min-w-28"
           disabled={busy || (!body.trim() && files.length === 0)}
           data-testid="wall-send"
         >
@@ -439,17 +452,18 @@ export function EventWall({
 
   return (
     <section aria-labelledby="wall-title" className="space-y-4" data-testid="event-wall">
-      <h2 id="wall-title" className="flex items-center gap-2 font-sans text-lg font-semibold">
+      <h2 id="wall-title" className="flex items-center gap-2 font-sans text-xl font-semibold">
         <MessageSquare className="size-5 text-primary" aria-hidden="true" />
         {t('title')}
       </h2>
       {signedIn ? (
         <Composer eventId={eventId} />
       ) : (
-        <p className="rounded-xl bg-muted p-4 text-sm">
+        <p className="flex items-center gap-3 rounded-2xl border border-dashed border-border p-4 text-sm">
+          <LogIn className="size-5 shrink-0 text-primary rtl:rotate-180" aria-hidden="true" />
           <Link
             href={`/sign-in?next=${encodeURIComponent(signInPath)}`}
-            className="font-semibold text-primary hover:underline"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
             data-testid="wall-sign-in"
           >
             {t('signInToPost')}
@@ -459,20 +473,35 @@ export function EventWall({
       {wall.isPending ? (
         <div className="space-y-3" aria-busy="true">
           {Array.from({ length: 2 }, (_, i) => (
-            <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted" />
+            <div
+              key={i}
+              className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="size-10 animate-pulse rounded-full bg-muted" />
+                <div className="h-3 w-32 animate-pulse rounded-full bg-muted" />
+              </div>
+              <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
+              <div className="h-3 w-2/3 animate-pulse rounded-full bg-muted" />
+            </div>
           ))}
         </div>
       ) : wall.isError ? (
-        <div role="alert" className="rounded-xl bg-muted p-4 text-sm">
-          <p>{errorMessage(wall.error)}</p>
-          <Button variant="outline" className="mt-3 min-h-11" onClick={() => void wall.refetch()}>
-            {t('retry')}
-          </Button>
-        </div>
+        <EmptyState
+          size="compact"
+          tone="alert"
+          icon={AlertCircle}
+          title={errorMessage(wall.error)}
+          action={
+            <Button variant="outline" onClick={() => void wall.refetch()}>
+              {t('retry')}
+            </Button>
+          }
+        />
       ) : posts.length === 0 ? (
-        <p className="text-sm text-muted-foreground" data-testid="wall-empty">
-          {t('empty')}
-        </p>
+        <div data-testid="wall-empty">
+          <EmptyState size="compact" icon={MessageSquare} title={t('empty')} />
+        </div>
       ) : (
         <ul className="space-y-4">
           {posts.map((post) => (
@@ -483,7 +512,7 @@ export function EventWall({
       {wall.hasNextPage ? (
         <Button
           variant="outline"
-          className="min-h-11 w-full rounded-full"
+          className="w-full"
           disabled={wall.isFetchingNextPage}
           onClick={() => void wall.fetchNextPage()}
         >

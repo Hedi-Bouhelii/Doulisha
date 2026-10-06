@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { createAuth, type Auth } from '@doulisha/auth';
+import { createAuth, EXPO_DEV_ORIGINS, MOBILE_APP_ORIGIN, type Auth } from '@doulisha/auth';
 import { mockEmailSender, mockSmsSender } from '@doulisha/notifications';
 import { headers } from 'next/headers';
 import { cache } from 'react';
@@ -24,6 +24,10 @@ export function getAuth(): Auth {
     social: configuredSocialProviders(env),
     rateLimit: env.NODE_ENV === 'production',
     adminEmails: env.ADMIN_EMAILS?.split(',') ?? [],
+    trustedOrigins:
+      env.NODE_ENV === 'production'
+        ? [MOBILE_APP_ORIGIN]
+        : [MOBILE_APP_ORIGIN, ...EXPO_DEV_ORIGINS],
   });
   return auth;
 }

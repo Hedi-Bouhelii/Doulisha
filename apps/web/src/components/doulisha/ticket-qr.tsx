@@ -21,7 +21,7 @@ export async function TicketQR({
   });
   return (
     <figure
-      className="inline-flex flex-col items-center gap-2 rounded-xl border border-border bg-white p-4 text-[#2A2420]"
+      className="inline-flex flex-col items-center gap-2 rounded-2xl border border-border/70 bg-white p-4 text-[#2A2420] shadow-xs"
       data-testid="ticket-qr"
     >
       <div

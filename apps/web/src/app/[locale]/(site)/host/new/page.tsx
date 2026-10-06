@@ -1,6 +1,7 @@
 import { toTunisInput } from '@doulisha/i18n';
 import { getTranslations } from 'next-intl/server';
 
+import { BackLink, PageHeader } from '@/components/doulisha/page';
 import { resolveLocale } from '@/i18n/locale';
 
 import { QuickInviteForm } from './quick-invite-form';
@@ -17,8 +18,8 @@ export default async function NewPrivateEventPage({ params }: PageProps<'/[local
   const t = await getTranslations('Host');
   return (
     <div>
-      <h1 className="text-3xl font-bold">{t('newTitle')}</h1>
-      <p className="mt-2 text-muted-foreground">{t('newHint')}</p>
+      <BackLink href="/host">{t('myEvents')}</BackLink>
+      <PageHeader title={t('newTitle')} description={t('newHint')} />
       <QuickInviteForm suggestedStart={tomorrowEvening()} />
     </div>
   );

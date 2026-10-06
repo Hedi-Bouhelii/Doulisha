@@ -258,7 +258,7 @@ export function CheckoutFlow({
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pt-4 pb-32 sm:px-6 lg:pb-12">
+    <div className="mx-auto w-full max-w-6xl px-4 pt-4 pb-36 sm:px-6 lg:pb-16">
       <Link
         href={`/events/${event.slug}`}
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -268,7 +268,7 @@ export function CheckoutFlow({
       </Link>
 
       {/* Event header with the summary folded in on phones. */}
-      <div className="mt-2 rounded-2xl border border-border bg-card p-3 lg:hidden">
+      <div className="mt-2 rounded-2xl border border-border/70 bg-card p-3 shadow-card lg:hidden">
         <div className="flex items-center gap-3">
           <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-muted">
             {event.coverUrl ? (
@@ -276,14 +276,16 @@ export function CheckoutFlow({
             ) : null}
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold">{event.title}</p>
+            <p className="truncate font-semibold" dir="auto">
+              {event.title}
+            </p>
             <p className="truncate text-sm text-muted-foreground">
               {when}
               {event.city ? ` · ${event.city}` : ''}
             </p>
           </div>
         </div>
-        <details className="mt-2 border-t border-border pt-2 [&[open]_.chev]:rotate-180">
+        <details className="mt-3 border-t border-border/70 pt-2 [&[open]_.chev]:rotate-180">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold">
             <span>{t('summary')}</span>
             <span className="flex items-center gap-1">
@@ -295,27 +297,47 @@ export function CheckoutFlow({
         </details>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_20rem]">
+      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_22rem] lg:gap-10">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold sm:text-3xl">{stepTitles[step]}</h1>
-          <ol className="mt-4 grid grid-cols-3 gap-2" aria-label={t('progress')}>
+          <ol
+            className="flex items-center gap-2 rounded-2xl border border-border/70 bg-card p-3 shadow-card sm:gap-3"
+            aria-label={t('progress')}
+          >
             {STEPS.map((name, i) => (
-              <li key={name} aria-current={i === step ? 'step' : undefined} className="min-w-0">
-                <div className={cn('h-1.5 rounded-full', i <= step ? 'bg-primary' : 'bg-muted')} />
-                <p
+              <li
+                key={name}
+                aria-current={i === step ? 'step' : undefined}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+                <span
                   className={cn(
-                    'mt-1.5 flex items-center gap-1 truncate text-xs font-medium sm:text-sm',
-                    i === step ? 'text-foreground' : 'text-muted-foreground',
+                    'ltr-nums flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors',
+                    i < step
+                      ? 'bg-primary-soft text-primary'
+                      : i === step
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground',
                   )}
                 >
-                  {i < step ? (
-                    <Check className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
-                  ) : null}
+                  {i < step ? <Check className="size-4" aria-hidden="true" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    'truncate text-xs font-medium sm:text-sm',
+                    i === step ? 'text-foreground' : 'text-muted-foreground max-sm:sr-only',
+                  )}
+                >
                   {stepLabels[i]}
-                </p>
+                </span>
+                {i < STEPS.length - 1 ? (
+                  <span aria-hidden="true" className="h-px min-w-3 flex-1 bg-border" />
+                ) : null}
               </li>
             ))}
           </ol>
+          <h1 className="mt-6 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            {stepTitles[step]}
+          </h1>
 
           {step === 0 ? (
             <section className="mt-6 space-y-3" aria-label={t('stepTickets')}>
@@ -439,7 +461,7 @@ export function CheckoutFlow({
               ) : null}
 
               {waitlist ? (
-                <p className="rounded-xl bg-highlight-soft p-3 text-sm text-highlight">
+                <p className="rounded-2xl bg-info-soft px-4 py-3 text-sm text-info">
                   {t('waitlistNote')}
                 </p>
               ) : null}
@@ -449,7 +471,7 @@ export function CheckoutFlow({
           {step === 1 ? (
             <section className="mt-6 space-y-6" aria-label={t('stepDetails')}>
               {people[0] ? (
-                <fieldset className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                <fieldset className="space-y-3 rounded-2xl border border-border/70 bg-card shadow-card p-4">
                   <legend className="px-1 font-semibold">{t('yourDetails')}</legend>
                   <div className="space-y-1.5">
                     <Label htmlFor="name-0">{t('fullName')}</Label>
@@ -494,7 +516,7 @@ export function CheckoutFlow({
               ) : null}
 
               {people.length > 1 ? (
-                <fieldset className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                <fieldset className="space-y-3 rounded-2xl border border-border/70 bg-card shadow-card p-4">
                   <legend className="px-1 font-semibold">{t('otherPeople')}</legend>
                   {people.slice(1).map((person, j) => {
                     const i = j + 1;
@@ -548,7 +570,7 @@ export function CheckoutFlow({
               ) : null}
 
               {options.questions.length > 0 ? (
-                <fieldset className="space-y-4 rounded-2xl border border-border bg-card p-4">
+                <fieldset className="space-y-4 rounded-2xl border border-border/70 bg-card shadow-card p-4">
                   <legend className="px-1 font-semibold">{t('questions')}</legend>
                   {options.questions.map((q) => (
                     <div key={q.id} className="space-y-1.5">
@@ -604,10 +626,10 @@ export function CheckoutFlow({
                         key={method}
                         data-testid={`pay-method-${method}`}
                         className={cn(
-                          'flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 transition',
+                          'flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-150',
                           payment === method
-                            ? 'border-primary ring-2 ring-primary/30'
-                            : 'border-border hover:bg-accent/50',
+                            ? 'border-primary bg-primary-soft/40 shadow-card ring-2 ring-primary/20'
+                            : 'border-border/80 hover:border-primary/35 hover:bg-primary-soft/25',
                         )}
                       >
                         <input
@@ -640,7 +662,7 @@ export function CheckoutFlow({
                 </fieldset>
               ) : null}
               {waitlist ? (
-                <p className="rounded-xl bg-highlight-soft p-3 text-sm text-highlight">
+                <p className="rounded-2xl bg-info-soft px-4 py-3 text-sm text-info">
                   {t('waitlistNote')}
                 </p>
               ) : null}
@@ -652,11 +674,11 @@ export function CheckoutFlow({
           ) : null}
 
           {/* Bottom bar on phones, end of the column on desktop. */}
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-8 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-overlay backdrop-blur-md lg:static lg:mt-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
             {showErrors && missing.length > 0 ? (
               <ul
                 role="alert"
-                className="mx-auto mb-3 max-w-5xl space-y-1 text-sm text-highlight"
+                className="mx-auto mb-3 max-w-5xl space-y-1 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
                 data-testid="checkout-missing"
               >
                 {missing.map((m) => (
@@ -670,7 +692,7 @@ export function CheckoutFlow({
             {error ? (
               <p
                 role="alert"
-                className="mx-auto mb-3 max-w-5xl rounded-lg bg-highlight-soft p-3 text-sm text-highlight"
+                className="mx-auto mb-3 max-w-5xl rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
               >
                 {error}
               </p>
@@ -680,7 +702,7 @@ export function CheckoutFlow({
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-11 rounded-full"
+                  size="lg"
                   onClick={() => {
                     setShowErrors(false);
                     setStep(step - 1);
@@ -696,7 +718,8 @@ export function CheckoutFlow({
               )}
               <Button
                 type="button"
-                className="min-h-12 flex-1 rounded-full px-6 text-base lg:ms-auto lg:flex-none"
+                size="lg"
+                className="flex-1 lg:ms-auto lg:min-w-48 lg:flex-none"
                 onClick={primary}
                 disabled={book.isPending}
                 data-testid={primaryTestId}
@@ -708,15 +731,17 @@ export function CheckoutFlow({
         </div>
 
         <aside className="hidden lg:block">
-          <div className="sticky top-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="sticky top-24 overflow-hidden rounded-3xl border border-border/70 bg-card shadow-raised">
             {event.coverUrl ? (
               <div className="relative aspect-[16/9] bg-muted">
                 <Image src={event.coverUrl} alt="" fill sizes="320px" className="object-cover" />
               </div>
             ) : null}
-            <div className="space-y-3 p-4">
+            <div className="space-y-4 p-5">
               <div>
-                <p className="font-semibold">{event.title}</p>
+                <p className="text-lg font-semibold" dir="auto">
+                  {event.title}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {when}
                   {event.city ? ` · ${event.city}` : ''}

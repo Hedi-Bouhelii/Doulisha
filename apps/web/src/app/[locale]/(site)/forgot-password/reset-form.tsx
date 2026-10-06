@@ -92,11 +92,7 @@ export function ResetForm({ showDevOutbox }: { showDevOutbox: boolean }) {
           autoComplete="new-password"
         />
         <FormError message={error} />
-        <Button
-          type="submit"
-          className="h-11 w-full rounded-full"
-          disabled={busy || code.length < 6}
-        >
+        <Button type="submit" className="w-full" disabled={busy || code.length < 6}>
           {t('savePassword')}
         </Button>
         <DevOutboxNote show={showDevOutbox} />
@@ -115,7 +111,7 @@ export function ResetForm({ showDevOutbox }: { showDevOutbox: boolean }) {
       />
       <IdentifierField method={method} value={identifier} onChange={setIdentifier} />
       <FormError message={error} />
-      <Button type="submit" className="h-11 w-full rounded-full" disabled={busy}>
+      <Button type="submit" className="w-full" disabled={busy}>
         {t('sendCode')}
       </Button>
       <DevOutboxNote show={showDevOutbox} />

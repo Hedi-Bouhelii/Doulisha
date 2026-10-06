@@ -3,6 +3,7 @@
 import { formatPrice, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
 import {
+  AlertCircle,
   Banknote,
   CalendarPlus,
   Check,
@@ -73,7 +74,11 @@ function useAction() {
 function ErrorLine({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+    <p
+      role="alert"
+      className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+    >
+      <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       {message}
     </p>
   );
@@ -84,7 +89,7 @@ function CopyValue({ label, value, testId }: { label: string; value: string; tes
   const t = useTranslations('Tickets');
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-background p-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-3 shadow-xs">
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p
@@ -98,8 +103,7 @@ function CopyValue({ label, value, testId }: { label: string; value: string; tes
       <Button
         type="button"
         variant="outline"
-        size="sm"
-        className="min-h-11 shrink-0 rounded-full"
+        className="shrink-0"
         onClick={() =>
           void navigator.clipboard.writeText(value.replace(/\s/g, '')).then(() => {
             setCopied(true);
@@ -156,10 +160,10 @@ export function ManualPaymentSteps({
   if (proofStatus === 'pending') {
     return (
       <p
-        className="flex items-center gap-2 rounded-xl bg-background p-3 text-sm"
+        className="flex items-center gap-3 rounded-2xl bg-info-soft px-4 py-3 text-sm text-info"
         data-testid="proof-pending"
       >
-        <Loader2 className="size-4 shrink-0 text-primary" aria-hidden="true" />
+        <Loader2 className="size-4 shrink-0" aria-hidden="true" />
         {t('proof.pending')}
       </p>
     );
@@ -167,70 +171,84 @@ export function ManualPaymentSteps({
 
   return (
     <div className="space-y-3">
-      <ol className="space-y-3 text-sm">
-        <li className="space-y-2">
-          <p>
-            <span className="ltr-nums me-1 font-semibold">1.</span>
-            {t(method === 'd17' ? 'sendD17' : 'sendTransfer', {
-              amount: formatPrice(amount, locale),
-              organizer: organizerName ?? '',
-            })}
-          </p>
-          {payTo?.method === 'd17' ? (
-            <CopyValue label={t('d17Number')} value={payTo.d17Number} testId="pay-to-d17" />
-          ) : payTo?.method === 'bank_transfer' ? (
-            <div className="space-y-2">
-              <CopyValue label={t('rib')} value={payTo.rib} testId="pay-to-rib" />
-              {payTo.bankName || payTo.accountHolder ? (
-                <p className="text-xs text-muted-foreground">
-                  {[payTo.accountHolder, payTo.bankName].filter(Boolean).join(' · ')}
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <p className="rounded-xl bg-background p-3 text-muted-foreground">{t('noPayTo')}</p>
-          )}
-          <p className="text-xs text-muted-foreground" data-testid="write-reference">
-            {t('writeReference', { reference })}
-          </p>
-        </li>
-        <li className="space-y-2">
-          <p>
-            <span className="ltr-nums me-1 font-semibold">2.</span>
-            {t('thenUpload')}
-          </p>
-          {proofStatus === 'rejected' ? (
-            <p className="text-highlight">{t('proof.rejected')}</p>
-          ) : null}
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            className="sr-only"
-            aria-label={t('uploadProof')}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) upload(file);
-            }}
-          />
-          <Button
-            type="button"
-            className="min-h-11 w-full rounded-full sm:w-auto"
-            onClick={() => fileInput.current?.click()}
-            disabled={busy}
-            data-testid="upload-proof"
-          >
-            {busy ? (
-              <Loader2 className="animate-spin" aria-hidden="true" />
+      <ol className="space-y-5 text-sm">
+        <li className="flex gap-3">
+          <StepNumber value={1} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <p className="pt-1">
+              {t(method === 'd17' ? 'sendD17' : 'sendTransfer', {
+                amount: formatPrice(amount, locale),
+                organizer: organizerName ?? '',
+              })}
+            </p>
+            {payTo?.method === 'd17' ? (
+              <CopyValue label={t('d17Number')} value={payTo.d17Number} testId="pay-to-d17" />
+            ) : payTo?.method === 'bank_transfer' ? (
+              <div className="space-y-2">
+                <CopyValue label={t('rib')} value={payTo.rib} testId="pay-to-rib" />
+                {payTo.bankName || payTo.accountHolder ? (
+                  <p className="text-xs text-muted-foreground">
+                    {[payTo.accountHolder, payTo.bankName].filter(Boolean).join(' · ')}
+                  </p>
+                ) : null}
+              </div>
             ) : (
-              <Upload aria-hidden="true" />
+              <p className="rounded-2xl bg-card p-3 text-muted-foreground">{t('noPayTo')}</p>
             )}
-            {busy ? t('uploading') : t('uploadProof')}
-          </Button>
+            <p className="text-xs text-muted-foreground" data-testid="write-reference">
+              {t('writeReference', { reference })}
+            </p>
+          </div>
+        </li>
+        <li className="flex gap-3">
+          <StepNumber value={2} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <p className="pt-1">{t('thenUpload')}</p>
+            {proofStatus === 'rejected' ? (
+              <p className="font-medium text-destructive">{t('proof.rejected')}</p>
+            ) : null}
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="sr-only"
+              aria-label={t('uploadProof')}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) upload(file);
+              }}
+            />
+            <Button
+              type="button"
+              className="w-full sm:w-auto"
+              onClick={() => fileInput.current?.click()}
+              disabled={busy}
+              data-testid="upload-proof"
+            >
+              {busy ? (
+                <Loader2 className="animate-spin" aria-hidden="true" />
+              ) : (
+                <Upload aria-hidden="true" />
+              )}
+              {busy ? t('uploading') : t('uploadProof')}
+            </Button>
+          </div>
         </li>
       </ol>
       <ErrorLine message={error} />
     </div>
+  );
+}
+
+/** A payment step's number, in a circle (the list itself gives the order). */
+function StepNumber({ value }: { value: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="ltr-nums flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+    >
+      {value}
+    </span>
   );
 }
 
@@ -245,7 +263,8 @@ export function PayOnlineButton({ reference, amount }: { reference: string; amou
     <div className="space-y-2">
       <Button
         type="button"
-        className="min-h-12 w-full rounded-full text-base sm:w-auto sm:px-8"
+        size="lg"
+        className="w-full sm:w-auto"
         disabled={busy}
         onClick={() =>
           void run(async () => {
@@ -291,7 +310,7 @@ export function PayDifferently({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="min-h-11 text-sm font-medium text-primary hover:underline"
+          className="min-h-11 text-sm font-semibold text-primary underline-offset-4 hover:underline"
           data-testid="pay-differently"
         >
           {t('payDifferently')}
@@ -300,7 +319,7 @@ export function PayDifferently({
       <DialogContent>
         <DialogTitle>{t('payDifferently')}</DialogTitle>
         <DialogDescription>{t('payDifferentlyHint')}</DialogDescription>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {others.map((method) => {
             const Icon = methodIcons[method];
             return (
@@ -319,10 +338,12 @@ export function PayDifferently({
                     }
                   }, method !== 'online')
                 }
-                className="flex w-full items-start gap-3 rounded-xl border border-border p-3 text-start hover:bg-accent"
+                className="flex w-full items-start gap-3 rounded-2xl border border-border/80 bg-card p-4 text-start transition-colors hover:border-primary/35 hover:bg-primary-soft/25 focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none disabled:opacity-55"
               >
-                <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-                <span>
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <span className="pt-0.5">
                   <span className="block font-medium">{tCheckout(`methods.${method}`)}</span>
                   <span className="block text-sm text-muted-foreground">
                     {tCheckout(`methodHints.${method}`)}
@@ -378,7 +399,7 @@ export function BookingActions({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" className="min-h-11 rounded-full" onClick={downloadIcs}>
+        <Button variant="outline" onClick={downloadIcs}>
           <CalendarPlus aria-hidden="true" />
           {t('addToCalendar')}
         </Button>
@@ -386,7 +407,10 @@ export function BookingActions({
         {canCancel ? (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" className="min-h-11 rounded-full text-destructive">
+              <Button
+                variant="ghost"
+                className="text-destructive hover:bg-destructive-soft hover:text-destructive"
+              >
                 <XCircle aria-hidden="true" />
                 {t('cancel')}
               </Button>
@@ -400,13 +424,10 @@ export function BookingActions({
               </DialogDescription>
               <DialogFooter className="gap-2">
                 <DialogClose asChild>
-                  <Button variant="outline" className="min-h-11">
-                    {t('keepBooking')}
-                  </Button>
+                  <Button variant="outline">{t('keepBooking')}</Button>
                 </DialogClose>
                 <Button
                   variant="destructive"
-                  className="min-h-11"
                   onClick={() => void run(() => cancel.mutateAsync({ reference }))}
                   disabled={busy}
                 >
@@ -456,7 +477,7 @@ export function PdfTicketButton({
   }, [autoDownload, href, reference]);
 
   return (
-    <Button asChild variant={prominent ? 'default' : 'outline'} className="min-h-11 rounded-full">
+    <Button asChild variant={prominent ? 'default' : 'outline'}>
       <a href={href} download={`doulisha-${reference}.pdf`} data-testid="download-pdf">
         <FileDown aria-hidden="true" />
         {t('downloadPdf')}

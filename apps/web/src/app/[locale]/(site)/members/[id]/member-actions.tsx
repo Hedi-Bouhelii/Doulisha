@@ -28,7 +28,6 @@ export function MemberActions({
       {blocked ? (
         <Button
           variant="outline"
-          className="min-h-11 rounded-full"
           disabled={unblock.isPending}
           onClick={() => unblock.mutate({ userId: user.id }, { onSuccess: () => router.refresh() })}
           data-testid="member-unblock"

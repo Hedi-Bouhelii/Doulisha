@@ -64,7 +64,7 @@ pnpm dev          # http://localhost:3000 → redirects to /fr, /ar or /en
 - **Seeded accounts** have no password yet: on `/fr/sign-in`, choose "Receive a code instead" the first time, then set a password.
 - **Admin:** `20 000 001` (the seeded admin); open `/fr/admin` to browse the seed data and `/fr/admin/templates` to edit templates.
 - **Arabic:** use the language menu or open `/ar`; the layout flips to right-to-left.
-- **Components:** `/fr/design` shows every base component and state (development only).
+- **Components:** `/fr/design` shows the design system v2 (colours, buttons, status badges, cards, every base component and state; development only). See [`docs/UX_GUIDELINES.md`](docs/UX_GUIDELINES.md).
 - **Organizer:** sign in with `22 000 001` (Sami, owner of "Kroumirie Trekkers"), open `/fr/organizer`, create an event from a template and publish it.
 - **Booking:** on any event page, "Get ticket" books as a guest; the online payment goes to a simulated gateway (`/fr/checkout/mock-pay`). Tickets and their QR codes are under `/fr/tickets`.
 - **Private invitation:** `/fr/host/new` creates one and gives a link; guests answer at `/fr/invite/…` without an account.
@@ -91,9 +91,10 @@ packages/
   config/     shared tsconfig and ESLint presets
   db/         Drizzle schema, migrations, seed
   api/        tRPC routers, services, permissions
+  api-types/  the API types bundled into one file for the mobile app (pnpm --filter @doulisha/api-types build)
   auth/       Better Auth configuration
   i18n/       ar/fr/en messages, TND and date formatters
-  ui-tokens/  design tokens (colours, fonts, radii) and tokens.css
+  ui-tokens/  design tokens (colours, status tints, fonts, radii, shadows) and tokens.css
   templates/  category templates
   validators/ shared Zod schemas
   notifications/ SMS and email senders (mocks for now)

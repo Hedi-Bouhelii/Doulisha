@@ -24,7 +24,10 @@
     "createEvent": "Create an event",
     "signUp": "Create account",
     "feed": "My feed",
-    "messages": "Messages"
+    "messages": "Messages",
+    "logoLabel": "Doulisha home",
+    "mySpace": "My space",
+    "signUpShort": "Sign up"
   },
   "Home": {
     "heroLine1": "Discover",
@@ -46,7 +49,14 @@
     "organizeTitle": "Organize something",
     "organizeHint": "A hike, a workshop or a birthday: create it in a few minutes and share it on WhatsApp.",
     "organizePublic": "Create a public event",
-    "organizePrivate": "Invite friends to a private event"
+    "organizePrivate": "Invite friends to a private event",
+    "heroEyebrow": "Outings, workshops and parties in Tunisia",
+    "searchButton": "Search",
+    "trustSecure": "Secure booking",
+    "trustPayments": "D17, transfer or pay at the door",
+    "trustTickets": "Tickets with a QR code",
+    "trendingEyebrow": "Don’t miss",
+    "organizeEyebrow": "For organizers and hosts"
   },
   "Explore": {
     "title": "Explore",
@@ -80,7 +90,9 @@
     "locating": "Finding your location…",
     "locationDenied": "Location not available. Pick a city instead.",
     "apply": "Show results",
-    "reset": "Reset"
+    "reset": "Reset",
+    "eyebrow": "All of Doulisha",
+    "searchButton": "Search"
   },
   "Event": {
     "going": "{count} going",
@@ -132,7 +144,9 @@
     "manage": "Manage this event",
     "organizerEvents": "Organizer",
     "unlisted": "Only people with the link can see this event.",
-    "seeOrganizer": "See the organizer"
+    "seeOrganizer": "See the organizer",
+    "byOrganizer": "By {name}",
+    "secureBooking": "Secure booking, ticket with a QR code"
   },
   "Auth": {
     "title": "Welcome back",
@@ -210,7 +224,8 @@
     "retry": "Try again",
     "notFoundTitle": "Page not found",
     "notFoundHint": "This page does not exist or is no longer available.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "close": "Close"
   },
   "Errors": {
     "forbidden": "You are not allowed to do this.",
@@ -491,7 +506,8 @@
       "upcoming": "Upcoming events",
       "fillRate": "Fill rate",
       "revenue": "Collected",
-      "pending": "Pending payments"
+      "pending": "Pending payments",
+      "pendingOrders": "{count, plural, one {# booking} other {# bookings}}"
     },
     "sources": "Where bookings come from",
     "direct": "Direct",
@@ -564,7 +580,18 @@
     "keepEvent": "Keep the event",
     "refunds": "Refunds",
     "collectFirst": "Collect {amount} from {name}.",
-    "collectedCheckIn": "Collected, check in"
+    "collectedCheckIn": "Collected, check in",
+    "moreActions": "More actions",
+    "stats": {
+      "capacity": "Places",
+      "booked": "Booked",
+      "checkedIn": "Checked in",
+      "unlimited": "Unlimited"
+    },
+    "noSources": "Once people book, you will see here where they came from.",
+    "noWaitlist": "Nobody on the waitlist",
+    "thanksTitle": "Great experiences bring people together",
+    "thanksHint": "Thank you for organizing with Doulisha."
   },
   "Wizard": {
     "newTitle": "What are you organizing?",
@@ -687,7 +714,18 @@
     "ticketsHint": "Set the price per person. Add other types only if prices differ (VIP, student, early bird…).",
     "moreTicketOptions": "More options (type, quantity, people per ticket)",
     "quantityHint": "Empty: up to the event capacity.",
-    "addAnotherTicket": "Add another ticket type"
+    "addAnotherTicket": "Add another ticket type",
+    "stepsLabel": "Steps",
+    "stepOf": "Step {current} of {total}",
+    "stepHints": {
+      "basics": "Give your event a name and a short description.",
+      "place": "When it starts, and where people meet.",
+      "details": "Who can see it, who it is for, and what the category asks.",
+      "tickets": "How people register, how many places and at what price.",
+      "logistics": "Pick-up points, programme and questions at booking.",
+      "brief": "What participants should know before they come.",
+      "publish": "Check what is missing, then put your event online."
+    }
   },
   "Host": {
     "newTitle": "Invite your friends",
@@ -701,17 +739,35 @@
     "titlePlaceholder": "e.g. Yasmine's 30th birthday",
     "when": "When",
     "where": "Where (optional)",
+    "wherePlaceholder": "e.g. Dar El Jeld",
     "city": "City (optional)",
+    "coverPhoto": "Cover photo (optional)",
+    "coverPhotoHint": "Give your invitation a picture.",
     "message": "A word for your guests (optional)",
     "hideAddress": "Show the address only to guests who say they are going",
     "create": "Create the invitation",
+    "eventDetails": "The invitation",
+    "eventDetailsHint": "A clear title and a few words for your guests.",
     "creating": "Creating…",
     "readyTitle": "Your invitation is ready",
     "readyHint": "Share this link. Guests answer without creating an account.",
     "openInvitation": "Open the invitation",
     "myEvents": "My private events",
     "noEvents": "No private events yet",
-    "guests": "Guests"
+    "locationHint": "Guests see the city, but not the exact address.",
+    "guests": "Guests",
+    "kindHint": "Choose the kind of invitation.",
+    "kindHints": {
+      "birthday": "Celebrate a special day",
+      "private_gathering": "Time with the people close to you"
+    },
+    "messagePlaceholder": "Tell your guests what makes this moment special.",
+    "whenHint": "The day and the time it starts.",
+    "whereTitle": "Where is it happening?",
+    "whereHint": "An address or a description of the place.",
+    "cityPlaceholder": "e.g. Tunis",
+    "coverFormats": "JPG, PNG or WebP · 5 MB maximum",
+    "createHint": "You then get a link to share on WhatsApp."
   },
   "Invite": {
     "invitedBy": "{name} invites you",
@@ -748,7 +804,8 @@
     "privacy": "Privacy policy",
     "draft": "Draft, written from how Doulisha really works. It will be reviewed before the public launch.",
     "updated": "Last updated: {date}",
-    "dataDeletion": "Data deletion"
+    "dataDeletion": "Data deletion",
+    "onThisPage": "On this page"
   },
   "AdminTemplates": {
     "title": "Category templates",
@@ -764,7 +821,11 @@
     "terms": "Terms",
     "privacy": "Privacy",
     "legal": "Legal",
-    "dataDeletion": "Data deletion"
+    "dataDeletion": "Data deletion",
+    "about": "Doulisha brings people together around experiences in Tunisia: outings, workshops, parties and trips.",
+    "discover": "Discover",
+    "organize": "Organize",
+    "copyright": "© {year} Doulisha"
   },
   "OrganizerProfile": {
     "about": "About",

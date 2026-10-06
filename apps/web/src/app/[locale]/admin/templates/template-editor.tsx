@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -56,19 +57,19 @@ export function TemplateEditor({
   }
 
   return (
-    <details className="rounded-xl border border-border bg-card">
-      <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-x-3 px-4 py-2">
+    <details className="rounded-2xl border border-border/70 bg-card shadow-card">
+      <summary className="flex min-h-14 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 sm:px-5">
         <span className="font-semibold">{name}</span>
         <span className="text-sm text-muted-foreground">
           {category} · <code dir="ltr">{templateKey}</code> · {t('version', { version })}
         </span>
         {isActive ? (
-          <span className="rounded-full bg-cat-outdoor-bg px-2 text-xs font-semibold text-cat-outdoor-fg">
+          <Badge variant="success" dot>
             {t('active')}
-          </span>
+          </Badge>
         ) : null}
       </summary>
-      <div className="space-y-3 border-t border-border p-4">
+      <div className="space-y-3 border-t border-border/70 p-4 sm:p-5">
         <div className="flex min-h-11 items-center gap-3">
           <Switch id={`active-${templateKey}`} checked={active} onCheckedChange={setActive} />
           <Label htmlFor={`active-${templateKey}`}>{t('active')}</Label>
@@ -84,18 +85,13 @@ export function TemplateEditor({
           className="font-mono text-xs"
         />
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            className="min-h-11"
-            onClick={() => void save()}
-            disabled={update.isPending}
-          >
+          <Button type="button" onClick={() => void save()} disabled={update.isPending}>
             {t('save')}
           </Button>
           {message ? (
             <p
               role={message.ok ? 'status' : 'alert'}
-              className={`text-sm whitespace-pre-line ${message.ok ? 'text-success' : 'text-highlight'}`}
+              className={`text-sm whitespace-pre-line ${message.ok ? 'text-success' : 'text-destructive'}`}
             >
               {message.text}
             </p>

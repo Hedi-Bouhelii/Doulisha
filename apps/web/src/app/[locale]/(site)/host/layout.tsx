@@ -13,5 +13,5 @@ export default async function HostLayout({ children, params }: LayoutProps<'/[lo
   if (!session || session.user.isAnonymous) {
     redirect({ href: '/sign-in?next=/host', locale });
   }
-  return <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">{children}</div>;
+  return <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">{children}</div>;
 }

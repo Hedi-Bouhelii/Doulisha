@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useErrorMessage } from '@/lib/errors';
+import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 
 export type ReportTarget = 'event' | 'post' | 'comment' | 'user' | 'organizer' | 'message';
@@ -61,11 +62,13 @@ export function ReportDialog({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent>
         {sent ? (
-          <div className="space-y-3 text-center" data-testid="report-sent">
-            <CheckCircle2 className="mx-auto size-10 text-success" aria-hidden="true" />
+          <div className="space-y-3 py-2 text-center" data-testid="report-sent">
+            <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-success-soft text-success">
+              <CheckCircle2 className="size-7" aria-hidden="true" />
+            </span>
             <DialogTitle>{t('reportSent')}</DialogTitle>
             <DialogDescription>{t('reportSentHint')}</DialogDescription>
-            <Button className="min-h-11" onClick={() => close(false)}>
+            <Button className="w-full sm:w-auto" onClick={() => close(false)}>
               {t('close')}
             </Button>
           </div>
@@ -76,13 +79,22 @@ export function ReportDialog({
             <RadioGroup
               value={reason}
               onValueChange={(value) => setReason(value as Reason)}
-              className="gap-1"
+              className="gap-2"
             >
               {REASONS.map((r) => (
-                <div key={r} className="flex min-h-11 items-center gap-3">
+                <Label
+                  key={r}
+                  htmlFor={`reason-${r}`}
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 font-normal transition-colors',
+                    reason === r
+                      ? 'border-primary bg-primary-soft/50'
+                      : 'border-border/70 hover:bg-accent',
+                  )}
+                >
                   <RadioGroupItem id={`reason-${r}`} value={r} data-testid={`report-reason-${r}`} />
-                  <Label htmlFor={`reason-${r}`}>{t(`reasons.${r}`)}</Label>
-                </div>
+                  {t(`reasons.${r}`)}
+                </Label>
               ))}
             </RadioGroup>
             <div className="space-y-1.5">
@@ -96,16 +108,18 @@ export function ReportDialog({
               />
             </div>
             {error ? (
-              <p role="alert" className="text-sm text-destructive">
+              <p
+                role="alert"
+                className="rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+              >
                 {error}
               </p>
             ) : null}
             <DialogFooter>
-              <Button variant="outline" className="min-h-11" onClick={() => close(false)}>
+              <Button variant="outline" onClick={() => close(false)}>
                 {t('cancel')}
               </Button>
               <Button
-                className="min-h-11"
                 disabled={report.isPending}
                 onClick={() =>
                   report.mutate(
@@ -148,17 +162,19 @@ export function BlockDialog({
         <DialogTitle>{t('blockTitle', { name: user.name })}</DialogTitle>
         <DialogDescription>{t('blockHint')}</DialogDescription>
         {error ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
             {error}
           </p>
         ) : null}
         <DialogFooter>
-          <Button variant="outline" className="min-h-11" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('cancel')}
           </Button>
           <Button
             variant="destructive"
-            className="min-h-11"
             disabled={block.isPending}
             onClick={() =>
               block.mutate(
@@ -210,7 +226,7 @@ export function ItemMenu({
           <Button
             variant="ghost"
             size="icon"
-            className="size-9 shrink-0 rounded-full"
+            className="size-9 shrink-0 text-muted-foreground hover:text-foreground"
             aria-label={label}
             data-testid="item-menu"
           >
@@ -219,7 +235,12 @@ export function ItemMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {onRemove ? (
-            <DropdownMenuItem className="min-h-11" onSelect={onRemove} data-testid="item-remove">
+            <DropdownMenuItem
+              variant="destructive"
+              className="min-h-11"
+              onSelect={onRemove}
+              data-testid="item-remove"
+            >
               <Trash2 aria-hidden="true" />
               {t('remove')}
             </DropdownMenuItem>

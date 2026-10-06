@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { BackLink, PageHeader } from '@/components/doulisha/page';
 import { resolveLocale } from '@/i18n/locale';
 import { api } from '@/trpc/server';
 
@@ -11,6 +12,7 @@ export default async function NewEventPage({
 }: PageProps<'/[locale]/organizer/events/new'>) {
   await resolveLocale(params);
   const t = await getTranslations('Wizard');
+  const tOrganizer = await getTranslations('Organizer');
   const caller = await api();
   const [templates, profiles] = await Promise.all([
     caller.editor.templates(),
@@ -19,8 +21,8 @@ export default async function NewEventPage({
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">{t('newTitle')}</h1>
-      <p className="mt-2 text-muted-foreground">{t('newHint')}</p>
+      <BackLink href="/organizer">{tOrganizer('dashboard')}</BackLink>
+      <PageHeader title={t('newTitle')} description={t('newHint')} />
       <TemplatePicker
         // Private gatherings have their own quick form (/host, INV-01).
         templates={templates

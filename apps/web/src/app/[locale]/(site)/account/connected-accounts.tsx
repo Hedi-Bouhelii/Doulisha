@@ -3,7 +3,7 @@
 import { authClient } from '@doulisha/auth/client';
 import { formatDate, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
-import { CheckCircle2, KeyRound, Loader2, Mail, Phone } from 'lucide-react';
+import { CheckCircle2, KeyRound, Loader2, Mail, Phone, ShieldCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
@@ -13,13 +13,14 @@ import {
   socialErrorKey,
   type SocialProvider,
 } from '@/components/auth/social-buttons';
+import { SectionHeading } from '@/components/doulisha/page';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogTitle,
+  DialogTitle, 
 } from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
@@ -29,6 +30,7 @@ const MIN_PASSWORD = 8;
 const providerNames: Record<SocialProvider, string> = {
   google: 'Google',
   facebook: 'Facebook',
+  
   apple: 'Apple',
 };
 
@@ -53,8 +55,8 @@ function MethodRow({
   testId: string;
 }) {
   return (
-    <li className="flex flex-wrap items-center gap-3 p-4" data-testid={testId}>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+    <li className="flex flex-wrap items-center gap-3 p-4 sm:px-5" data-testid={testId}>
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft">
         {icon}
       </span>
       <div className="min-w-0 flex-1">
@@ -131,16 +133,19 @@ export function ConnectedAccounts({
   }
 
   return (
-    <section aria-labelledby="sign-in-methods" className="mt-8" data-testid="connected-accounts">
-      <h2 id="sign-in-methods" className="font-sans text-lg font-semibold">
-        {t('signInMethods')}
-      </h2>
-      <p className="mt-1 text-sm text-muted-foreground">{t('signInHint')}</p>
+    <section aria-labelledby="sign-in-methods" data-testid="connected-accounts">
+      <SectionHeading
+        id="sign-in-methods"
+        icon={ShieldCheck}
+        title={t('signInMethods')}
+        description={t('signInHint')}
+        className="mb-0"
+      />
 
       {justLinked ? (
         <p
           role="status"
-          className="mt-4 flex items-center gap-2 rounded-xl bg-success/10 p-3 text-sm text-success"
+          className="mt-4 flex items-center gap-2 rounded-2xl bg-success-soft px-4 py-3 text-sm text-success"
           data-testid="account-linked"
         >
           <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
@@ -151,7 +156,7 @@ export function ConnectedAccounts({
         <FormError message={actionError ?? (linkError ? tErrors(linkError) : null)} />
       </div>
 
-      <ul className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">
+      <ul className="mt-4 divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
         <MethodRow
           testId="method-phone"
           icon={<Phone className="size-5 text-primary" aria-hidden="true" />}
@@ -188,7 +193,6 @@ export function ConnectedAccounts({
               p.linkedAt ? (
                 <Button
                   variant="outline"
-                  className="min-h-11 rounded-full"
                   disabled={!p.removable}
                   title={p.removable ? undefined : t('lastMethodHint')}
                   onClick={() => setRemoving(p.providerId)}
@@ -198,8 +202,7 @@ export function ConnectedAccounts({
                 </Button>
               ) : p.canConnect ? (
                 <Button
-                  variant="outline"
-                  className="min-h-11 rounded-full"
+                  variant="soft"
                   disabled={busy !== null}
                   onClick={() => void connect(p.providerId)}
                   data-testid={`connect-${p.providerId}`}
@@ -229,12 +232,11 @@ export function ConnectedAccounts({
             {t('removeHint', { provider: removing ? providerNames[removing] : '' })}
           </DialogDescription>
           <DialogFooter>
-            <Button variant="outline" className="min-h-11" onClick={() => setRemoving(null)}>
+            <Button variant="outline" onClick={() => setRemoving(null)}>
               {t('cancel')}
             </Button>
             <Button
               variant="destructive"
-              className="min-h-11"
               disabled={unlink.isPending}
               onClick={() => void remove()}
               data-testid="confirm-remove"
@@ -273,9 +275,9 @@ function PasswordRow({ hasPassword }: { hasPassword: boolean }) {
   }
 
   return (
-    <li className="p-4" data-testid="method-password">
+    <li className="p-4 sm:px-5" data-testid="method-password">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft">
           <KeyRound className="size-5 text-primary" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
@@ -285,18 +287,17 @@ function PasswordRow({ hasPassword }: { hasPassword: boolean }) {
           </p>
         </div>
         {!hasPassword && !open ? (
-          <Button
-            variant="outline"
-            className="min-h-11 rounded-full"
-            onClick={() => setOpen(true)}
-            data-testid="add-password"
-          >
+          <Button variant="soft" onClick={() => setOpen(true)} data-testid="add-password">
             {t('addPassword')}
           </Button>
         ) : null}
       </div>
       {open ? (
-        <form onSubmit={(e) => void submit(e)} className="mt-4 space-y-3" noValidate>
+        <form
+          onSubmit={(e) => void submit(e)}
+          className="mt-4 space-y-3 rounded-2xl bg-muted/50 p-4"
+          noValidate
+        >
           <PasswordField
             id="account-password"
             label={tAuth('choosePassword')}
@@ -309,18 +310,12 @@ function PasswordRow({ hasPassword }: { hasPassword: boolean }) {
           <div className="flex gap-2">
             <Button
               type="submit"
-              className="min-h-11 rounded-full"
               disabled={save.isPending || password.length < MIN_PASSWORD}
               data-testid="save-password"
             >
               {t('savePassword')}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="min-h-11"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               {t('cancel')}
             </Button>
           </div>

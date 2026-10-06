@@ -4,9 +4,10 @@ packages:
 
 # Shared versions: reference them with "catalog:" in package.json files.
 catalog:
+  '@better-auth/expo': ^1.7.6
   '@neondatabase/serverless': ^1.1.0
   '@types/node': ^24.13.6
-  better-auth: ^1.7.5
+  better-auth: ^1.7.6
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.3
   eslint: ^9.39.5

@@ -79,7 +79,7 @@ export function SocialButtons({
           key={provider}
           type="button"
           variant="outline"
-          className="h-11 w-full rounded-full"
+          className="w-full"
           disabled={disabled}
           onClick={() => onSelect(provider)}
           data-testid={`social-${provider}`}

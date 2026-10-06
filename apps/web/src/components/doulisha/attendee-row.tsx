@@ -1,18 +1,12 @@
 import { CheckCircle2 } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 import { initials } from './friends-going';
+import { toneOf } from './status-badge';
 
 export type PaymentState = 'paid' | 'deposit' | 'pending' | 'refunded';
-
-const stateClasses: Record<PaymentState, string> = {
-  paid: 'bg-cat-outdoor-bg text-cat-outdoor-fg',
-  deposit: 'bg-cat-sports-bg text-cat-sports-fg',
-  pending: 'bg-highlight-soft text-highlight',
-  refunded: 'bg-muted text-muted-foreground',
-};
 
 /**
  * One line of the organizer's attendee list (PRT-01): who, which ticket,
@@ -36,9 +30,9 @@ export function AttendeeRow({
   checkedInLabel: string;
 }) {
   return (
-    <div className="flex min-h-14 items-center gap-3 border-b border-border py-2 last:border-b-0">
-      <Avatar className="size-9">
-        <AvatarFallback className="bg-secondary text-xs font-semibold">
+    <div className="flex min-h-14 items-center gap-3 border-b border-border/70 py-2.5 last:border-b-0">
+      <Avatar className="size-10">
+        <AvatarFallback className="bg-primary-soft text-xs font-semibold text-primary">
           {initials(name)}
         </AvatarFallback>
       </Avatar>
@@ -54,9 +48,9 @@ export function AttendeeRow({
           ) : null}
         </p>
       </div>
-      <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', stateClasses[payment])}>
+      <Badge variant={toneOf(payment)} dot>
         {paymentLabel}
-      </span>
+      </Badge>
       {checkedIn ? (
         <CheckCircle2 className="size-5 text-success" aria-label={checkedInLabel} />
       ) : null}

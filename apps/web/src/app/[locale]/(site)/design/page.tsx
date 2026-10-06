@@ -1,4 +1,5 @@
 import type { EventCardDto } from '@doulisha/api';
+import { CalendarDays, Plus, Ticket, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -11,11 +12,16 @@ import { EmptyState } from '@/components/doulisha/empty-state';
 import { EventCard, EventCardSkeleton } from '@/components/doulisha/event-card';
 import { FriendsGoing } from '@/components/doulisha/friends-going';
 import { OrganizerCard } from '@/components/doulisha/organizer-card';
+import { StatCard } from '@/components/doulisha/page';
 import { PlacesLeft } from '@/components/doulisha/places-left';
 import { PriceTag } from '@/components/doulisha/price-tag';
+import { StatusBadge } from '@/components/doulisha/status-badge';
 import { StickyCTA } from '@/components/doulisha/sticky-cta';
 import { TicketQR } from '@/components/doulisha/ticket-qr';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { resolveLocale } from '@/i18n/locale';
 
 export const metadata: Metadata = { robots: { index: false } };
@@ -39,8 +45,9 @@ const sampleEvent: EventCardDto = {
 };
 
 /**
- * Development gallery of the base components (BUILD_PROMPT section 6) in the
- * current language and theme. Switch to Arabic to check RTL. Hidden in production.
+ * Development gallery of design system v2 (docs/UX_GUIDELINES.md) in the
+ * current language and theme. Switch to Arabic to check RTL. Hidden in
+ * production; its labels are developer notes, not product copy.
  */
 export default async function DesignPage({ params }: PageProps<'/[locale]/design'>) {
   if (process.env.NODE_ENV === 'production') notFound();
@@ -48,8 +55,8 @@ export default async function DesignPage({ params }: PageProps<'/[locale]/design
   const t = await getTranslations('States');
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-10 px-4 py-10 sm:px-6">
-      <h1 className="text-4xl font-bold">Design system</h1>
+    <div className="mx-auto w-full max-w-5xl space-y-12 px-4 py-10 sm:px-6">
+      <h1 className="font-display text-4xl font-bold tracking-tight">Design system v2</h1>
 
       <Demo title="Colours">
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -60,24 +67,67 @@ export default async function DesignPage({ params }: PageProps<'/[locale]/design
             'bg-secondary',
             'bg-muted',
             'bg-card',
+            'bg-primary-soft',
+            'bg-success-soft',
+            'bg-warning-soft',
+            'bg-destructive-soft',
+            'bg-info-soft',
+            'bg-highlight-soft',
           ].map((c) => (
-            <div key={c} className={`h-16 rounded-lg border border-border ${c}`} title={c} />
+            <div key={c} className={`h-16 rounded-2xl border border-border/70 ${c}`} title={c} />
           ))}
         </div>
       </Demo>
 
       <Demo title="Buttons">
         <div className="flex flex-wrap gap-3">
-          <Button className="min-h-11">Primary</Button>
-          <Button variant="outline" className="min-h-11">
-            Secondary
+          <Button>Primary</Button>
+          <Button variant="accent">Accent</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="soft">Soft</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="destructive">Destructive</Button>
+          <Button variant="link">Link</Button>
+          <Button size="icon" variant="outline" aria-label="Add">
+            <Plus aria-hidden="true" />
           </Button>
-          <Button className="min-h-11 bg-highlight text-highlight-foreground hover:bg-highlight/90">
-            Highlight
-          </Button>
-          <Button variant="ghost" className="min-h-11">
-            Ghost
-          </Button>
+        </div>
+      </Demo>
+
+      <Demo title="Badges · status tones">
+        <div className="flex flex-wrap gap-2">
+          {(['neutral', 'primary', 'success', 'warning', 'danger', 'info', 'accent'] as const).map(
+            (tone) => (
+              <Badge key={tone} variant={tone} dot>
+                {tone}
+              </Badge>
+            ),
+          )}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {['draft', 'published', 'full', 'ongoing', 'completed', 'cancelled'].map((status) => (
+            <StatusBadge key={status} status={status} />
+          ))}
+        </div>
+      </Demo>
+
+      <Demo title="Card · StatCard · Input">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Card title</CardTitle>
+              <CardDescription>Warm surface, 20 px radius, soft shadow.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input placeholder="Input, 14 px radius" aria-label="Sample input" />
+            </CardContent>
+          </Card>
+          <div className="grid gap-3">
+            <StatCard icon={CalendarDays} label="Upcoming events" value={4} />
+            <StatCard icon={Wallet} tone="accent" label="Collected" value="1 250 DT" />
+            <StatCard icon={Ticket} tone="info" label="Booked" value={86} hint="12 this week" />
+          </div>
         </div>
       </Demo>
 
@@ -134,7 +184,7 @@ export default async function DesignPage({ params }: PageProps<'/[locale]/design
       </Demo>
 
       <Demo title="AttendeeRow">
-        <div className="max-w-xl rounded-xl border border-border bg-card px-4">
+        <div className="max-w-xl rounded-2xl border border-border/70 bg-card px-4 shadow-card">
           <AttendeeRow
             name="Omar Chaabane"
             ticket="Standard"
@@ -182,17 +232,17 @@ export default async function DesignPage({ params }: PageProps<'/[locale]/design
             tone="alert"
             title={t('errorTitle')}
             hint={t('errorHint')}
-            action={<Button className="min-h-11">{t('retry')}</Button>}
+            action={<Button>{t('retry')}</Button>}
           />
         </div>
       </Demo>
 
       <Demo title="StickyCTA">
-        <div className="relative h-24 overflow-hidden rounded-xl border border-dashed border-border">
+        <div className="relative h-24 overflow-hidden rounded-2xl border border-dashed border-border">
           <StickyCTA
             className="absolute! lg:absolute!"
             summary={<PriceTag millimes={45_000} />}
-            action={<Button className="min-h-11 rounded-full px-6">Get ticket</Button>}
+            action={<Button>Get ticket</Button>}
           />
         </div>
       </Demo>

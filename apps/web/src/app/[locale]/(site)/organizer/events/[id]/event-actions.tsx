@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { Copy, XCircle } from 'lucide-react';
+import { Copy, FileSpreadsheet, MoreHorizontal, Printer, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -13,19 +13,39 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { useRouter } from '@/i18n/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { useTRPC } from '@/trpc/client';
 
-/** Duplicate the event as a new draft, or cancel it with full refunds. */
-export function EventActions({ eventId, canCancel }: { eventId: string; canCancel: boolean }) {
+/**
+ * The event's secondary actions in one "more" menu: the attendee list as
+ * Excel or PDF, a copy as a new draft, and cancelling with full refunds.
+ */
+export function EventActions({
+  eventId,
+  canCancel,
+  exportHref,
+  printHref,
+}: {
+  eventId: string;
+  canCancel: boolean;
+  exportHref: string;
+  printHref: string;
+}) {
   const t = useTranslations('Organizer');
   const trpc = useTRPC();
   const router = useRouter();
   const errorMessage = useErrorMessage();
   const [message, setMessage] = useState<string | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const duplicate = useMutation(trpc.editor.duplicate.mutationOptions());
   const cancel = useMutation(trpc.organizer.cancelEvent.mutationOptions());
 
@@ -50,55 +70,70 @@ export function EventActions({ eventId, canCancel }: { eventId: string; canCance
 
   return (
     <>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        className="min-h-11 rounded-full"
-        onClick={() => void onDuplicate()}
-        disabled={duplicate.isPending}
-      >
-        <Copy aria-hidden="true" />
-        {t('duplicate')}
-      </Button>
-      {canCancel ? (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-11 rounded-full text-destructive"
-            >
-              <XCircle aria-hidden="true" />
-              {t('cancelEvent')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>{t('cancelEvent')}</DialogTitle>
-            <DialogDescription>{t('cancelEventConfirm')}</DialogDescription>
-            <DialogFooter className="gap-2">
-              <DialogClose asChild>
-                <Button variant="outline" className="min-h-11">
-                  {t('keepEvent')}
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button
-                  variant="destructive"
-                  className="min-h-11"
-                  onClick={() => void onCancel()}
-                  disabled={cancel.isPending}
-                >
-                  {t('cancelEvent')}
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      ) : null}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label={t('moreActions')}
+            data-testid="event-more"
+          >
+            <MoreHorizontal aria-hidden="true" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-56">
+          <DropdownMenuItem asChild>
+            <a href={exportHref} download>
+              <FileSpreadsheet aria-hidden="true" />
+              {t('export')} · {t('exportExcel')}
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={printHref}>
+              <Printer aria-hidden="true" />
+              {t('export')} · {t('exportPdf')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={duplicate.isPending} onSelect={() => void onDuplicate()}>
+            <Copy aria-hidden="true" />
+            {t('duplicate')}
+          </DropdownMenuItem>
+          {canCancel ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={() => setConfirmCancel(true)}>
+                <XCircle aria-hidden="true" />
+                {t('cancelEvent')}
+              </DropdownMenuItem>
+            </>
+          ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={confirmCancel} onOpenChange={setConfirmCancel}>
+        <DialogContent>
+          <DialogTitle>{t('cancelEvent')}</DialogTitle>
+          <DialogDescription>{t('cancelEventConfirm')}</DialogDescription>
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button variant="outline">{t('keepEvent')}</Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button
+                variant="destructive"
+                onClick={() => void onCancel()}
+                disabled={cancel.isPending}
+              >
+                {t('cancelEvent')}
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {message ? (
-        <p role="status" className="w-full text-sm">
+        <p role="status" className="basis-full rounded-2xl bg-muted/70 px-4 py-2.5 text-sm">
           {message}
         </p>
       ) : null}

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { PageHeader } from '@/components/doulisha/page';
 import { PaymentsInbox } from '@/components/doulisha/payments-inbox';
 import { resolveLocale } from '@/i18n/locale';
 import { api } from '@/trpc/server';
@@ -12,11 +13,8 @@ export default async function OrganizerPaymentsPage({
   const t = await getTranslations('Payments');
   const inbox = await (await api()).organizer.payments({});
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <p className="mt-1 max-w-2xl text-muted-foreground">{t('intro')}</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title={t('title')} description={t('intro')} />
       <PaymentsInbox inbox={inbox} showEvent />
     </div>
   );

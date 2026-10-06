@@ -52,6 +52,10 @@ jobs:
           # No database or auth secrets in this job; pages that need them are dynamic.
           SKIP_ENV_VALIDATION: '1'
 
+      # The mobile app copies this bundle (ADR 0024): it must match the routers.
+      - name: API types are up to date
+        run: git diff --exit-code -- packages/api-types/dist
+
   # One Neon branch per pull request: migrate, seed, then run the E2E suite.
   # Skipped until the repository has the NEON_API_KEY secret and NEON_PROJECT_ID
   # variable (docs/DEPLOYMENT.md).

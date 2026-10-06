@@ -1,7 +1,15 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { ArrowRight, Globe2, Loader2, PartyPopper, UserRound } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Globe2,
+  Loader2,
+  PartyPopper,
+  UserRound,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -67,28 +75,33 @@ export function TemplatePicker({
   }
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className="mt-8 space-y-10">
       {/* Public or private: two different flows. */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex items-start gap-3 rounded-2xl border-2 border-primary bg-primary/5 p-4">
-          <Globe2 className="mt-0.5 size-6 shrink-0 text-primary" aria-hidden="true" />
-          <div>
+        <div className="relative flex items-start gap-4 rounded-2xl border-2 border-primary bg-primary-soft/50 p-5">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Globe2 className="size-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
             <p className="font-semibold">{t('publicTitle')}</p>
-            <p className="text-sm text-muted-foreground">{t('publicHint')}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t('publicHint')}</p>
           </div>
+          <CheckCircle2 className="size-5 shrink-0 text-primary" aria-hidden="true" />
         </div>
         <Link
           href="/host/new"
-          className="group flex items-start gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-highlight hover:shadow-sm"
+          className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-[border-color,box-shadow] hover:border-highlight/50 hover:shadow-raised"
           data-testid="go-private"
         >
-          <PartyPopper className="mt-0.5 size-6 shrink-0 text-highlight" aria-hidden="true" />
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-highlight-soft text-highlight">
+            <PartyPopper className="size-5" aria-hidden="true" />
+          </span>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">{t('privateTitle')}</p>
-            <p className="text-sm text-muted-foreground">{t('privateHint')}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t('privateHint')}</p>
           </div>
           <ArrowRight
-            className="mt-1 size-5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 rtl:rotate-180"
+            className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
             aria-hidden="true"
           />
         </Link>
@@ -96,7 +109,7 @@ export function TemplatePicker({
 
       <section aria-labelledby="choose-template" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 id="choose-template" className="font-sans text-xl font-semibold">
+          <h2 id="choose-template" className="font-sans text-xl font-semibold tracking-tight">
             {t('chooseTemplate')}
           </h2>
           {profiles.length > 0 ? (
@@ -120,7 +133,7 @@ export function TemplatePicker({
               {t('noProfile')}{' '}
               <Link
                 href="/organizer/profile"
-                className="font-semibold text-primary hover:underline"
+                className="font-semibold text-primary underline-offset-4 hover:underline"
               >
                 {t('createProfile')}
               </Link>
@@ -129,12 +142,16 @@ export function TemplatePicker({
         </div>
 
         {error ? (
-          <p role="alert" className="rounded-lg bg-highlight-soft p-3 text-sm text-highlight">
+          <p
+            role="alert"
+            className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {error}
           </p>
         ) : null}
 
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-5 sm:grid-cols-2">
           {templates.map((tpl) => {
             const accent = accentOf(tpl.category.accent);
             const photo = templatePhotos[tpl.key];
@@ -146,7 +163,7 @@ export function TemplatePicker({
                   onClick={() => void pick(tpl.key)}
                   disabled={create.isPending}
                   data-testid={`template-${tpl.key}`}
-                  className="group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-start shadow-sm transition hover:shadow-md disabled:opacity-60"
+                  className="group flex w-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-start shadow-card transition-[box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:shadow-raised focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none disabled:opacity-60"
                 >
                   <div className={cn('relative aspect-[16/7] w-full', accent.tile)}>
                     {photo ? (
@@ -178,7 +195,7 @@ export function TemplatePicker({
                       {tpl.category.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 p-4">
+                  <div className="flex items-center gap-3 p-5">
                     <div className="min-w-0 flex-1">
                       <p className="text-lg font-semibold">{tpl.name}</p>
                       {described.has(tpl.key) ? (
@@ -187,17 +204,13 @@ export function TemplatePicker({
                         </p>
                       ) : null}
                     </div>
-                    {busy ? (
-                      <Loader2
-                        className="size-5 shrink-0 animate-spin text-primary"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <ArrowRight
-                        className="size-5 shrink-0 text-muted-foreground transition group-hover:text-primary rtl:rotate-180"
-                        aria-hidden="true"
-                      />
-                    )}
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                      {busy ? (
+                        <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+                      )}
+                    </span>
                   </div>
                 </button>
               </li>

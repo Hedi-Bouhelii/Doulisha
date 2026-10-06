@@ -2,13 +2,29 @@
 
 import { formatEventDateTime, formatPrice, formatTime, type Locale } from '@doulisha/i18n';
 import { useMutation } from '@tanstack/react-query';
-import { CheckCircle2, FileSearch, Plus, Search, StickyNote } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  FileSearch,
+  Hourglass,
+  Mail,
+  Phone,
+  Plus,
+  Search,
+  StickyNote,
+  Ticket,
+  Undo2,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { Field, NativeSelect } from '@/components/doulisha/form-field';
+import { initials } from '@/components/doulisha/friends-going';
 import { MarkPaidDialog, PaymentsInbox, ReceiptReview } from '@/components/doulisha/payments-inbox';
+import { toneOf } from '@/components/doulisha/status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -30,15 +46,6 @@ import type { RouterOutputs } from '@/trpc/types';
 type Attendee = RouterOutputs['organizer']['attendees'][number];
 type Inbox = RouterOutputs['organizer']['payments'];
 type Method = 'cash' | 'bank_transfer' | 'd17';
-
-const paymentTone: Record<string, string> = {
-  paid: 'bg-cat-outdoor-bg text-cat-outdoor-fg',
-  deposit: 'bg-cat-sports-bg text-cat-sports-fg',
-  pending: 'bg-highlight-soft text-highlight',
-  refunded: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-muted text-muted-foreground',
-  waitlisted: 'bg-secondary text-secondary-foreground',
-};
 
 /** Attendees, waitlist and items to review, with the organizer's actions (PRT-01..04). */
 export function ManagePanel({
@@ -84,37 +91,39 @@ export function ManagePanel({
     : booked;
 
   return (
-    <Tabs defaultValue="attendees" className="min-w-0">
-      <TabsList className="h-11 w-full justify-start overflow-x-auto sm:w-auto">
-        <TabsTrigger value="attendees" className="min-h-9 px-3">
-          {t('attendees')} ({booked.length})
+    <Tabs
+      defaultValue="attendees"
+      className="min-w-0 gap-0 rounded-2xl border border-border/70 bg-card shadow-card"
+    >
+      <TabsList
+        variant="line"
+        className="w-full gap-4 group-data-[orientation=horizontal]/tabs:h-13 data-[variant=line]:px-4 sm:data-[variant=line]:px-5"
+      >
+        <TabsTrigger value="attendees">
+          {t('attendees')}
+          <TabCount value={booked.length} />
         </TabsTrigger>
-        <TabsTrigger value="payments" className="min-h-9 gap-1.5 px-3" data-testid="tab-payments">
+        <TabsTrigger value="payments" data-testid="tab-payments">
           {tPayments('title')}
-          <span
-            className={cn(
-              'ltr-nums rounded-full px-1.5 text-xs',
-              inbox.toVerify.length > 0 ? 'bg-highlight text-white' : 'bg-muted',
-            )}
-          >
-            {openPayments}
-          </span>
+          <TabCount value={openPayments} alert={inbox.toVerify.length > 0} />
         </TabsTrigger>
-        <TabsTrigger value="waitlist" className="min-h-9 px-3">
-          {t('waitlist')} ({waitlist.length})
+        <TabsTrigger value="waitlist">
+          {t('waitlist')}
+          <TabCount value={waitlist.length} />
         </TabsTrigger>
         {refunds.length > 0 ? (
-          <TabsTrigger value="refunds" className="min-h-9 px-3">
-            {t('refunds')} ({refunds.length})
+          <TabsTrigger value="refunds">
+            {t('refunds')}
+            <TabCount value={refunds.length} alert />
           </TabsTrigger>
         ) : null}
       </TabsList>
 
-      <TabsContent value="attendees" className="mt-4 space-y-3">
+      <TabsContent value="attendees" className="space-y-4 p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-56 flex-1">
             <Search
-              className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
             />
             <Input
@@ -123,7 +132,7 @@ export function ManagePanel({
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('search')}
               aria-label={t('search')}
-              className="h-11 ps-9"
+              className="ps-10"
             />
           </div>
           {!locked && tickets.length > 0 ? (
@@ -131,40 +140,47 @@ export function ManagePanel({
           ) : null}
         </div>
         {booked.length === 0 ? (
-          <EmptyState title={t('noAttendees')} hint={t('noAttendeesHint')} />
+          <EmptyState
+            size="compact"
+            icon={Ticket}
+            title={t('noAttendees')}
+            hint={t('noAttendeesHint')}
+          />
         ) : (
           <AttendeeList attendees={visible} questions={questions} locked={locked} inbox={inbox} />
         )}
       </TabsContent>
 
-      <TabsContent value="waitlist" className="mt-4">
+      <TabsContent value="waitlist" className="p-4 sm:p-5">
         {waitlist.length === 0 ? (
-          <p className="text-sm text-muted-foreground">–</p>
+          <EmptyState size="compact" icon={Hourglass} title={t('noWaitlist')} />
         ) : (
           <ol className="space-y-2">
             {waitlist.map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3 text-sm"
+                className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-3 text-sm shadow-xs"
               >
-                <span>
-                  <span className="ltr-nums me-2 font-semibold">
-                    {t('position', { position: a.waitlistPosition ?? 0 })}
-                  </span>
+                <span className="ltr-nums flex size-9 shrink-0 items-center justify-center rounded-full bg-info-soft text-xs font-bold text-info">
+                  {t('position', { position: a.waitlistPosition ?? 0 })}
+                </span>
+                <span className="min-w-0 flex-1 truncate font-medium" dir="auto">
                   {a.fullName}
                 </span>
-                <span className="ltr-nums text-muted-foreground">{a.phone}</span>
+                <span className="ltr-nums text-muted-foreground" dir="ltr">
+                  {a.phone}
+                </span>
               </li>
             ))}
           </ol>
         )}
       </TabsContent>
 
-      <TabsContent value="payments" className="mt-4">
+      <TabsContent value="payments" className="p-4 sm:p-5">
         <PaymentsInbox inbox={inbox} showEvent={false} />
       </TabsContent>
 
-      <TabsContent value="refunds" className="mt-4">
+      <TabsContent value="refunds" className="p-4 sm:p-5">
         <ul className="space-y-3">
           {refunds.map((a) => (
             <RefundItem key={a.orderId} eventId={eventId} attendee={a} />
@@ -175,7 +191,23 @@ export function ManagePanel({
   );
 }
 
-/** Cards on phones, a dense list on desktop; order-level actions on the first person of each order. */
+/** A count next to a tab label; `alert` when something waits for the organizer. */
+function TabCount({ value, alert = false }: { value: number; alert?: boolean }) {
+  return (
+    <span
+      className={cn(
+        'ltr-nums min-w-5 rounded-full px-1.5 text-xs leading-5 font-semibold',
+        alert && value > 0
+          ? 'bg-highlight text-highlight-foreground'
+          : 'bg-muted text-muted-foreground',
+      )}
+    >
+      {value}
+    </span>
+  );
+}
+
+/** One card per person; order-level actions on the first person of each order. */
 function AttendeeList({
   attendees,
   questions,
@@ -194,66 +226,91 @@ function AttendeeList({
   const seen = new Set<string>();
 
   return (
-    <ul
-      className="divide-y divide-border rounded-xl border border-border bg-card"
-      data-testid="attendee-list"
-    >
+    <ul className="space-y-3" data-testid="attendee-list">
       {attendees.map((a) => {
         const firstOfOrder = !seen.has(a.orderId);
         seen.add(a.orderId);
         const due = a.totalMillimes - a.paidMillimes;
+        const contact = a.phone ?? a.email;
         return (
           <li
             key={a.id}
-            className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
+            className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-xs sm:flex-row sm:items-start"
             data-testid="attendee-row"
           >
-            <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-2 font-medium">
-                {a.checkedInAt ? (
-                  <CheckCircle2
-                    className="size-4 shrink-0 text-success"
-                    aria-label={t('columns.checkIn')}
-                  />
-                ) : null}
-                <span className="truncate">{a.fullName}</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                <span className="ltr-nums">{a.phone ?? a.email ?? ''}</span>
-                {a.ticketName ? ` · ${a.ticketName}` : ''}
-                {a.meetingPoint ? ` · ${a.meetingPoint}` : ''}
-                {' · '}
-                <span className="ltr-nums">{a.reference}</span>
-                {a.utmSource ? ` · ${a.utmSource}` : ''}
-                {a.checkedInAt ? ` · ${formatTime(a.checkedInAt, locale)}` : ''}
-              </p>
-              {a.paymentDeadline ? (
-                <p className="text-xs font-medium text-highlight">
-                  {tPayments('reservedUntil', {
-                    time: formatEventDateTime(a.paymentDeadline, locale),
-                  })}
-                </p>
-              ) : null}
-              {Object.keys(a.answers).length > 0 ? (
-                <p className="mt-1 text-xs">
-                  {Object.entries(a.answers)
-                    .map(([id, answer]) => `${questions[id] ?? id}: ${String(answer)}`)
-                    .join(' · ')}
-                </p>
-              ) : null}
-              <NoteEditor attendeeId={a.id} initial={a.notes} disabled={locked} />
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div className="flex min-w-0 flex-1 gap-3">
               <span
                 className={cn(
-                  'rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                  paymentTone[a.payment],
+                  'relative flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                  a.checkedInAt ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary',
                 )}
+                aria-hidden="true"
+              >
+                {initials(a.fullName)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-2 font-semibold">
+                  <span className="truncate" dir="auto">
+                    {a.fullName}
+                  </span>
+                  {a.checkedInAt ? (
+                    <CheckCircle2
+                      className="size-4 shrink-0 text-success"
+                      aria-label={t('columns.checkIn')}
+                    />
+                  ) : null}
+                </p>
+                <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                  {contact ? (
+                    <p className="flex items-center gap-1.5">
+                      {a.phone ? (
+                        <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                      ) : (
+                        <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                      )}
+                      <span className="ltr-nums truncate" dir="ltr">
+                        {contact}
+                      </span>
+                    </p>
+                  ) : null}
+                  <p className="flex flex-wrap items-center gap-x-1.5">
+                    <Ticket className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="ltr-nums font-mono">{a.reference}</span>
+                    {a.ticketName ? <span>· {a.ticketName}</span> : null}
+                    {a.meetingPoint ? <span>· {a.meetingPoint}</span> : null}
+                    {a.utmSource ? <span>· {a.utmSource}</span> : null}
+                    {a.checkedInAt ? (
+                      <span className="ltr-nums">· {formatTime(a.checkedInAt, locale)}</span>
+                    ) : null}
+                  </p>
+                </div>
+                {a.paymentDeadline ? (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-warning">
+                    <Clock className="size-3.5 shrink-0" aria-hidden="true" />
+                    {tPayments('reservedUntil', {
+                      time: formatEventDateTime(a.paymentDeadline, locale),
+                    })}
+                  </p>
+                ) : null}
+                {Object.keys(a.answers).length > 0 ? (
+                  <p className="mt-2 rounded-xl bg-muted/60 px-3 py-2 text-xs">
+                    {Object.entries(a.answers)
+                      .map(([id, answer]) => `${questions[id] ?? id}: ${String(answer)}`)
+                      .join(' · ')}
+                  </p>
+                ) : null}
+                <NoteEditor attendeeId={a.id} initial={a.notes} disabled={locked} />
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 ps-14 sm:flex-col sm:items-end sm:ps-0">
+              <Badge
+                variant={toneOf(a.payment)}
+                dot
                 data-testid="attendee-payment"
                 data-payment={a.payment}
               >
                 {tTickets(`payment.${a.payment}`)}
-              </span>
+              </Badge>
               {firstOfOrder &&
               due > 0 &&
               (a.payment === 'pending' || a.payment === 'deposit') &&
@@ -292,12 +349,7 @@ function OrderPaymentAction({
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <Button
-            type="button"
-            size="sm"
-            className="min-h-11 rounded-full"
-            data-testid="verify-receipt"
-          >
+          <Button type="button" data-testid="verify-receipt">
             <FileSearch aria-hidden="true" />
             {t('verifyReceipt')}
           </Button>
@@ -311,7 +363,7 @@ function OrderPaymentAction({
     );
   }
   const method = inbox.awaiting.find((item) => item.orderId === orderId)?.method ?? 'cash';
-  return <MarkPaidDialog orderId={orderId} method={method} amount={amount} compact />;
+  return <MarkPaidDialog orderId={orderId} method={method} amount={amount} />;
 }
 
 function NoteEditor({
@@ -336,10 +388,10 @@ function NoteEditor({
         type="button"
         onClick={() => setOpen(true)}
         disabled={disabled}
-        className="mt-1 flex min-h-8 items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        className="mt-2 flex min-h-8 max-w-full items-center gap-1.5 rounded-lg text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-55"
       >
-        <StickyNote className="size-3.5" aria-hidden="true" />
-        {value || t('note')}
+        <StickyNote className="size-3.5 shrink-0" aria-hidden="true" />
+        <span className="truncate">{value || t('note')}</span>
       </button>
     );
   }
@@ -359,10 +411,9 @@ function NoteEditor({
         onChange={(e) => setValue(e.target.value)}
         maxLength={500}
         aria-label={t('note')}
-        className="h-11"
         autoFocus
       />
-      <Button type="submit" size="sm" className="min-h-11" disabled={setNote.isPending}>
+      <Button type="submit" disabled={setNote.isPending}>
         {t('save')}
       </Button>
       {saved ? (
@@ -394,17 +445,23 @@ function RefundItem({ eventId, attendee }: { eventId: string; attendee: Attendee
   }
 
   return (
-    <li className="space-y-3 rounded-xl border border-border bg-card p-4">
-      <p className="font-medium">
-        {attendee.fullName} ·{' '}
-        <span className="ltr-nums text-sm text-muted-foreground">{attendee.reference}</span>
+    <li className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+      <p className="flex flex-wrap items-center gap-x-2 font-semibold">
+        <span dir="auto">{attendee.fullName}</span>
+        <span className="ltr-nums font-mono text-sm font-normal text-muted-foreground">
+          {attendee.reference}
+        </span>
       </p>
       {attendee.refundRequests.map((refund) => (
-        <div key={refund.id} className="flex flex-wrap items-center gap-2 text-sm">
-          <span>{t('refundRequest', { amount: formatPrice(refund.amountMillimes, locale) })}</span>
+        <div
+          key={refund.id}
+          className="flex flex-wrap items-center gap-2 rounded-xl bg-warning-soft/60 p-3 text-sm"
+        >
+          <span className="flex flex-1 items-center gap-2 font-medium text-warning">
+            <Undo2 className="size-4 shrink-0" aria-hidden="true" />
+            {t('refundRequest', { amount: formatPrice(refund.amountMillimes, locale) })}
+          </span>
           <Button
-            size="sm"
-            className="min-h-11"
             disabled={decideRefund.isPending}
             onClick={() =>
               void run(() =>
@@ -415,9 +472,7 @@ function RefundItem({ eventId, attendee }: { eventId: string; attendee: Attendee
             {t('approve')}
           </Button>
           <Button
-            size="sm"
             variant="outline"
-            className="min-h-11"
             disabled={decideRefund.isPending}
             onClick={() =>
               void run(() =>
@@ -430,7 +485,11 @@ function RefundItem({ eventId, attendee }: { eventId: string; attendee: Attendee
         </div>
       ))}
       {error ? (
-        <p role="alert" className="text-sm text-highlight">
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       ) : null}
@@ -486,7 +545,7 @@ function AddAttendee({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="min-h-11 rounded-full">
+        <Button type="button" variant="outline">
           <Plus aria-hidden="true" />
           {t('addAttendee')}
         </Button>
@@ -503,7 +562,6 @@ function AddAttendee({
               required
               minLength={2}
               maxLength={120}
-              className="h-11"
             />
           </Field>
           <Field id="add-phone" label={tCheckout('phone')}>
@@ -514,7 +572,6 @@ function AddAttendee({
               dir="ltr"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="h-11"
             />
           </Field>
           <div className="grid grid-cols-[2fr_1fr] gap-3">
@@ -540,7 +597,6 @@ function AddAttendee({
                 max={10}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="h-11"
               />
             </Field>
           </div>
@@ -568,11 +624,15 @@ function AddAttendee({
             </Field>
           ) : null}
           {error ? (
-            <p role="alert" className="text-sm text-highlight">
+            <p
+              role="alert"
+              className="flex items-start gap-2 rounded-2xl bg-destructive-soft px-4 py-3 text-sm text-destructive"
+            >
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               {error}
             </p>
           ) : null}
-          <Button type="submit" className="min-h-11 w-full rounded-full" disabled={add.isPending}>
+          <Button type="submit" className="w-full" disabled={add.isPending}>
             {t('add')}
           </Button>
         </form>

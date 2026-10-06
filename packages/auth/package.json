@@ -14,6 +14,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@better-auth/expo": "catalog:",
     "@doulisha/db": "workspace:*",
     "@doulisha/notifications": "workspace:*",
     "better-auth": "catalog:",

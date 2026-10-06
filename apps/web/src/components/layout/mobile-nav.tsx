@@ -9,49 +9,83 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 
-import { CountBadge } from './count-badge';
+import { MenuLink, type NavLink } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
 
-/** Menu sheet for small screens. It slides in from the reading-start side. */
-export function MobileNav({ links }: { links: { href: string; label: string; badge?: number }[] }) {
+/**
+ * Menu sheet for small screens, sliding in from the reading-start side:
+ * main links, then the member's spaces, then theme; visitors get sign-in and
+ * sign-up at the bottom.
+ */
+export function MobileNav({
+  links,
+  spaces,
+  signedOut,
+}: {
+  links: NavLink[];
+  spaces: NavLink[];
+  signedOut: boolean;
+}) {
   const t = useTranslations('Nav');
   const rtl = useLocale() === 'ar';
   const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-11 md:hidden"
-          aria-label={t('openMenu')}
-        >
+        <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t('openMenu')}>
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side={rtl ? 'right' : 'left'} className="w-72">
-        <SheetHeader>
+      <SheetContent side={rtl ? 'right' : 'left'} className="w-[min(20rem,86vw)] gap-0 p-0">
+        <SheetHeader className="border-b border-border/70 px-5 py-4">
           <SheetTitle>
             <Logo />
           </SheetTitle>
         </SheetHeader>
-        <nav aria-label={t('mainNavigation')} className="flex flex-col gap-1 px-4">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center gap-2 rounded-lg px-3 font-medium hover:bg-accent"
-            >
-              {link.label}
-              <CountBadge count={link.badge} />
-            </Link>
-          ))}
-          <div className="mt-2 flex items-center gap-2 border-t border-border px-3 pt-3 text-sm">
-            <ThemeToggle />
-            {t('theme')}
-          </div>
+        <nav aria-label={t('mainNavigation')} className="flex-1 overflow-y-auto px-3 py-4">
+          <ul className="space-y-1">
+            {links.map((link) => (
+              <li key={link.href}>
+                <MenuLink link={link} onNavigate={close} />
+              </li>
+            ))}
+          </ul>
+          {spaces.length > 0 ? (
+            <>
+              <p className="mt-6 mb-2 px-3 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                {t('mySpace')}
+              </p>
+              <ul className="space-y-1">
+                {spaces.map((link) => (
+                  <li key={link.href}>
+                    <MenuLink link={link} onNavigate={close} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </nav>
+        <div className="space-y-3 border-t border-border/70 px-5 py-4">
+          <div className="flex items-center justify-between text-sm font-medium">
+            {t('theme')}
+            <ThemeToggle />
+          </div>
+          {signedOut ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Button asChild variant="outline">
+                <Link href="/sign-in" onClick={close}>
+                  {t('signIn')}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up" onClick={close}>
+                  {t('signUp')}
+                </Link>
+              </Button>
+            </div>
+          ) : null}
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -1,10 +1,11 @@
 import { formatEventDateTime } from '@doulisha/i18n';
-import { PartyPopper } from 'lucide-react';
+import { CalendarDays, PartyPopper } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
 import { GroupChatButton } from '@/components/doulisha/chat';
 import { EmptyState } from '@/components/doulisha/empty-state';
+import { PageHeader } from '@/components/doulisha/page';
 import { Button } from '@/components/ui/button';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
@@ -20,39 +21,42 @@ export default async function HostPage({ params }: PageProps<'/[locale]/host'>) 
   const events = await (await api()).invitations.hosted();
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold">{t('myEvents')}</h1>
-        <Button asChild className="min-h-11 rounded-full">
-          <Link href="/host/new" data-testid="host-new">
-            <PartyPopper aria-hidden="true" />
-            {t('newTitle')}
-          </Link>
-        </Button>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title={t('myEvents')}
+        description={t('newHint')}
+        actions={
+          <Button asChild>
+            <Link href="/host/new" data-testid="host-new">
+              <PartyPopper aria-hidden="true" />
+              {t('newTitle')}
+            </Link>
+          </Button>
+        }
+      />
       {events.length === 0 ? (
-        <EmptyState title={t('noEvents')} hint={t('newHint')} />
+        <EmptyState icon={PartyPopper} title={t('noEvents')} hint={t('newHint')} />
       ) : (
         <ul className="space-y-3">
           {events.map((event) => (
             <li
               key={event.id}
-              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center"
+              className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:flex-row sm:items-center"
             >
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-highlight-soft">
                   {event.coverUrl ? (
                     <Image src={event.coverUrl} alt="" fill sizes="64px" className="object-cover" />
                   ) : (
-                    <PartyPopper
-                      className="m-auto mt-5 size-6 text-muted-foreground"
-                      aria-hidden="true"
-                    />
+                    <PartyPopper className="size-6 text-highlight" aria-hidden="true" />
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-semibold">{event.title}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="truncate font-semibold" dir="auto">
+                    {event.title}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
                     {formatEventDateTime(event.startsAt, locale)}
                   </p>
                 </div>

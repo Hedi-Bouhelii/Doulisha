@@ -1,4 +1,4 @@
-import type { Auth } from '@doulisha/auth';
+import type { Auth, AuthSession } from '@doulisha/auth';
 import { getUserRoles } from '@doulisha/auth';
 import type { HttpDb } from '@doulisha/db';
 import { defaultLocale, isLocale, type Locale } from '@doulisha/i18n';
@@ -19,8 +19,27 @@ function readLocale(headers: Headers): Locale {
   return isLocale(value) ? value : defaultLocale;
 }
 
+/**
+ * Named explicitly so the router declarations refer to it instead of
+ * repeating the whole Better Auth and Drizzle types (ADR 0024).
+ */
+export interface Context {
+  db: HttpDb;
+  auth: Auth;
+  session: AuthSession | null;
+  actor: Actor | null;
+  locale: Locale;
+  deps: ServiceDeps;
+  headers: Headers;
+}
+
 /** Built once per request: database, session, roles and locale. */
-export async function createContext({ db, auth, headers, deps }: CreateContextOptions) {
+export async function createContext({
+  db,
+  auth,
+  headers,
+  deps,
+}: CreateContextOptions): Promise<Context> {
   const session = await auth.api.getSession({ headers });
   const actor: Actor | null = session
     ? {
@@ -31,5 +50,3 @@ export async function createContext({ db, auth, headers, deps }: CreateContextOp
     : null;
   return { db, auth, session, actor, locale: readLocale(headers), deps, headers };
 }
-
-export type Context = Awaited<ReturnType<typeof createContext>>;

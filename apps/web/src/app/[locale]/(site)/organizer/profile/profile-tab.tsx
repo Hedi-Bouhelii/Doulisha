@@ -1,6 +1,6 @@
 'use client';
 
-import { ExternalLink, Pencil } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ExternalLink, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -27,33 +27,37 @@ export function ProfileTab({
 
   if (editing) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold">{t('editTitle')}</h1>
+      <div className="space-y-6">
+        <Button
+          type="button"
+          variant="ghost"
+          className="-ms-3 text-muted-foreground"
+          onClick={() => setEditing(false)}
+        >
+          <ArrowLeft className="rtl:rotate-180" aria-hidden="true" />
+          {t('backToPreview')}
+        </Button>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          {t('editTitle')}
+        </h1>
         <OrganizerProfileEditor
           profile={profile}
           categories={categories}
           mode="edit"
           onDone={() => setEditing(false)}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          className="min-h-11"
-          onClick={() => setEditing(false)}
-        >
-          {t('backToPreview')}
-        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {missingPayment ? (
         <p
           role="status"
-          className="rounded-lg border border-highlight/30 bg-highlight-soft p-3 text-sm text-highlight"
+          className="flex items-start gap-3 rounded-2xl border border-warning/20 bg-warning-soft px-4 py-3 text-sm font-medium text-warning"
         >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {t('missingPayment')}
         </p>
       ) : null}
@@ -65,16 +69,11 @@ export function ProfileTab({
         }}
         actions={
           <>
-            <Button
-              type="button"
-              className="min-h-11 rounded-full"
-              onClick={() => setEditing(true)}
-              data-testid="edit-profile"
-            >
+            <Button type="button" onClick={() => setEditing(true)} data-testid="edit-profile">
               <Pencil aria-hidden="true" />
               {t('edit')}
             </Button>
-            <Button asChild variant="outline" className="min-h-11 rounded-full">
+            <Button asChild variant="outline">
               <Link href={`/organizers/${profile.slug}`}>
                 <ExternalLink aria-hidden="true" />
                 {t('publicPage')}

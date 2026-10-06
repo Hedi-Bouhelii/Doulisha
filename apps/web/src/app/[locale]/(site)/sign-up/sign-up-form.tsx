@@ -116,7 +116,7 @@ export function SignUpForm({
         <FormError message={error} />
         <Button
           type="submit"
-          className="h-11 w-full rounded-full"
+          className="w-full"
           disabled={busy || code.length < 6}
           data-testid="verify-code"
         >
@@ -125,14 +125,14 @@ export function SignUpForm({
         <div className="flex justify-between gap-2 text-sm">
           <button
             type="button"
-            className="min-h-11 text-primary hover:underline"
+            className="min-h-11 font-medium text-primary underline-offset-4 hover:underline"
             onClick={() => setSentTo(null)}
           >
             {t('changeNumber')}
           </button>
           <button
             type="button"
-            className="min-h-11 text-primary hover:underline"
+            className="min-h-11 font-medium text-primary underline-offset-4 hover:underline"
             onClick={() => void sendCode()}
             disabled={busy}
           >
@@ -160,12 +160,7 @@ export function SignUpForm({
       />
       <IdentifierField method={method} value={identifier} onChange={setIdentifier} />
       <FormError message={error} />
-      <Button
-        type="submit"
-        className="h-11 w-full rounded-full"
-        disabled={busy}
-        data-testid="send-code"
-      >
+      <Button type="submit" className="w-full" disabled={busy} data-testid="send-code">
         {t('sendCode')}
       </Button>
       <p className="text-center text-xs text-muted-foreground">{t('codeExplainer')}</p>

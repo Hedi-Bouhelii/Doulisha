@@ -1,6 +1,12 @@
-import { categoryAccents, motion, radii, themes, type ThemeColors } from './tokens';
+import { categoryAccents, elevations, motion, radii, themes, type ThemeColors } from './tokens';
 
 const kebab = (value: string) => value.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+function elevationVariables(values: Record<string, string>, indent: string): string {
+  return Object.entries(values)
+    .map(([name, value]) => `${indent}--elevation-${name}: ${value};`)
+    .join('\n');
+}
 
 function themeVariables(theme: ThemeColors, indent: string): string {
   return Object.entries(theme)
@@ -26,7 +32,8 @@ export function generateTokensCss(): string {
 :root {
 ${themeVariables(themes.light, '  ')}
 ${categoryVars.join('\n')}
-  --radius: ${radii.lg};
+${elevationVariables(elevations.light, '  ')}
+  --radius: ${radii.xl};
   --duration-fast: ${motion.fast};
   --duration-base: ${motion.base};
   --duration-slow: ${motion.slow};
@@ -36,6 +43,7 @@ ${categoryVars.join('\n')}
 
 .dark {
 ${themeVariables(themes.dark, '  ')}
+${elevationVariables(elevations.dark, '  ')}
   color-scheme: dark;
 }
 
@@ -52,6 +60,11 @@ ${Object.keys(categoryAccents)
   --radius-md: ${radii.md};
   --radius-lg: ${radii.lg};
   --radius-xl: ${radii.xl};
+  --radius-2xl: ${radii['2xl']};
+  --radius-3xl: ${radii['3xl']};
+${Object.keys(elevations.light)
+  .map((name) => `  --shadow-${name}: var(--elevation-${name});`)
+  .join('\n')}
 }
 `;
 }
