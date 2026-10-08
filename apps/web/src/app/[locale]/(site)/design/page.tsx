@@ -31,6 +31,7 @@ const sampleEvent: EventCardDto = {
   slug: 'randonnee-foret-ain-draham',
   title: 'Randonnée en forêt à Aïn Draham',
   coverUrl: '/images/events/ain-draham-hike.webp',
+  coverMedia: null,
   startsAt: new Date('2026-10-03T06:00:00Z'),
   city: 'Aïn Draham',
   venueName: 'Forêt de Kroumirie',

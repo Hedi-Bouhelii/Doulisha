@@ -8,7 +8,6 @@ import {
   mediaPublicId,
   mediaPublicIdBelongsTo,
   mediaUploadPolicies,
-  type MediaRef,
   type MediaUploadAnswer,
   type MediaUploadKind,
 } from '@doulisha/storage';
@@ -19,7 +18,10 @@ import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { loadManagedEvent } from './event-editor';
 import { loadOwnProfile } from './organizers';
+import { toMediaRef, type MediaRow } from './media-refs';
 import { getOwnOrder } from './payments';
+
+export { toMediaRef, type MediaRow } from './media-refs';
 
 type MediaDeps = Pick<ServiceDeps, 'media'>;
 
@@ -86,21 +88,6 @@ export async function signMediaUpload(
     maxBytes: MEDIA_MAX_BYTES,
     now,
   });
-}
-
-export type MediaRow = typeof schema.media.$inferSelect;
-
-/** What delivery needs from a media row (never a URL, spec 2.3 step 4). */
-export function toMediaRef(row: MediaRow): MediaRef {
-  return {
-    provider: row.provider,
-    key: row.key,
-    version: row.version,
-    format: row.format ?? 'jpg',
-    width: row.width ?? 0,
-    height: row.height ?? 0,
-    crop: row.crop ?? null,
-  };
 }
 
 /**

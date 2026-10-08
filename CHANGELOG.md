@@ -4,6 +4,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: uploaded images shown at the right size, Cloudinary only (MED-03, 2026-10-08)
+
+- Pages that show an event cover, an organizer logo, cover or photo use `MediaImage`: a plain `<img>` with Cloudinary sizes for its slot (spec 2.5), so these images never go through `/_next/image` again (Q5). Older uploads and demo covers keep `next/image`.
+- **Event page:** the cover is a 16:9 block (at most 1,104 px wide) with the category, title, date and place under it, instead of text over a full-width photo that stretched on phones and hid the bottom of posters (Q31).
+- The API returns `coverMedia` (events, tickets, invitations, the organizer's lists) and `logoMedia` / `coverMedia` (organizer pages) next to the old URLs; JSON-LD and the organizer page's Open Graph image use the media when there is one.
+
 ### Added: signed direct uploads (MED-02, 2026-10-08)
 
 - `media.sign` returns signed parameters to send the original file straight to Cloudinary (spec 2.3): no upload preset, no transformation, 10 MB, JPEG, PNG, WebP and HEIC (PDF for payment proofs, stored as authenticated files). It checks that the member may edit the event or profile, or owns the booking.

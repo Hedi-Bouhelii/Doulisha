@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { cache, type ReactNode } from 'react';
 
@@ -25,6 +24,7 @@ import { EmptyState } from '@/components/doulisha/empty-state';
 import { FriendsGoing } from '@/components/doulisha/friends-going';
 import { AskOrganizerButton } from '@/components/doulisha/chat';
 import { EventWall } from '@/components/doulisha/event-wall';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { OrganizerCard } from '@/components/doulisha/organizer-card';
 import { PlacesLeft } from '@/components/doulisha/places-left';
 import { PriceTag } from '@/components/doulisha/price-tag';
@@ -34,7 +34,8 @@ import { StickyCTA } from '@/components/doulisha/sticky-cta';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from '@/i18n/navigation';
-import { absoluteUrl, jsonLdScript, siteUrl } from '@/lib/site';
+import { externalImageUrl } from '@/lib/media';
+import { absoluteUrl, jsonLdScript } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
@@ -82,6 +83,7 @@ export async function generateMetadata({
 /** schema.org Event, for search results (DSC-03). Public events only. */
 function eventJsonLd(event: EventDetailDto, locale: Locale) {
   const url = absoluteUrl(`/${locale}/events/${event.slug}`);
+  const image = externalImageUrl(event.coverMedia, event.coverUrl);
   return {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -93,7 +95,7 @@ function eventJsonLd(event: EventDetailDto, locale: Locale) {
     endDate: event.endsAt?.toISOString(),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    image: event.coverUrl ? [new URL(event.coverUrl, siteUrl).toString()] : undefined,
+    image: image ? [image] : undefined,
     location: {
       '@type': 'Place',
       name: event.venueName ?? event.city ?? undefined,
@@ -153,58 +155,60 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
           dangerouslySetInnerHTML={{ __html: jsonLdScript(eventJsonLd(event, locale)) }}
         />
       ) : null}
-      {/* Immersive hero: the cover, then category, title, date and place over it. */}
-      <header className="relative isolate flex min-h-[24rem] items-end overflow-hidden bg-foreground sm:min-h-[30rem]">
-        {event.coverUrl ? (
-          <Image
-            src={event.coverUrl}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="-z-10 object-cover"
-          />
-        ) : (
-          <div
-            className={cn('absolute inset-0 -z-10 flex items-center justify-center', accent.tile)}
-          >
-            <CategoryIcon name={event.category.icon} className="size-24 opacity-40" />
-          </div>
-        )}
-        <div className="absolute inset-0 -z-10 bg-linear-to-t from-black/85 via-black/35 to-black/15" />
-        <div className="absolute inset-x-0 top-0 mx-auto flex max-w-6xl items-center justify-between px-4 pt-4 sm:px-6">
-          <Button
-            asChild
-            variant="secondary"
-            size="icon"
-            className="bg-card/90 shadow-xs backdrop-blur-sm hover:bg-card"
-          >
-            <Link href="/explore" aria-label={t('backToExplore')}>
-              <ArrowLeft className="size-5 rtl:rotate-180" />
-            </Link>
-          </Button>
-          {event.canManage ? (
+      {/*
+        The cover as uploaded, 16:9 and at most 1,104 px wide (MED slot "cover", Q31),
+        then category, title, date and place under it, so nothing hides a poster's text.
+      */}
+      <header className="mx-auto max-w-6xl sm:px-6 sm:pt-6">
+        <div className="relative isolate aspect-video overflow-hidden bg-muted sm:rounded-3xl">
+          {event.coverMedia || event.coverUrl ? (
+            <MediaImage
+              media={event.coverMedia}
+              url={event.coverUrl}
+              slot="cover"
+              sizes="(min-width: 1152px) 1104px, (min-width: 640px) calc(100vw - 3rem), 100vw"
+              priority
+              className="object-cover"
+            />
+          ) : (
+            <div className={cn('absolute inset-0 flex items-center justify-center', accent.tile)}>
+              <CategoryIcon name={event.category.icon} className="size-24 opacity-40" />
+            </div>
+          )}
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 sm:p-4">
             <Button
               asChild
               variant="secondary"
+              size="icon"
               className="bg-card/90 shadow-xs backdrop-blur-sm hover:bg-card"
             >
-              <Link href={`/organizer/events/${event.id}`} data-testid="manage-event">
-                <Settings2 className="size-4" aria-hidden="true" />
-                {t('manage')}
+              <Link href="/explore" aria-label={t('backToExplore')}>
+                <ArrowLeft className="size-5 rtl:rotate-180" />
               </Link>
             </Button>
-          ) : null}
+            {event.canManage ? (
+              <Button
+                asChild
+                variant="secondary"
+                className="bg-card/90 shadow-xs backdrop-blur-sm hover:bg-card"
+              >
+                <Link href={`/organizer/events/${event.id}`} data-testid="manage-event">
+                  <Settings2 className="size-4" aria-hidden="true" />
+                  {t('manage')}
+                </Link>
+              </Button>
+            ) : null}
+          </div>
         </div>
-        <div className="mx-auto w-full max-w-6xl px-4 pb-8 text-white sm:px-6 sm:pb-10">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-            <CategoryIcon name={event.category.icon} className="size-3.5" />
+        <div className="px-4 pt-5 sm:px-0 sm:pt-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
+            <CategoryIcon name={event.category.icon} className={cn('size-3.5', accent.icon)} />
             {event.category.name}
           </span>
-          <h1 className="mt-3 max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-3 max-w-3xl text-3xl leading-tight font-bold tracking-tight sm:text-4xl lg:text-5xl">
             {event.title}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:text-base">
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground sm:text-base">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" aria-hidden="true" />
               <time dateTime={event.startsAt.toISOString()}>

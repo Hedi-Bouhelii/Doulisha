@@ -12,6 +12,7 @@ import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { listPastPublicEvents, listUpcomingPublicEvents } from './events';
 import { followerCount, isFollowing } from './follows';
+import { loadMediaRefs, pickMedia } from './media-refs';
 import { publicUrlFromKey } from './uploads';
 
 type OrganizerInput = z.infer<typeof organizerProfileInputSchema>;
@@ -165,8 +166,16 @@ export async function ensureProfileFromAccount(db: Executor, actor: Actor) {
 export async function getOwnProfileDetail(db: Executor, actor: Actor) {
   const [profile] = await listOwnProfiles(db, actor);
   if (!profile) return null;
-  const photos = await listPhotos(db, profile.id);
-  return { ...profile, photos };
+  const [photos, media] = await Promise.all([
+    listPhotos(db, profile.id),
+    loadMediaRefs(db, [profile.logoMediaId, profile.coverMediaId]),
+  ]);
+  return {
+    ...profile,
+    logoMedia: pickMedia(media, profile.logoMediaId),
+    coverMedia: pickMedia(media, profile.coverMediaId),
+    photos,
+  };
 }
 
 async function listPhotos(db: Executor, organizerProfileId: string) {
@@ -174,14 +183,20 @@ async function listPhotos(db: Executor, organizerProfileId: string) {
     .select({
       id: schema.organizerPhotos.id,
       url: schema.organizerPhotos.url,
+      mediaId: schema.organizerPhotos.mediaId,
       caption: schema.organizerPhotos.caption,
     })
     .from(schema.organizerPhotos)
     .where(eq(schema.organizerPhotos.organizerProfileId, organizerProfileId))
     .orderBy(asc(schema.organizerPhotos.sort), asc(schema.organizerPhotos.createdAt));
-  // Photos stored as media rows (MED, ADR 0026) have no URL; they are shown
-  // once the pages render media.
-  return rows.filter((photo): photo is typeof photo & { url: string } => photo.url !== null);
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.mediaId),
+  );
+  // A photo is its MED media (ADR 0026), or the URL of an older upload.
+  return rows
+    .map(({ mediaId, ...row }) => ({ ...row, media: pickMedia(media, mediaId) }))
+    .filter((photo) => photo.media !== null || photo.url !== null);
 }
 
 /** Adds an uploaded photo of a past event to the gallery (at most 12). */
@@ -241,12 +256,13 @@ export async function getPublicProfile(
       and(eq(schema.organizerProfiles.slug, slug), isNull(schema.organizerProfiles.deletedAt)),
     );
   if (!profile) throw new AppError('NOT_FOUND', 'errors.notFound');
-  const [photos, events, pastEvents, followers, viewerFollows] = await Promise.all([
+  const [photos, events, pastEvents, followers, viewerFollows, media] = await Promise.all([
     listPhotos(db, profile.id),
     listUpcomingPublicEvents(db, locale, { limit: 12, organizerProfileId: profile.id }),
     listPastPublicEvents(db, locale, { organizerProfileId: profile.id, limit: 12 }),
     followerCount(db, profile.id),
     isFollowing(db, actor, profile.id),
+    loadMediaRefs(db, [profile.logoMediaId, profile.coverMediaId]),
   ]);
   return {
     id: profile.id,
@@ -254,7 +270,9 @@ export async function getPublicProfile(
     name: profile.name,
     bio: profile.bio,
     logoUrl: profile.logoUrl,
+    logoMedia: pickMedia(media, profile.logoMediaId),
     coverUrl: profile.coverUrl,
+    coverMedia: pickMedia(media, profile.coverMediaId),
     categories: profile.categories,
     regions: profile.regions,
     socialLinks: profile.socialLinks,

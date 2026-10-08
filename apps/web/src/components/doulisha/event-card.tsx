@@ -2,12 +2,12 @@ import type { EventCardDto } from '@doulisha/api';
 import { formatEventDateTime, type Locale } from '@doulisha/i18n';
 import { CalendarDays, MapPin, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import Image from 'next/image';
 
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 import { accentOf, CategoryIcon } from './category-icon';
+import { MediaImage } from './media-image';
 import { PriceTag } from './price-tag';
 
 /**
@@ -40,11 +40,11 @@ export function EventCard({
       )}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        {event.coverUrl ? (
-          <Image
-            src={event.coverUrl}
-            alt=""
-            fill
+        {event.coverMedia || event.coverUrl ? (
+          <MediaImage
+            media={event.coverMedia}
+            url={event.coverUrl}
+            slot="card"
             priority={priority}
             sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 90vw"
             className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"

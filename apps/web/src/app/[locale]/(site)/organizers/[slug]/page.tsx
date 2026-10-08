@@ -11,6 +11,7 @@ import { ReportButton } from '@/components/doulisha/safety';
 import { resolveLocale } from '@/i18n/locale';
 import { getSession } from '@/server/auth';
 import { api } from '@/trpc/server';
+import { externalImageUrl } from '@/lib/media';
 
 const loadOrganizer = cache(async (slug: string) => {
   try {
@@ -27,11 +28,12 @@ export async function generateMetadata({
   const locale = await resolveLocale(params);
   const { slug } = await params;
   const organizer = await loadOrganizer(slug);
+  const ogImage = externalImageUrl(organizer.coverMedia, organizer.coverUrl);
   return {
     title: organizer.name,
     description: organizer.bio?.slice(0, 160),
     alternates: { canonical: `/${locale}/organizers/${slug}` },
-    openGraph: organizer.coverUrl ? { images: [organizer.coverUrl] } : undefined,
+    openGraph: ogImage ? { images: [ogImage] } : undefined,
   };
 }
 

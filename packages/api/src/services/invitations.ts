@@ -14,6 +14,7 @@ import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { loadManagedEvent } from './event-editor';
 import { coverUrlFromKey } from './uploads';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** Unguessable token for invitation links (INV-02). */
 export function invitationToken() {
@@ -157,11 +158,13 @@ export async function getInvitation(db: Executor, actor: Actor | null, token: st
     if (g.status === 'not_going') counts.notGoing += 1;
   }
   const showAddress = !event.locationHiddenUntilBooking || isHost || mine?.status === 'going';
+  const media = await loadMediaRefs(db, [event.coverMediaId]);
   return {
     eventId: event.id,
     title: event.title,
     description: event.description,
     coverUrl: event.coverUrl,
+    coverMedia: pickMedia(media, event.coverMediaId),
     startsAt: event.startsAt,
     venueName: showAddress ? event.venueName : null,
     address: showAddress ? event.address : null,
@@ -233,13 +236,14 @@ export async function respondToInvitation(
 
 /** The host's private events with their invitation link token. */
 export async function listHostedPrivateEvents(db: Executor, actor: Actor) {
-  return db
+  const rows = await db
     .select({
       id: schema.events.id,
       title: schema.events.title,
       startsAt: schema.events.startsAt,
       status: schema.events.status,
       coverUrl: schema.events.coverUrl,
+      coverMediaId: schema.events.coverMediaId,
       token: schema.invitations.token,
     })
     .from(schema.events)
@@ -249,4 +253,12 @@ export async function listHostedPrivateEvents(db: Executor, actor: Actor) {
     )
     .where(and(eq(schema.events.creatorId, actor.userId), eq(schema.events.visibility, 'private')))
     .orderBy(asc(schema.events.startsAt));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.coverMediaId),
+  );
+  return rows.map(({ coverMediaId, ...row }) => ({
+    ...row,
+    coverMedia: pickMedia(media, coverMediaId),
+  }));
 }

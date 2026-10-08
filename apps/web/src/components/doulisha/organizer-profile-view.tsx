@@ -1,9 +1,10 @@
+import type { MediaRef } from '@doulisha/storage/delivery';
 import { BadgeCheck, Mail, MapPin, Phone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 
 import { initials } from './friends-going';
+import { MediaImage } from './media-image';
 import { socialNetworks } from './social-icons';
 
 export interface OrganizerProfileData {
@@ -11,6 +12,9 @@ export interface OrganizerProfileData {
   bio: string | null;
   logoUrl: string | null;
   coverUrl: string | null;
+  /** MED images (ADR 0026), shown instead of the URLs when set. */
+  logoMedia?: MediaRef | null;
+  coverMedia?: MediaRef | null;
   /** Category names, already localized. */
   categories: string[];
   regions: string[];
@@ -19,7 +23,7 @@ export interface OrganizerProfileData {
   contactEmail: string | null;
   legalStatus: 'association' | 'company' | 'independent';
   verified: boolean;
-  photos: { id: string; url: string; caption: string | null }[];
+  photos: { id: string; url: string | null; media?: MediaRef | null; caption: string | null }[];
 }
 
 /**
@@ -45,11 +49,11 @@ export function OrganizerProfileView({
   return (
     <article className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-card">
       <div className="relative aspect-[5/2] max-h-80 w-full bg-secondary sm:aspect-[7/2]">
-        {profile.coverUrl ? (
-          <Image
-            src={profile.coverUrl}
-            alt=""
-            fill
+        {profile.coverMedia || profile.coverUrl ? (
+          <MediaImage
+            media={profile.coverMedia}
+            url={profile.coverUrl}
+            slot="banner"
             sizes="(min-width: 1024px) 1024px, 100vw"
             className="object-cover"
             priority
@@ -63,8 +67,14 @@ export function OrganizerProfileView({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex items-end gap-3">
             <div className="relative -mt-10 size-20 shrink-0 overflow-hidden rounded-3xl border-4 border-card bg-muted shadow-raised sm:-mt-14 sm:size-28">
-              {profile.logoUrl ? (
-                <Image src={profile.logoUrl} alt="" fill sizes="96px" className="object-cover" />
+              {profile.logoMedia || profile.logoUrl ? (
+                <MediaImage
+                  media={profile.logoMedia}
+                  url={profile.logoUrl}
+                  slot="logo"
+                  sizes="(min-width: 640px) 112px, 80px"
+                  className="object-cover"
+                />
               ) : (
                 <span className="flex size-full items-center justify-center text-2xl font-bold text-primary">
                   {initials(profile.name)}
@@ -129,10 +139,11 @@ export function OrganizerProfileView({
                       key={photo.id}
                       className="group relative aspect-square overflow-hidden rounded-2xl bg-muted"
                     >
-                      <Image
-                        src={photo.url}
+                      <MediaImage
+                        media={photo.media}
+                        url={photo.url}
+                        slot="thumb"
                         alt={photo.caption ?? ''}
-                        fill
                         sizes="(min-width: 640px) 33vw, 50vw"
                         className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                       />

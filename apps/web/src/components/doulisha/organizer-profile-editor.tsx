@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 import type { RouterOutputs } from '@/trpc/types';
 
+import { MediaImage } from './media-image';
 import { socialNetworks } from './social-icons';
 
 type Profile = NonNullable<RouterOutputs['organizer']['myProfile']>;
@@ -556,7 +557,7 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
       for (const file of Array.from(files).slice(0, max - items.length)) {
         const done = await upload('organizer-photo', file);
         const photo = await add.mutateAsync({ profileId, key: done.key });
-        setItems((list) => [...list, { id: photo.id, url: photo.url, caption: null }]);
+        setItems((list) => [...list, { id: photo.id, url: photo.url, media: null, caption: null }]);
       }
       router.refresh();
     } catch (e) {
@@ -592,7 +593,13 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
             key={photo.id}
             className="group relative aspect-square overflow-hidden rounded-xl bg-muted"
           >
-            <Image src={photo.url} alt="" fill sizes="160px" className="object-cover" />
+            <MediaImage
+              media={photo.media}
+              url={photo.url}
+              slot="thumb"
+              sizes="160px"
+              className="object-cover"
+            />
             <button
               type="button"
               onClick={() => void drop(photo.id)}

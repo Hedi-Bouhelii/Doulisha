@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -30,6 +29,7 @@ import { toneOf } from '@/components/doulisha/status-badge';
 import { TicketQR } from '@/components/doulisha/ticket-qr';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -135,14 +135,14 @@ export default async function TicketPage({
         <div
           className={cn(
             'relative aspect-[5/2] sm:aspect-[3/1]',
-            order.event.coverUrl ? 'bg-muted' : 'bg-primary',
+            order.event.coverMedia || order.event.coverUrl ? 'bg-muted' : 'bg-primary',
           )}
         >
-          {order.event.coverUrl ? (
-            <Image
-              src={order.event.coverUrl}
-              alt=""
-              fill
+          {order.event.coverMedia || order.event.coverUrl ? (
+            <MediaImage
+              media={order.event.coverMedia}
+              url={order.event.coverUrl}
+              slot="banner"
               priority
               sizes="(min-width: 768px) 768px, 100vw"
               className="object-cover"

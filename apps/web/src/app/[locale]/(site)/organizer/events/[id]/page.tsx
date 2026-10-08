@@ -13,7 +13,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -22,6 +21,7 @@ import { BackLink } from '@/components/doulisha/page';
 import { ShareBar } from '@/components/doulisha/share-bar';
 import { StatusBadge } from '@/components/doulisha/status-badge';
 import { Button } from '@/components/ui/button';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { absoluteUrl } from '@/lib/site';
@@ -67,11 +67,11 @@ export default async function ManageEventPage({
         <BackLink href="/organizer">{t('events')}</BackLink>
         <header className="grid gap-5 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start lg:gap-6 xl:grid-cols-[auto_minmax(0,1fr)_auto]">
           <div className="relative aspect-[21/9] overflow-hidden rounded-2xl bg-primary-soft shadow-card sm:aspect-[5/2] lg:aspect-[4/3] lg:w-52">
-            {event.coverUrl ? (
-              <Image
-                src={event.coverUrl}
-                alt=""
-                fill
+            {data.coverMedia || event.coverUrl ? (
+              <MediaImage
+                media={data.coverMedia}
+                url={event.coverUrl}
+                slot="banner"
                 priority
                 sizes="(min-width: 1024px) 208px, 100vw"
                 className="object-cover"

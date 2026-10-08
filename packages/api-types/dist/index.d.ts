@@ -14725,7 +14725,10 @@ interface EventCardDto {
     id: string;
     slug: string;
     title: string;
+    /** Covers uploaded before MED and demo covers in public/images. */
     coverUrl: string | null;
+    /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+    coverMedia: MediaRef | null;
     startsAt: Date;
     city: string | null;
     venueName: string | null;
@@ -15031,6 +15034,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         myEvents: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
+                coverMedia: MediaRef | null;
                 id: string;
                 slug: string;
                 title: string;
@@ -15162,6 +15166,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     required: boolean;
                     sort: number;
                 }[];
+                coverMedia: MediaRef | null;
                 problems: PublishProblem[];
             };
             meta: object;
@@ -15367,18 +15372,19 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         mine: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
-                reference: string;
-                status: "cancelled" | "paid" | "pending" | "awaiting_payment" | "partially_paid" | "refunded" | "expired";
-                totalMillimes: number;
-                paidMillimes: number;
-                createdAt: Date;
                 event: {
+                    coverMedia: MediaRef | null;
                     slug: string;
                     title: string;
                     startsAt: Date;
                     city: string | null;
                     coverUrl: string | null;
                 };
+                reference: string;
+                status: "cancelled" | "paid" | "pending" | "awaiting_payment" | "partially_paid" | "refunded" | "expired";
+                totalMillimes: number;
+                paidMillimes: number;
+                createdAt: Date;
             }[];
             meta: object;
         }>;
@@ -15439,6 +15445,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     address: string | null;
                     city: string | null;
                     coverUrl: string | null;
+                    coverMedia: MediaRef | null;
                     cancellationPolicy: "flexible" | "moderate" | "strict";
                     status: "draft" | "published" | "full" | "closed" | "ongoing" | "completed" | "cancelled";
                 };
@@ -15649,13 +15656,14 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         myProfile: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
-                photos: ({
+                logoMedia: MediaRef | null;
+                coverMedia: MediaRef | null;
+                photos: {
+                    media: MediaRef | null;
                     id: string;
                     url: string | null;
                     caption: string | null;
-                } & {
-                    url: string;
-                })[];
+                }[];
                 deletedAt: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
@@ -15707,6 +15715,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
             input: void;
             output: {
                 events: {
+                    coverMedia: MediaRef | null;
                     id: string;
                     slug: string;
                     title: string;
@@ -15976,7 +15985,9 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 name: string;
                 bio: string | null;
                 logoUrl: string | null;
+                logoMedia: MediaRef | null;
                 coverUrl: string | null;
+                coverMedia: MediaRef | null;
                 categories: string[];
                 regions: string[];
                 socialLinks: Record<string, string>;
@@ -15985,13 +15996,12 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 legalStatus: "association" | "company" | "independent";
                 verified: boolean;
                 memberSince: Date;
-                photos: ({
+                photos: {
+                    media: MediaRef | null;
                     id: string;
                     url: string | null;
                     caption: string | null;
-                } & {
-                    url: string;
-                })[];
+                }[];
                 events: EventCardDto[];
                 pastEvents: EventCardDto[];
                 followers: number;
@@ -16081,6 +16091,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         hosted: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
+                coverMedia: MediaRef | null;
                 id: string;
                 title: string;
                 startsAt: Date;
@@ -16099,6 +16110,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 title: string;
                 description: string | null;
                 coverUrl: string | null;
+                coverMedia: MediaRef | null;
                 startsAt: Date;
                 venueName: string | null;
                 address: string | null;
@@ -16619,6 +16631,8 @@ interface EventDetailDto {
     description: string | null;
     language: Locale;
     coverUrl: string | null;
+    /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+    coverMedia: MediaRef | null;
     status: (typeof eventStatus.enumValues)[number];
     visibility: (typeof eventVisibility.enumValues)[number];
     audience: string[];
@@ -16649,6 +16663,7 @@ interface EventDetailDto {
         name: string;
         slug: string;
         logoUrl: string | null;
+        logoMedia: MediaRef | null;
         bio: string | null;
         verified: boolean;
     } | null;

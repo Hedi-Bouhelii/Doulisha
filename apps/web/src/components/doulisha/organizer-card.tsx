@@ -1,8 +1,10 @@
+import { mediaSources, type MediaRef } from '@doulisha/storage/delivery';
 import { ArrowRight, BadgeCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from '@/i18n/navigation';
+import { cloudName } from '@/lib/media';
 
 import { initials } from './friends-going';
 
@@ -14,6 +16,7 @@ export function OrganizerCard({
     name: string;
     slug: string;
     logoUrl: string | null;
+    logoMedia?: MediaRef | null;
     bio: string | null;
     verified: boolean;
   };
@@ -22,7 +25,16 @@ export function OrganizerCard({
   return (
     <div className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card">
       <Avatar className="size-14 ring-2 ring-background shadow-xs">
-        {organizer.logoUrl ? <AvatarImage src={organizer.logoUrl} alt="" /> : null}
+        {organizer.logoMedia ? (
+          // Cloudinary srcset, never /_next/image (MED rule Q5).
+          <AvatarImage
+            {...mediaSources(cloudName, organizer.logoMedia, 'logo')}
+            sizes="56px"
+            alt=""
+          />
+        ) : organizer.logoUrl ? (
+          <AvatarImage src={organizer.logoUrl} alt="" />
+        ) : null}
         <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
           {initials(organizer.name)}
         </AvatarFallback>

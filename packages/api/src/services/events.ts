@@ -1,6 +1,7 @@
 import type { Db } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
+import type { MediaRef } from '@doulisha/storage';
 import {
   and,
   arrayOverlaps,
@@ -19,13 +20,17 @@ import {
 } from 'drizzle-orm';
 
 import { whenRange, type WhenFilter } from '../domain/dates';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** Data an event card needs (DSC-03 cards, template "Trending events"). */
 export interface EventCardDto {
   id: string;
   slug: string;
   title: string;
+  /** Covers uploaded before MED and demo covers in public/images. */
   coverUrl: string | null;
+  /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+  coverMedia: MediaRef | null;
   startsAt: Date;
   city: string | null;
   venueName: string | null;
@@ -185,7 +190,11 @@ export async function listUpcomingPublicEvents(
     .orderBy(asc(e.startsAt))
     .limit(input.limit);
 
-  return rows.map((row) => toEventCard(row, locale));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.event.coverMediaId),
+  );
+  return rows.map((row) => toEventCard(row, locale, media));
 }
 
 type CardRow = {
@@ -198,12 +207,14 @@ type CardRow = {
 function toEventCard(
   { event, category, templateName, organizer }: CardRow,
   locale: Locale,
+  media: Map<string, MediaRef>,
 ): EventCardDto {
   return {
     id: event.id,
     slug: event.slug,
     title: event.title,
     coverUrl: event.coverUrl,
+    coverMedia: pickMedia(media, event.coverMediaId),
     startsAt: event.startsAt,
     city: event.city,
     venueName: event.venueName,
@@ -255,7 +266,11 @@ export async function listPastPublicEvents(
     )
     .orderBy(desc(e.startsAt))
     .limit(input.limit);
-  return rows.map((row) => toEventCard(row, locale));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.event.coverMediaId),
+  );
+  return rows.map((row) => toEventCard(row, locale, media));
 }
 
 /** Public upcoming events for the sitemap (DSC-03 SEO). Private and unlisted events never appear. */
