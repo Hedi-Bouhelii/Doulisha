@@ -52,6 +52,16 @@ export const reactionTarget = pgEnum('reaction_target', ['post', 'comment', 'med
 export const reactionKind = pgEnum('reaction_kind', ['like', 'love', 'fire', 'clap', 'haha']);
 export const mediaKind = pgEnum('media_kind', ['image', 'video', 'document', 'gpx']);
 export const storageBucket = pgEnum('storage_bucket', ['public', 'private']);
+/** Where a media file's bytes are (ADR 0026): Cloudinary, or local disk for runs without keys. */
+export const mediaProvider = pgEnum('media_provider', ['local', 'cloudinary']);
+/** MED spec 2.3: what an image is used for. */
+export const mediaPurpose = pgEnum('media_purpose', [
+  'cover',
+  'gallery',
+  'avatar',
+  'logo',
+  'proof',
+]);
 export const reportTarget = pgEnum('report_target', [
   'event',
   'post',

@@ -169,8 +169,8 @@ export async function getOwnProfileDetail(db: Executor, actor: Actor) {
   return { ...profile, photos };
 }
 
-function listPhotos(db: Executor, organizerProfileId: string) {
-  return db
+async function listPhotos(db: Executor, organizerProfileId: string) {
+  const rows = await db
     .select({
       id: schema.organizerPhotos.id,
       url: schema.organizerPhotos.url,
@@ -179,6 +179,9 @@ function listPhotos(db: Executor, organizerProfileId: string) {
     .from(schema.organizerPhotos)
     .where(eq(schema.organizerPhotos.organizerProfileId, organizerProfileId))
     .orderBy(asc(schema.organizerPhotos.sort), asc(schema.organizerPhotos.createdAt));
+  // Photos stored as media rows (MED, ADR 0026) have no URL; they are shown
+  // once the pages render media.
+  return rows.filter((photo): photo is typeof photo & { url: string } => photo.url !== null);
 }
 
 /** Adds an uploaded photo of a past event to the gallery (at most 12). */
@@ -197,16 +200,17 @@ export async function addPhoto(
   if (existing >= MAX_ORGANIZER_PHOTOS) {
     throw new AppError('BAD_REQUEST', 'errors.tooManyPhotos', { max: MAX_ORGANIZER_PHOTOS });
   }
+  const url = publicUrlFromKey(deps, actor, input.key, 'organizer-photo');
   const [photo] = await db
     .insert(schema.organizerPhotos)
     .values({
       organizerProfileId: input.profileId,
-      url: publicUrlFromKey(deps, actor, input.key, 'organizer-photo'),
+      url,
       caption: input.caption ?? null,
       sort: existing,
     })
-    .returning({ id: schema.organizerPhotos.id, url: schema.organizerPhotos.url });
-  return photo!;
+    .returning({ id: schema.organizerPhotos.id });
+  return { id: photo!.id, url };
 }
 
 export async function removePhoto(db: Executor, actor: Actor, photoId: string) {

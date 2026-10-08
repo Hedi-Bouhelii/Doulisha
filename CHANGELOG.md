@@ -4,6 +4,11 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: media table for uploads (MED-02, 2026-10-08)
+
+- Migration `0007_media_cloudinary` (additive): `media` records the original's provider, purpose, version, format, size, SHA-256 and crop; event covers, organizer logos, covers and photos, and payment proofs can point at a media row. Applied to the `dev` branch; production applies it on its next deployment.
+- Organizer photos without a URL (stored as media) are not listed until the pages render media.
+
 ### Added: image delivery URLs and Cloudinary signatures (MED-03, 2026-10-08)
 
 - `@doulisha/storage` builds every image URL at render time from the stored public id, per display slot (spec 2.5): event cover 16:9 at fixed quality 90 without chroma subsampling, cards 4:3, gallery, avatars, logos, thumbnails, share images and Open Graph. Widths 320 to 2560 capped at the original, resizing that never enlarges, automatic format, crops in original pixels (ADR 0026).

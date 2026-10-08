@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -17,6 +18,8 @@ import {
   followTarget,
   friendshipStatus,
   mediaKind,
+  mediaProvider,
+  mediaPurpose,
   reactionKind,
   reactionTarget,
   reportStatus,
@@ -121,7 +124,18 @@ export const reactions = pgTable(
   ],
 );
 
-/** Photos, videos, GPX tracks and documents stored in R2 (`key` is the object key). */
+/** Crop rectangle in pixels of the original, applied at delivery (MED rule Q2). */
+export interface MediaCropData {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Uploaded files (module MED, ADR 0026): the original is stored as uploaded and
+ * every display URL is built from this row, never stored.
+ */
 export const media = pgTable(
   'media',
   {
@@ -130,10 +144,24 @@ export const media = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     kind: mediaKind().notNull(),
+    /** `private` for payment proofs: Cloudinary `authenticated` assets. */
     bucket: storageBucket().notNull().default('public'),
+    provider: mediaProvider().notNull().default('local'),
+    /** The Cloudinary public id (or the local file's key), without extension. */
     key: text().notNull(),
+    /** Null for event wall photos, which predate MED. */
+    purpose: mediaPurpose(),
+    /** Cloudinary version, part of every delivery URL. */
+    version: integer(),
+    /** Format of the original as stored, e.g. "jpg", "heic". */
+    format: text(),
+    /** Size of the original in bytes; equals the uploaded file (Q1). */
+    bytes: integer(),
+    /** SHA-256 of the uploaded file, hex (acceptance test T2). */
+    checksumSha256: text(),
     width: integer(),
     height: integer(),
+    crop: jsonb().$type<MediaCropData>(),
     alt: text(),
     eventId: uuid().references(() => events.id, { onDelete: 'cascade' }),
     postId: uuid().references(() => posts.id, { onDelete: 'cascade' }),
