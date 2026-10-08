@@ -99,7 +99,7 @@ packages/
   validators/ shared Zod schemas
   notifications/ SMS and email senders (mocks for now)
   payments/   payment providers (mock gateway, manual methods)
-  storage/    uploads: policies, signed upload tokens, local provider
+  storage/    images and files: upload policies, Cloudinary signatures and URLs, local provider
 docs/         specification, build plan, architecture, database, API, UX, ADRs, open questions
 .claude/      Claude Code skills shared by the team (Neon)
 ```

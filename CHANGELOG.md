@@ -4,6 +4,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: image delivery URLs and Cloudinary signatures (MED-03, 2026-10-08)
+
+- `@doulisha/storage` builds every image URL at render time from the stored public id, per display slot (spec 2.5): event cover 16:9 at fixed quality 90 without chroma subsampling, cards 4:3, gallery, avatars, logos, thumbnails, share images and Open Graph. Widths 320 to 2560 capped at the original, resizing that never enlarges, automatic format, crops in original pixels (ADR 0026).
+- Signing of uploads and private downloads, and checking of Cloudinary's upload answers, without the Cloudinary package.
+- `@doulisha/storage/delivery` has no Node APIs, for client components.
+
 ### Added: Cloudinary configuration for images (MED-01, 2026-10-08)
 
 - Spec v2.1 is the reference; only items marked P are built (Q29).

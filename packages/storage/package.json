@@ -2,10 +2,11 @@
   "name": "@doulisha/storage",
   "version": "0.0.0",
   "private": true,
-  "description": "File storage: upload policies, signed uploads, local provider (dev) and R2 (Phase 6)",
+  "description": "Images and files: upload policies, Cloudinary signatures and delivery URLs, local provider for runs without keys",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./delivery": "./src/delivery.ts"
   },
   "scripts": {
     "lint": "eslint .",
