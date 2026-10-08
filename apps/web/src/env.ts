@@ -25,8 +25,21 @@ const schema = z
     EMAIL_PROVIDER: z.enum(['mock']).default('mock'),
     /** Online payments: the simulated gateway until Konnect/Flouci (Phase 6). */
     PAYMENT_PROVIDER: z.enum(['mock']).default('mock'),
-    /** File storage: local disk in development, Cloudflare R2 in Phase 6. */
-    STORAGE_PROVIDER: z.enum(['local']).default('local'),
+    /**
+     * Images and payment proofs (module MED, ADR 0026). Defaults to Cloudinary
+     * when its keys are set, and to local disk otherwise (CI and E2E without keys).
+     */
+    STORAGE_PROVIDER: z.enum(['local', 'cloudinary']).optional(),
+    /** Public: delivery URLs and the signed upload form (next-cloudinary names). */
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: optional,
+    NEXT_PUBLIC_CLOUDINARY_API_KEY: optional,
+    /** Server only: signs uploads and private downloads. Never prefix with NEXT_PUBLIC_. */
+    CLOUDINARY_API_SECRET: optional,
+    /** Folder for this environment's files, e.g. doulisha/dev or doulisha/prod. */
+    CLOUDINARY_UPLOAD_FOLDER: z
+      .string()
+      .regex(/^[a-z0-9_-]+(\/[a-z0-9_-]+)*$/i, 'Letters, digits, "-" or "_", separated by "/".')
+      .default('doulisha/dev'),
     GOOGLE_CLIENT_ID: optional,
     GOOGLE_CLIENT_SECRET: optional,
     FACEBOOK_CLIENT_ID: optional,
@@ -36,10 +49,29 @@ const schema = z
     /** Comma-separated verified emails that become admins on sign-in (ADR 0020). */
     ADMIN_EMAILS: optional,
   })
-  .transform((env) => ({
-    ...env,
-    BETTER_AUTH_URL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,
-  }));
+  .transform((env, ctx) => {
+    const cloudinaryKeys = [
+      env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      env.CLOUDINARY_API_SECRET,
+    ];
+    const keysSet = cloudinaryKeys.filter(Boolean).length;
+    const storage = env.STORAGE_PROVIDER ?? (keysSet > 0 ? 'cloudinary' : 'local');
+    // Some keys but not all is a typo, not a request for local disk.
+    if (storage === 'cloudinary' && keysSet < cloudinaryKeys.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['STORAGE_PROVIDER'],
+        message:
+          'Cloudinary needs NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, NEXT_PUBLIC_CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.',
+      });
+    }
+    return {
+      ...env,
+      STORAGE_PROVIDER: storage,
+      BETTER_AUTH_URL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,
+    };
+  });
 
 export type ServerEnv = z.infer<typeof schema>;
 

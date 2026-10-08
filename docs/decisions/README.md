@@ -29,6 +29,7 @@ One file per important decision, numbered in order. An ADR is never edited after
 | 0023 | [Sign-in for the mobile app through Better Auth's Expo plugin](0023-mobile-app-auth.md)                                        | Accepted                           |
 | 0024 | [The API types, bundled into one committed file for the mobile app](0024-api-types-package.md)                                 | Accepted                           |
 | 0025 | [Design system v2: one surface, shape, elevation and status system for every screen](0025-design-system-v2.md)                 | Accepted                           |
+| 0026 | [Images and payment proofs on Cloudinary (module MED)](0026-media-on-cloudinary.md)                                            | Accepted                           |
 
 ## Template
 

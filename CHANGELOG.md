@@ -4,6 +4,13 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: Cloudinary configuration for images (MED-01, 2026-10-08)
+
+- Spec v2.1 is the reference; only items marked P are built (Q29).
+- New variables `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `NEXT_PUBLIC_CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (server only) and `CLOUDINARY_UPLOAD_FOLDER`. With the three keys set, the app uses Cloudinary; without them, local disk (ADR 0026). Setting only some keys stops the app with a clear error.
+- `STORAGE_PROVIDER` accepts `local` or `cloudinary` and is optional.
+- The unused R2 placeholders are removed from `.env.example`: Cloudinary replaces R2 (ADR 0026).
+
 ### Changed: design system v2 and full UI redesign (2026-09-30)
 
 - **One design system on every screen** (ADR 0025), on the same palette: warm white cards, a radius scale (inputs 14 px, cards 20 px, hero and dialogs 28 px, pill buttons), soft warm shadows, and one status palette (`Badge` tones and `statusTone`) for events, bookings and payments in both themes. New contrast tests for every status on its tint.
