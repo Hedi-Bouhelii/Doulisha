@@ -4,6 +4,13 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: covers, logos and organizer photos are uploaded as originals (MED-02, 2026-10-08)
+
+- The create-event wizard, the quick private invitation and the organizer profile (logo, cover, past-event photos) send the original file straight to Cloudinary (or local disk without keys) through `media.sign` and `media.confirm`: no resizing or compression on the way (Q1). HEIC from iPhones is accepted.
+- Files over 10 MB are refused with a message that names the limit; covers narrower than 1,200 px get a "may look blurry" warning (Q8).
+- The API takes media ids (`coverMediaId`, `logoMediaId`, `mediaId`) instead of upload keys; a new image replaces any image uploaded before MED. `uploads.create` now serves only event wall photos and payment proofs.
+- E2E `media.spec.ts`: an uploaded cover is shown at least twice its drawn width and never through `/_next/image` (T3, T4, T6); the warning and the 10 MB refusal.
+
 ### Changed: uploaded images shown at the right size, Cloudinary only (MED-03, 2026-10-08)
 
 - Pages that show an event cover, an organizer logo, cover or photo use `MediaImage`: a plain `<img>` with Cloudinary sizes for its slot (spec 2.5), so these images never go through `/_next/image` again (Q5). Older uploads and demo covers keep `next/image`.

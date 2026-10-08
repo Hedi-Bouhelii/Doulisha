@@ -21,7 +21,7 @@ import { makeSlug } from '../domain/slug';
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import { assertCanManageEvent, type Actor } from '../permissions';
-import { coverUrlFromKey } from './uploads';
+import { attachableMedia } from './media';
 import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** Loads an event with what permission checks need, or throws NOT_FOUND. */
@@ -201,15 +201,17 @@ export async function updateEvent(
     const template = await loadTemplate(db, event.templateId);
     details = validateDetails(template.definition, { ...event.details, ...patch.details });
   }
-  const { details: _ignored, coverKey, ...rest } = patch;
-  const cover =
-    coverKey === undefined
-      ? {}
-      : { coverUrl: coverKey === null ? null : coverUrlFromKey(deps, actor, coverKey) };
+  const { details: _ignored, coverMediaId: newCover, ...rest } = patch;
+  const coverMediaId = await attachableMedia(db, actor, newCover, 'cover');
+  // A new cover (or none) replaces any cover uploaded before MED.
+  const cover = coverMediaId === undefined ? {} : { coverMediaId, coverUrl: null };
   await db
     .update(schema.events)
     .set({ ...rest, ...cover, details })
     .where(eq(schema.events.id, eventId));
+  if (coverMediaId) {
+    await db.update(schema.media).set({ eventId }).where(eq(schema.media.id, coverMediaId));
+  }
 }
 
 /**

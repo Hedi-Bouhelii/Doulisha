@@ -57,7 +57,7 @@ export const organizerRouter = router({
     .input(
       z.object({
         profileId: z.uuid(),
-        key: z.string().min(10).max(300),
+        mediaId: z.uuid(),
         caption: z.string().trim().max(120).nullish(),
       }),
     )

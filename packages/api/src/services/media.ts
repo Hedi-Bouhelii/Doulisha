@@ -76,7 +76,7 @@ export async function signMediaUpload(
   if (!check.ok) {
     throw new AppError(
       'BAD_REQUEST',
-      check.reason === 'type' ? 'errors.fileType' : 'errors.fileSize',
+      check.reason === 'type' ? 'errors.fileType' : 'errors.fileTooLarge',
     );
   }
   await assertMayUploadFor(db, uploader, input.kind, input);
@@ -156,6 +156,20 @@ export async function confirmMediaUpload(
     })
     .returning();
   return { id: row!.id, media: toMediaRef(row!) };
+}
+
+/**
+ * For optional image fields: undefined keeps the image, null removes it, and
+ * an id must be the member's own upload for `purpose`. Returns the id to store.
+ */
+export async function attachableMedia(
+  db: Executor,
+  actor: Actor,
+  mediaId: string | null | undefined,
+  purpose: NonNullable<MediaRow['purpose']>,
+): Promise<string | null | undefined> {
+  if (mediaId === undefined || mediaId === null) return mediaId;
+  return (await loadOwnMedia(db, actor, mediaId, [purpose])).id;
 }
 
 /**

@@ -154,7 +154,7 @@
     "phoneTab": "Phone",
     "emailTab": "Email",
     "phoneLabel": "Phone number",
-    "phoneHint": "Tunisian numbers: 8 digits. Other countries: add the country code, e.g. \u2066+33\u2069.",
+    "phoneHint": "Tunisian numbers: 8 digits. Other countries: add the country code, e.g. ⁦+33⁩.",
     "sendCode": "Send code",
     "codeLabel": "6-digit code",
     "codeSentTo": "We sent a code to {phone}.",
@@ -252,6 +252,8 @@
     "capacityBelowBooked": "Capacity cannot be lower than the places already booked.",
     "fileType": "This file type is not accepted.",
     "fileSize": "This file is too large.",
+    "fileTooLarge": "This file is larger than 10 MB. Choose a smaller one.",
+    "uploadFailed": "The upload did not finish. Check your connection and try again.",
     "dateInPast": "Choose a date in the future.",
     "nameRequired": "Give your name.",
     "invalidTemplate": "The template is invalid.",
@@ -766,7 +768,7 @@
     "whereTitle": "Where is it happening?",
     "whereHint": "An address or a description of the place.",
     "cityPlaceholder": "e.g. Tunis",
-    "coverFormats": "JPG, PNG or WebP · 5 MB maximum",
+    "coverFormats": "JPG, PNG, WebP or HEIC · 10 MB maximum",
     "createHint": "You then get a link to share on WhatsApp."
   },
   "Invite": {
@@ -1108,5 +1110,8 @@
     "save": "Save",
     "saved": "Saved",
     "seeMyPage": "See my page"
+  },
+  "Media": {
+    "lowResolution": "This image is only {width} px wide and may look blurry. A photo at least 1,200 px wide will look sharper."
   }
 }

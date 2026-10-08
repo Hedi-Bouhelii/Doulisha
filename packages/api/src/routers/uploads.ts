@@ -1,4 +1,3 @@
-import { uploadPurposes } from '@doulisha/storage';
 import { z } from 'zod';
 
 import { createUpload } from '../services/uploads';
@@ -12,7 +11,7 @@ export const uploadsRouter = router({
   create: publicProcedure
     .input(
       z.object({
-        purpose: z.enum(uploadPurposes),
+        purpose: z.enum(['post-photo', 'payment-proof']),
         contentType: z.string().max(100),
         size: z.number().int().positive(),
       }),

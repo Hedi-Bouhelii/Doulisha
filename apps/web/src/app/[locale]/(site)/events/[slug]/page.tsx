@@ -160,7 +160,10 @@ export default async function EventPage({ params }: PageProps<'/[locale]/events/
         then category, title, date and place under it, so nothing hides a poster's text.
       */}
       <header className="mx-auto max-w-6xl sm:px-6 sm:pt-6">
-        <div className="relative isolate aspect-video overflow-hidden bg-muted sm:rounded-3xl">
+        <div
+          className="relative isolate aspect-video overflow-hidden bg-muted sm:rounded-3xl"
+          data-testid="event-cover"
+        >
           {event.coverMedia || event.coverUrl ? (
             <MediaImage
               media={event.coverMedia}

@@ -36,8 +36,8 @@ export const eventPatchSchema = z.object({
   title: z.string().trim().max(120).optional(),
   description: z.string().trim().max(5000).nullish(),
   language: localeSchema.optional(),
-  /** Key of the member's own `event-cover` upload; null removes the cover. */
-  coverKey: z.string().max(300).nullish(),
+  /** A cover the member uploaded (`media.confirm`); null removes the cover. */
+  coverMediaId: z.uuid().nullish(),
   startsAt: z.coerce.date().optional(),
   endsAt: z.coerce.date().nullish(),
   venueName: z.string().trim().max(120).nullish(),
@@ -141,7 +141,7 @@ export const quickPrivateEventSchema = z.object({
   venueName: z.string().trim().max(120).nullish(),
   city: z.string().trim().max(80).nullish(),
   description: z.string().trim().max(2000).nullish(),
-  coverKey: z.string().max(300).nullish(),
+  coverMediaId: z.uuid().nullish(),
   locationHiddenUntilBooking: z.boolean().default(false),
 });
 
@@ -182,7 +182,7 @@ export const paymentInstructionsSchema = z.object({
   accountHolder: z.string().trim().max(120).optional(),
 });
 
-/** ACC-03 organizer profile. Images are upload keys, checked on the server. */
+/** ACC-03 organizer profile. Images are media the member uploaded, checked on the server. */
 export const organizerProfileInputSchema = z.object({
   name: z.string().trim().min(2).max(80),
   bio: z.string().trim().max(1000).nullish(),
@@ -193,9 +193,9 @@ export const organizerProfileInputSchema = z.object({
   contactPhone: phoneInputSchema.nullish(),
   contactEmail: z.email().nullish(),
   paymentInstructions: paymentInstructionsSchema.default({}),
-  /** New logo or cover upload keys; null removes the image, undefined keeps it. */
-  logoKey: z.string().max(300).nullish(),
-  coverKey: z.string().max(300).nullish(),
+  /** New logo or cover (`media.confirm` ids); null removes the image, undefined keeps it. */
+  logoMediaId: z.uuid().nullish(),
+  coverMediaId: z.uuid().nullish(),
 });
 
 /** PRT-02 attendee added by the organizer (phone or WhatsApp booking). */

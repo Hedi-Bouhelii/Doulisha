@@ -111,7 +111,14 @@ export async function createPublishedHike(
     title,
     capacity = 20,
     registration = 'paid',
-  }: { title: string; capacity?: number; registration?: 'paid' | 'pay_at_door' },
+    cover,
+  }: {
+    title: string;
+    capacity?: number;
+    registration?: 'paid' | 'pay_at_door';
+    /** A cover to upload on the first step (MED). */
+    cover?: { name: string; mimeType: string; buffer: Buffer };
+  },
 ) {
   await page.goto(`/${locale}/organizer/events/new`);
   await page.getByTestId('template-hiking_trip').click();
@@ -119,6 +126,10 @@ export async function createPublishedHike(
   const eventId = /events\/([0-9a-f-]+)\/edit/.exec(page.url())![1]!;
 
   await page.getByTestId('wizard-title').fill(title);
+  if (cover) {
+    await page.locator('input[type="file"]').setInputFiles(cover);
+    await expect(page.getByTestId('cover-preview').locator('img')).toBeVisible();
+  }
   await page.getByTestId('wizard-next').click();
   await page.getByTestId('wizard-city').fill('Zaghouan');
   await page.getByTestId('wizard-next').click();

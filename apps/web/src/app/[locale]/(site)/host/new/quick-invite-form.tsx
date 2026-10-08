@@ -22,7 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useErrorMessage } from '@/lib/errors';
 import { absoluteUrl } from '@/lib/site';
-import { putFile } from '@/lib/upload';
+import { IMAGE_ACCEPT, useMediaUpload } from '@/lib/media-upload';
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 
@@ -79,25 +79,20 @@ export function QuickInviteForm({ suggestedStart }: { suggestedStart: string }) 
   const [cover, setCover] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<{ url: string; title: string } | null>(null);
-  const createUpload = useMutation(trpc.uploads.create.mutationOptions());
+  const uploadCover = useMediaUpload('event-cover');
   const create = useMutation(trpc.invitations.quickCreate.mutationOptions());
-  const busy = createUpload.isPending || create.isPending;
+  const [sending, setSending] = useState(false);
+  const busy = sending || create.isPending;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     const start = fromTunisInput(startsAt);
     if (!start) return;
+    setSending(true);
     try {
-      let coverKey: string | null = null;
-      if (cover) {
-        const ticket = await createUpload.mutateAsync({
-          purpose: 'event-cover',
-          contentType: cover.type,
-          size: cover.size,
-        });
-        coverKey = await putFile(ticket, cover);
-      }
+      // The original file goes straight to storage (MED, spec 2.3).
+      const coverMediaId = cover ? (await uploadCover(cover)).id : null;
       const { token } = await create.mutateAsync({
         templateKey: kind,
         title,
@@ -105,12 +100,14 @@ export function QuickInviteForm({ suggestedStart }: { suggestedStart: string }) 
         venueName: venueName.trim() || null,
         city: city.trim() || null,
         description: description.trim() || null,
-        coverKey,
+        coverMediaId,
         locationHiddenUntilBooking: hideAddress,
       });
       setCreated({ url: absoluteUrl(`/${locale}/invite/${token}`), title });
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setSending(false);
     }
   }
 
@@ -266,7 +263,7 @@ export function QuickInviteForm({ suggestedStart }: { suggestedStart: string }) 
         <input
           ref={fileInput}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept={IMAGE_ACCEPT}
           className="sr-only"
           aria-label={tWizard('cover')}
           onChange={(e) => setCover(e.target.files?.[0] ?? null)}

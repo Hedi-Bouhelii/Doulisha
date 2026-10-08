@@ -13,7 +13,7 @@ import { makeSlug } from '../domain/slug';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { loadManagedEvent } from './event-editor';
-import { coverUrlFromKey } from './uploads';
+import { attachableMedia } from './media';
 import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** Unguessable token for invitation links (INV-02). */
@@ -33,6 +33,7 @@ export async function createQuickPrivateEvent(
   locale: Locale,
 ) {
   if (input.startsAt <= new Date()) throw new AppError('BAD_REQUEST', 'errors.dateInPast');
+  const coverMediaId = await attachableMedia(db, actor, input.coverMediaId, 'cover');
   const [template] = await db
     .select()
     .from(schema.templates)
@@ -51,7 +52,7 @@ export async function createQuickPrivateEvent(
       title: input.title,
       description: input.description ?? null,
       language: locale,
-      coverUrl: input.coverKey ? coverUrlFromKey(deps, actor, input.coverKey) : null,
+      coverMediaId: coverMediaId ?? null,
       startsAt: input.startsAt,
       venueName: input.venueName ?? null,
       city: input.city ?? null,
@@ -62,6 +63,12 @@ export async function createQuickPrivateEvent(
       publishedAt: new Date(),
     })
     .returning();
+  if (coverMediaId) {
+    await db
+      .update(schema.media)
+      .set({ eventId: event!.id })
+      .where(eq(schema.media.id, coverMediaId));
+  }
   const token = invitationToken();
   await db.insert(schema.invitations).values({
     eventId: event!.id,

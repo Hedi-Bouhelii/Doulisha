@@ -1,4 +1,5 @@
 import { fromTunisInput, type Locale, toTunisInput } from '@doulisha/i18n';
+import type { MediaRef } from '@doulisha/storage/delivery';
 
 import { millimesToInput, parseDinars } from '@/lib/money';
 import type { RouterInputs, RouterOutputs } from '@/trpc/types';
@@ -21,7 +22,9 @@ export interface EventForm {
   title: string;
   description: string;
   language: Locale;
+  /** Cover uploaded before MED; replaced by `coverMedia`. */
   coverUrl: string | null;
+  coverMedia: MediaRef | null;
   startsAt: string;
   endsAt: string;
   venueName: string;
@@ -82,12 +85,13 @@ export function parseCount(value: string): number | null {
   return Number(trimmed);
 }
 
-export function toForm(event: EventRow): EventForm {
+export function toForm(event: EventRow, coverMedia: MediaRef | null = null): EventForm {
   return {
     title: event.title,
     description: text(event.description),
     language: event.language,
     coverUrl: event.coverUrl,
+    coverMedia,
     startsAt: toTunisInput(event.startsAt),
     endsAt: event.endsAt ? toTunisInput(event.endsAt) : '',
     venueName: text(event.venueName),

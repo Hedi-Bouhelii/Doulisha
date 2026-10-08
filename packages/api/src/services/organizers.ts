@@ -13,7 +13,7 @@ import type { Actor } from '../permissions';
 import { listPastPublicEvents, listUpcomingPublicEvents } from './events';
 import { followerCount, isFollowing } from './follows';
 import { loadMediaRefs, pickMedia } from './media-refs';
-import { publicUrlFromKey } from './uploads';
+import { attachableMedia, loadOwnMedia, toMediaRef } from './media';
 
 type OrganizerInput = z.infer<typeof organizerProfileInputSchema>;
 type Storage = Pick<ServiceDeps, 'storage'>;
@@ -50,8 +50,13 @@ export async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
   return profile;
 }
 
-/** Fields both create and update write; images only when a new key is sent. */
-function profileValues(deps: Storage, actor: Actor, input: OrganizerInput) {
+/**
+ * Fields both create and update write. Images change only when sent; a new
+ * logo or cover replaces any image uploaded before MED.
+ */
+async function profileValues(db: Executor, actor: Actor, input: OrganizerInput) {
+  const logoMediaId = await attachableMedia(db, actor, input.logoMediaId, 'logo');
+  const coverMediaId = await attachableMedia(db, actor, input.coverMediaId, 'cover');
   const socialLinks = Object.fromEntries(
     Object.entries(input.socialLinks).filter((entry): entry is [string, string] =>
       Boolean(entry[1]),
@@ -70,22 +75,8 @@ function profileValues(deps: Storage, actor: Actor, input: OrganizerInput) {
     contactPhone: input.contactPhone ?? null,
     contactEmail: input.contactEmail ?? null,
     paymentInstructions,
-    ...(input.logoKey === undefined
-      ? {}
-      : {
-          logoUrl:
-            input.logoKey === null
-              ? null
-              : publicUrlFromKey(deps, actor, input.logoKey, 'organizer-logo'),
-        }),
-    ...(input.coverKey === undefined
-      ? {}
-      : {
-          coverUrl:
-            input.coverKey === null
-              ? null
-              : publicUrlFromKey(deps, actor, input.coverKey, 'organizer-cover'),
-        }),
+    ...(logoMediaId === undefined ? {} : { logoMediaId, logoUrl: null }),
+    ...(coverMediaId === undefined ? {} : { coverMediaId, coverUrl: null }),
   };
 }
 
@@ -104,7 +95,7 @@ export async function createProfile(
     .values({
       ownerUserId: actor.userId,
       slug: makeSlug(input.name),
-      ...profileValues(deps, actor, input),
+      ...(await profileValues(db, actor, input)),
     })
     .returning();
   await grantRole(db, actor.userId, 'organizer');
@@ -121,7 +112,7 @@ export async function updateProfile(
   await loadOwnProfile(db, actor, id);
   const [profile] = await db
     .update(schema.organizerProfiles)
-    .set(profileValues(deps, actor, input))
+    .set(await profileValues(db, actor, input))
     .where(eq(schema.organizerProfiles.id, id))
     .returning();
   return profile!;
@@ -204,7 +195,7 @@ export async function addPhoto(
   db: Executor,
   deps: Storage,
   actor: Actor,
-  input: { profileId: string; key: string; caption?: string | null | undefined },
+  input: { profileId: string; mediaId: string; caption?: string | null | undefined },
 ) {
   await loadOwnProfile(db, actor, input.profileId);
   const [row] = await db
@@ -215,17 +206,17 @@ export async function addPhoto(
   if (existing >= MAX_ORGANIZER_PHOTOS) {
     throw new AppError('BAD_REQUEST', 'errors.tooManyPhotos', { max: MAX_ORGANIZER_PHOTOS });
   }
-  const url = publicUrlFromKey(deps, actor, input.key, 'organizer-photo');
+  const media = await loadOwnMedia(db, actor, input.mediaId, ['gallery']);
   const [photo] = await db
     .insert(schema.organizerPhotos)
     .values({
       organizerProfileId: input.profileId,
-      url,
+      mediaId: media.id,
       caption: input.caption ?? null,
       sort: existing,
     })
     .returning({ id: schema.organizerPhotos.id });
-  return { id: photo!.id, url };
+  return { id: photo!.id, url: null, media: toMediaRef(media) };
 }
 
 export async function removePhoto(db: Executor, actor: Actor, photoId: string) {

@@ -15161,7 +15161,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     id: string;
                     eventId: string;
                     label: string;
-                    type: "number" | "select" | "text";
+                    type: "number" | "text" | "select";
                     options: string[];
                     required: boolean;
                     sort: number;
@@ -15178,7 +15178,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     title?: string | undefined;
                     description?: string | null | undefined;
                     language?: "ar" | "fr" | "en" | undefined;
-                    coverKey?: string | null | undefined;
+                    coverMediaId?: string | null | undefined;
                     startsAt?: unknown;
                     endsAt?: unknown;
                     venueName?: string | null | undefined;
@@ -15262,7 +15262,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 eventId: string;
                 questions: {
                     label: string;
-                    type?: "number" | "select" | "text" | undefined;
+                    type?: "number" | "text" | "select" | undefined;
                     options?: string[] | undefined;
                     required?: boolean | undefined;
                 }[];
@@ -15330,7 +15330,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 questions: {
                     id: string;
                     label: string;
-                    type: "number" | "select" | "text";
+                    type: "number" | "text" | "select";
                     options: string[];
                     required: boolean;
                 }[];
@@ -15567,14 +15567,15 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     rib?: string | undefined;
                     accountHolder?: string | undefined;
                 } | undefined;
-                logoKey?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                logoMediaId?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
             };
             output: {
-                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                deletedAt: Date | null;
+                name: string;
                 slug: string;
                 ownerUserId: string;
                 logoUrl: string | null;
@@ -15595,7 +15596,6 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     accountHolder?: string;
                 };
                 verifiedAt: Date | null;
-                deletedAt: Date | null;
             };
             meta: object;
         }>;
@@ -15621,8 +15621,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     rib?: string | undefined;
                     accountHolder?: string | undefined;
                 } | undefined;
-                logoKey?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                logoMediaId?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
             };
             output: {
                 deletedAt: Date | null;
@@ -15695,12 +15695,13 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         addPhoto: _trpc_server.TRPCMutationProcedure<{
             input: {
                 profileId: string;
-                key: string;
+                mediaId: string;
                 caption?: string | null | undefined;
             };
             output: {
                 id: string;
-                url: string;
+                url: null;
+                media: MediaRef;
             };
             meta: object;
         }>;
@@ -16070,7 +16071,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 venueName?: string | null | undefined;
                 city?: string | null | undefined;
                 description?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
                 locationHiddenUntilBooking?: boolean | undefined;
             };
             output: {
@@ -16377,7 +16378,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
     }, _trpc_server.TRPCDecorateCreateRouterOptions<{
         report: _trpc_server.TRPCMutationProcedure<{
             input: {
-                targetType: "event" | "organizer" | "user" | "post" | "comment" | "message";
+                targetType: "organizer" | "user" | "post" | "comment" | "event" | "message";
                 targetId: string;
                 reason: "other" | "spam" | "harassment" | "inappropriate" | "scam";
                 details?: string | null | undefined;
@@ -16480,7 +16481,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
     }, _trpc_server.TRPCDecorateCreateRouterOptions<{
         create: _trpc_server.TRPCMutationProcedure<{
             input: {
-                purpose: "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo" | "post-photo" | "event-photo" | "payment-proof";
+                purpose: "post-photo" | "payment-proof";
                 contentType: string;
                 size: number;
             };
@@ -16513,7 +16514,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
     }, _trpc_server.TRPCDecorateCreateRouterOptions<{
         sign: _trpc_server.TRPCMutationProcedure<{
             input: {
-                kind: "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo" | "payment-proof";
+                kind: "payment-proof" | "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo";
                 contentType: string;
                 size: number;
                 eventId?: string | undefined;
@@ -16525,7 +16526,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         }>;
         confirm: _trpc_server.TRPCMutationProcedure<{
             input: {
-                kind: "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo" | "payment-proof";
+                kind: "payment-proof" | "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo";
                 answer: {
                     public_id: string;
                     version: number;

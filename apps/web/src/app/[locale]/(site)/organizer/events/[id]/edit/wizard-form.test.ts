@@ -15,6 +15,7 @@ const form: EventForm = {
   description: '  ',
   language: 'fr',
   coverUrl: null,
+  coverMedia: null,
   startsAt: '2026-10-03T07:00',
   endsAt: '',
   venueName: '',
