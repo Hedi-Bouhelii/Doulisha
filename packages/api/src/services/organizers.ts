@@ -34,7 +34,7 @@ export function listOwnProfiles(db: Executor, actor: Actor) {
     .orderBy(asc(schema.organizerProfiles.createdAt));
 }
 
-async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
+export async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
   const [profile] = await db
     .select()
     .from(schema.organizerProfiles)

@@ -14,6 +14,7 @@ import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { createBooking } from '../services/booking';
+import { createLocalMediaStorage } from '@doulisha/storage';
 
 loadRootEnv();
 if (process.env.NEON_BRANCH === 'production') {
@@ -25,6 +26,7 @@ const db = createHttpDb(url);
 const deps: ServiceDeps = {
   transaction: (fn) => withTransaction(url, fn),
   payments: {},
+  media: createLocalMediaStorage({ secret: 'test', folder: 'doulisha/test' }),
   storage: {
     id: 'local',
     createUpload: () => Promise.reject(new Error('unused')),

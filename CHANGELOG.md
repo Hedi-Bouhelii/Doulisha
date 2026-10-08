@@ -4,6 +4,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Added: signed direct uploads (MED-02, 2026-10-08)
+
+- `media.sign` returns signed parameters to send the original file straight to Cloudinary (spec 2.3): no upload preset, no transformation, 10 MB, JPEG, PNG, WebP and HEIC (PDF for payment proofs, stored as authenticated files). It checks that the member may edit the event or profile, or owns the booking.
+- `media.confirm` checks Cloudinary's signed answer and that the stored size equals the file's (Q1), then saves a media row with the SHA-256.
+- Without Cloudinary keys, `PUT /api/media/upload/{token}` stores the file on local disk and answers the same way. Not used by the screens yet.
+
 ### Added: media table for uploads (MED-02, 2026-10-08)
 
 - Migration `0007_media_cloudinary` (additive): `media` records the original's provider, purpose, version, format, size, SHA-256 and crop; event covers, organizer logos, covers and photos, and payment proofs can point at a media row. Applied to the `dev` branch; production applies it on its next deployment.

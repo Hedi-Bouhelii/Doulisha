@@ -28,9 +28,9 @@ No upload path re-encodes or resizes before upload; originals are stored byte fo
 
 ### Upload flow (spec 2.3)
 
-1. The browser calls `POST /api/media/sign` with the purpose and the target (event, organizer profile or booking). The server checks the session and that the member may edit that target, then checks the type and size. It returns signed parameters for the public id `<folder>/<purpose>/<userId>/<uuid>`.
+1. The browser calls `media.sign` (spec 2.3's `POST /api/media/sign`; the API is tRPC, BUILD_PROMPT section 3, so the path is `POST /api/trpc/media.sign`) with the purpose and the target (event, organizer profile or booking). The server checks the session and that the member may edit that target, then checks the type and size. It returns signed parameters for the public id `<folder>/<purpose>/<userId>/<uuid>`.
 2. The browser sends the original `File` to Cloudinary: no canvas, no compression, no resizing.
-3. The browser sends Cloudinary's answer to the server, with the SHA-256 of the same bytes (Web Crypto). The server checks the answer's signature (`public_id=…&version=…` followed by the secret), that the public id is one it signed for this member, and that the stored size equals the file size. It then saves a `media` row.
+3. The browser sends Cloudinary's answer to the server (`media.confirm`), with the SHA-256 of the same bytes (Web Crypto). The server checks the answer's signature (`public_id=…&version=…` followed by the secret), that the public id is one it signed for this member, and that the stored size equals the file size. It then saves a `media` row.
 4. Records point at media rows: `events.cover_media_id`, `organizer_profiles.logo_media_id` and `cover_media_id`, `organizer_photos.media_id`, `payment_proofs.media_id`.
 
 ### The `media` table

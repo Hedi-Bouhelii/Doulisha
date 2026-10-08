@@ -4,6 +4,7 @@ import { bookingRouter } from './routers/booking';
 import { chatRouter } from './routers/chat';
 import { editorRouter } from './routers/editor';
 import { invitationsRouter } from './routers/invitations';
+import { mediaRouter } from './routers/media';
 import { organizerRouter } from './routers/organizer';
 import { organizersRouter } from './routers/organizers';
 import { uploadsRouter } from './routers/uploads';
@@ -33,6 +34,7 @@ export const appRouter = router({
   safety: safetyRouter,
   members: membersRouter,
   uploads: uploadsRouter,
+  media: mediaRouter,
   admin: adminRouter,
 });
 

@@ -1,7 +1,7 @@
 import type { Tx } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
 import type { PaymentProvider, PaymentProviderId } from '@doulisha/payments';
-import type { StorageProvider } from '@doulisha/storage';
+import type { MediaStorage, StorageProvider } from '@doulisha/storage';
 
 /**
  * Infrastructure the services need, injected by the app so the API package
@@ -11,7 +11,10 @@ export interface ServiceDeps {
   /** Runs `fn` in a database transaction (WebSocket Pool). */
   transaction: <T>(fn: (tx: Tx) => Promise<T>) => Promise<T>;
   payments: Partial<Record<PaymentProviderId, PaymentProvider>>;
+  /** Event wall photos (local keys, before MED). */
   storage: StorageProvider;
+  /** Module MED: Cloudinary, or local disk without keys (ADR 0026). */
+  media: MediaStorage;
   /** Absolute base URL of the web app, e.g. https://doulisha.tn. */
   appUrl: string;
   /**
