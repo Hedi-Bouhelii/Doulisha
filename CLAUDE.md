@@ -3,7 +3,8 @@
 Read first:
 
 - `docs/BUILD_PROMPT.md`: role, stack, phases and working rules. It wins on **technology**.
-- `docs/cahier-des-charges-v2.pdf`: the specification. It wins on **features, priorities and business rules**.
+- `docs/cahier-des-charges-v2.1.pdf`: the specification (organizer preview edition, 8 October 2026; v2.0 is kept for history). It wins on **features, priorities and business rules**.
+- Since v2.1, BUILD_PROMPT's phases give way to the spec's action plan (section 1.4): the fix list F-01 to F-13 and journeys J1 to J7.
 
 **Scope:** this repository is the **web application only**. The mobile app will be a separate project (ADR 0006). Skip BUILD_PROMPT Phase 3 and the mobile parts of other phases, and keep `packages/i18n` and `packages/ui-tokens` framework-free so the mobile app can reuse them.
 
@@ -12,7 +13,7 @@ Read first:
 - Work phase by phase (BUILD_PROMPT section 8).
   - Before coding a phase, post a short plan (files, tables, routes, screens, tests) and wait for "go".
   - At the end of a phase, run the checks, update the docs, summarize against the acceptance criteria, then **stop**.
-- Build only features marked **MVP** in the spec, unless the phase says otherwise. Never invent requirements.
+- Build only features marked **P** (organizer preview) in spec v2.1. MVP, V1 and V2 items wait for the decision gate (section 1.6 lists what is out of scope). Never invent requirements.
 - When the spec is ambiguous: log the question in `docs/OPEN_QUESTIONS.md`, pick the simplest option, and continue.
 - Never delete or rewrite existing code without saying why.
 - Git:

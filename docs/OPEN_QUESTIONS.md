@@ -216,3 +216,10 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** The spec lists age-gated events (18+ nightlife), no public profile for minors, and a "who can invite me" setting.
 - **Assumption:** —
 - **Decision (2026-09-29, founder):** No age restrictions. An organizer can state a minimum age on the event (it shows on the event page); nothing blocks a booking. "Who can invite me" is not shown: invitations go by shared link only, so the setting would do nothing yet.
+
+### Q29. Spec v2.1 section 10 still names Supabase
+
+- **Asked:** 2026-10-08 (audit of spec v2.1)
+- **Context:** Section 10 lists "Supabase (Postgres, auth, realtime)" as the backend, "unchanged". The code uses Neon, Drizzle and self-managed Better Auth since Phase 0 (ADR 0002, 0003, 0010).
+- **Assumption:** The table row is out of date.
+- **Decision (2026-10-08, founder):** Keep the existing tools (Neon, Drizzle, Better Auth). No Supabase integration.
