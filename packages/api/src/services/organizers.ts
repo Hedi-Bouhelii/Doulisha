@@ -12,7 +12,8 @@ import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { listPastPublicEvents, listUpcomingPublicEvents } from './events';
 import { followerCount, isFollowing } from './follows';
-import { publicUrlFromKey } from './uploads';
+import { loadMediaRefs, pickMedia } from './media-refs';
+import { attachableMedia, loadOwnMedia, toMediaRef } from './media';
 
 type OrganizerInput = z.infer<typeof organizerProfileInputSchema>;
 type Storage = Pick<ServiceDeps, 'storage'>;
@@ -34,7 +35,7 @@ export function listOwnProfiles(db: Executor, actor: Actor) {
     .orderBy(asc(schema.organizerProfiles.createdAt));
 }
 
-async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
+export async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
   const [profile] = await db
     .select()
     .from(schema.organizerProfiles)
@@ -49,8 +50,13 @@ async function loadOwnProfile(db: Executor, actor: Actor, id: string) {
   return profile;
 }
 
-/** Fields both create and update write; images only when a new key is sent. */
-function profileValues(deps: Storage, actor: Actor, input: OrganizerInput) {
+/**
+ * Fields both create and update write. Images change only when sent; a new
+ * logo or cover replaces any image uploaded before MED.
+ */
+async function profileValues(db: Executor, actor: Actor, input: OrganizerInput) {
+  const logoMediaId = await attachableMedia(db, actor, input.logoMediaId, 'logo');
+  const coverMediaId = await attachableMedia(db, actor, input.coverMediaId, 'cover');
   const socialLinks = Object.fromEntries(
     Object.entries(input.socialLinks).filter((entry): entry is [string, string] =>
       Boolean(entry[1]),
@@ -69,22 +75,8 @@ function profileValues(deps: Storage, actor: Actor, input: OrganizerInput) {
     contactPhone: input.contactPhone ?? null,
     contactEmail: input.contactEmail ?? null,
     paymentInstructions,
-    ...(input.logoKey === undefined
-      ? {}
-      : {
-          logoUrl:
-            input.logoKey === null
-              ? null
-              : publicUrlFromKey(deps, actor, input.logoKey, 'organizer-logo'),
-        }),
-    ...(input.coverKey === undefined
-      ? {}
-      : {
-          coverUrl:
-            input.coverKey === null
-              ? null
-              : publicUrlFromKey(deps, actor, input.coverKey, 'organizer-cover'),
-        }),
+    ...(logoMediaId === undefined ? {} : { logoMediaId, logoUrl: null }),
+    ...(coverMediaId === undefined ? {} : { coverMediaId, coverUrl: null }),
   };
 }
 
@@ -103,7 +95,7 @@ export async function createProfile(
     .values({
       ownerUserId: actor.userId,
       slug: makeSlug(input.name),
-      ...profileValues(deps, actor, input),
+      ...(await profileValues(db, actor, input)),
     })
     .returning();
   await grantRole(db, actor.userId, 'organizer');
@@ -120,7 +112,7 @@ export async function updateProfile(
   await loadOwnProfile(db, actor, id);
   const [profile] = await db
     .update(schema.organizerProfiles)
-    .set(profileValues(deps, actor, input))
+    .set(await profileValues(db, actor, input))
     .where(eq(schema.organizerProfiles.id, id))
     .returning();
   return profile!;
@@ -165,20 +157,37 @@ export async function ensureProfileFromAccount(db: Executor, actor: Actor) {
 export async function getOwnProfileDetail(db: Executor, actor: Actor) {
   const [profile] = await listOwnProfiles(db, actor);
   if (!profile) return null;
-  const photos = await listPhotos(db, profile.id);
-  return { ...profile, photos };
+  const [photos, media] = await Promise.all([
+    listPhotos(db, profile.id),
+    loadMediaRefs(db, [profile.logoMediaId, profile.coverMediaId]),
+  ]);
+  return {
+    ...profile,
+    logoMedia: pickMedia(media, profile.logoMediaId),
+    coverMedia: pickMedia(media, profile.coverMediaId),
+    photos,
+  };
 }
 
-function listPhotos(db: Executor, organizerProfileId: string) {
-  return db
+async function listPhotos(db: Executor, organizerProfileId: string) {
+  const rows = await db
     .select({
       id: schema.organizerPhotos.id,
       url: schema.organizerPhotos.url,
+      mediaId: schema.organizerPhotos.mediaId,
       caption: schema.organizerPhotos.caption,
     })
     .from(schema.organizerPhotos)
     .where(eq(schema.organizerPhotos.organizerProfileId, organizerProfileId))
     .orderBy(asc(schema.organizerPhotos.sort), asc(schema.organizerPhotos.createdAt));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.mediaId),
+  );
+  // A photo is its MED media (ADR 0026), or the URL of an older upload.
+  return rows
+    .map(({ mediaId, ...row }) => ({ ...row, media: pickMedia(media, mediaId) }))
+    .filter((photo) => photo.media !== null || photo.url !== null);
 }
 
 /** Adds an uploaded photo of a past event to the gallery (at most 12). */
@@ -186,7 +195,7 @@ export async function addPhoto(
   db: Executor,
   deps: Storage,
   actor: Actor,
-  input: { profileId: string; key: string; caption?: string | null | undefined },
+  input: { profileId: string; mediaId: string; caption?: string | null | undefined },
 ) {
   await loadOwnProfile(db, actor, input.profileId);
   const [row] = await db
@@ -197,16 +206,17 @@ export async function addPhoto(
   if (existing >= MAX_ORGANIZER_PHOTOS) {
     throw new AppError('BAD_REQUEST', 'errors.tooManyPhotos', { max: MAX_ORGANIZER_PHOTOS });
   }
+  const media = await loadOwnMedia(db, actor, input.mediaId, ['gallery']);
   const [photo] = await db
     .insert(schema.organizerPhotos)
     .values({
       organizerProfileId: input.profileId,
-      url: publicUrlFromKey(deps, actor, input.key, 'organizer-photo'),
+      mediaId: media.id,
       caption: input.caption ?? null,
       sort: existing,
     })
-    .returning({ id: schema.organizerPhotos.id, url: schema.organizerPhotos.url });
-  return photo!;
+    .returning({ id: schema.organizerPhotos.id });
+  return { id: photo!.id, url: null, media: toMediaRef(media) };
 }
 
 export async function removePhoto(db: Executor, actor: Actor, photoId: string) {
@@ -237,12 +247,13 @@ export async function getPublicProfile(
       and(eq(schema.organizerProfiles.slug, slug), isNull(schema.organizerProfiles.deletedAt)),
     );
   if (!profile) throw new AppError('NOT_FOUND', 'errors.notFound');
-  const [photos, events, pastEvents, followers, viewerFollows] = await Promise.all([
+  const [photos, events, pastEvents, followers, viewerFollows, media] = await Promise.all([
     listPhotos(db, profile.id),
     listUpcomingPublicEvents(db, locale, { limit: 12, organizerProfileId: profile.id }),
     listPastPublicEvents(db, locale, { organizerProfileId: profile.id, limit: 12 }),
     followerCount(db, profile.id),
     isFollowing(db, actor, profile.id),
+    loadMediaRefs(db, [profile.logoMediaId, profile.coverMediaId]),
   ]);
   return {
     id: profile.id,
@@ -250,7 +261,9 @@ export async function getPublicProfile(
     name: profile.name,
     bio: profile.bio,
     logoUrl: profile.logoUrl,
+    logoMedia: pickMedia(media, profile.logoMediaId),
     coverUrl: profile.coverUrl,
+    coverMedia: pickMedia(media, profile.coverMediaId),
     categories: profile.categories,
     regions: profile.regions,
     socialLinks: profile.socialLinks,

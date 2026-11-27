@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { buildKey, checkUpload, keyBelongsTo, type UploadPurpose } from '@doulisha/storage';
+import { buildKey, checkUpload, type UploadPurpose } from '@doulisha/storage';
 
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
@@ -35,30 +35,4 @@ export async function createUpload(
     ...ticket,
     publicUrl: check.bucket === 'public' ? deps.storage.publicUrl(key) : null,
   };
-}
-
-/**
- * The public URL of an image the member uploaded for `purpose`. Only their own
- * keys are accepted: never an outside URL, which the share-image route would
- * otherwise fetch from the server.
- */
-export function publicUrlFromKey(
-  deps: Pick<ServiceDeps, 'storage'>,
-  actor: Actor,
-  key: string,
-  purpose: 'event-cover' | 'organizer-logo' | 'organizer-cover' | 'organizer-photo' | 'post-photo',
-): string {
-  if (!keyBelongsTo(key, purpose, actor.userId)) {
-    throw new AppError('FORBIDDEN', 'errors.forbidden');
-  }
-  return deps.storage.publicUrl(key);
-}
-
-/** An event cover the member uploaded (see `publicUrlFromKey`). */
-export function coverUrlFromKey(
-  deps: Pick<ServiceDeps, 'storage'>,
-  actor: Actor,
-  key: string,
-): string {
-  return publicUrlFromKey(deps, actor, key, 'event-cover');
 }

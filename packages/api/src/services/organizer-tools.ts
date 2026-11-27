@@ -11,6 +11,7 @@ import { randomCode } from './booking';
 import { loadManagedEvent } from './event-editor';
 import { recordManualPayment } from './payments';
 import { lockEventStock, movePlaces, releaseExpired } from './stock';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** PRT-01 payment status of a person, from their order. */
 export type AttendeePayment =
@@ -283,7 +284,7 @@ export async function organizerDashboard(db: Executor, actor: Actor, now = new D
     profileIds.length ? inArray(schema.events.organizerProfileId, profileIds) : undefined,
   );
 
-  const events = await db
+  const rows = await db
     .select({
       id: schema.events.id,
       slug: schema.events.slug,
@@ -294,6 +295,7 @@ export async function organizerDashboard(db: Executor, actor: Actor, now = new D
       capacity: schema.events.capacity,
       placesTaken: schema.events.placesTaken,
       coverUrl: schema.events.coverUrl,
+      coverMediaId: schema.events.coverMediaId,
       revenueMillimes:
         sql<number>`coalesce((select sum(${schema.orders.paidMillimes}) from ${schema.orders} where ${schema.orders.eventId} = ${schema.events.id}), 0)`.mapWith(
           Number,
@@ -316,6 +318,14 @@ export async function organizerDashboard(db: Executor, actor: Actor, now = new D
       ),
     )
     .orderBy(asc(schema.events.startsAt));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.coverMediaId),
+  );
+  const events = rows.map(({ coverMediaId, ...row }) => ({
+    ...row,
+    coverMedia: pickMedia(media, coverMediaId),
+  }));
 
   const eventIds = events.map((e) => e.id);
   const sources = eventIds.length

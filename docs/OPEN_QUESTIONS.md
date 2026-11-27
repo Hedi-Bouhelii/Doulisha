@@ -153,7 +153,7 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Asked:** 2026-09-25 (Phase 2)
 - **Context:** Covers and receipts use the local disk provider, which does not survive serverless deployments.
 - **Assumption:** Production must use Cloudflare R2 (Phase 6, `STORAGE_PROVIDER=r2`). `STORAGE_PROVIDER` accepts only `local` until then, so a deployment cannot silently use the disk.
-- **Decision:**
+- **Decision (2026-10-08, founder):** Cloudinary, as spec v2.1 section 2 chooses (ADR 0026). The local disk provider stays only for runs without Cloudinary keys (CI, E2E).
 
 ### Q20. E2E data on the dev branch
 
@@ -216,3 +216,31 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** The spec lists age-gated events (18+ nightlife), no public profile for minors, and a "who can invite me" setting.
 - **Assumption:** —
 - **Decision (2026-09-29, founder):** No age restrictions. An organizer can state a minimum age on the event (it shows on the event page); nothing blocks a booking. "Who can invite me" is not shown: invitations go by shared link only, so the setting would do nothing yet.
+
+### Q29. Spec v2.1 section 10 still names Supabase
+
+- **Asked:** 2026-10-08 (audit of spec v2.1)
+- **Context:** Section 10 lists "Supabase (Postgres, auth, realtime)" as the backend, "unchanged". The code uses Neon, Drizzle and self-managed Better Auth since Phase 0 (ADR 0002, 0003, 0010).
+- **Assumption:** The table row is out of date.
+- **Decision (2026-10-08, founder):** Keep the existing tools (Neon, Drizzle, Better Auth). No Supabase integration.
+
+### Q30. Image size limit: 15 MB in the spec, 10 MB on Cloudinary's free plan
+
+- **Asked:** 2026-10-08 (MED)
+- **Context:** Spec rule Q8 accepts images up to 15 MB and test T8 uploads a 12 MB HEIC. Cloudinary's free plan refuses images over 10 MB or 25 megapixels.
+- **Assumption:** —
+- **Decision (2026-10-08, founder):** Limit uploads to 10 MB during the preview, with a clear message. T8 uses a HEIC under 10 MB. Revisit with a paid plan.
+
+### Q31. Event page header and the 16:9 cover slot
+
+- **Asked:** 2026-10-08 (MED)
+- **Context:** Spec section 2.5 shows the event cover at up to 1,200 px wide, cropped 16:9. The header drew the cover full width with a minimum height, almost square on phones, which stretched it and cut the edges of posters.
+- **Assumption:** —
+- **Decision (2026-10-08, founder):** A 16:9 cover block, at most 1,200 px wide, with the title under it on phones.
+
+### Q32. Transactional e-mail and SMS without a domain
+
+- **Asked:** 2026-10-08 (F-05)
+- **Context:** F-05 asks for e-mails sent from the domain with SPF and DKIM. The only domain is `doulisha.vercel.app`, whose DNS cannot be changed, and the domain purchase (F-08) is planned for Sprint 2.
+- **Assumption:** SMS stays a mock (the founder will bring an SMS provider later). E-mail sending is built behind the existing interface and waits for a domain.
+- **Decision (2026-10-08, founder):** No domain yet; SMS on hold until the founder provides a provider.

@@ -4,7 +4,7 @@ The social platform for events and activities in Tunisia: discover what to do, o
 
 This repository is the **web application**: the public site, event pages, guest RSVP, organizer dashboard and admin, plus the API. The mobile app will be a separate project ([ADR 0006](docs/decisions/0006-web-only-repository.md)).
 
-- Specification: [`docs/cahier-des-charges-v2.pdf`](docs/cahier-des-charges-v2.pdf)
+- Specification: [`docs/cahier-des-charges-v2.1.pdf`](docs/cahier-des-charges-v2.1.pdf) (organizer preview edition; [v2.0](docs/cahier-des-charges-v2.pdf) kept for history)
 - Build plan: [`docs/BUILD_PROMPT.md`](docs/BUILD_PROMPT.md)
 - Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [decisions](docs/decisions/README.md)
 - Database: [`docs/DATABASE.md`](docs/DATABASE.md) · API: [`docs/API.md`](docs/API.md) · UI: [`docs/UX_GUIDELINES.md`](docs/UX_GUIDELINES.md)
@@ -99,7 +99,7 @@ packages/
   validators/ shared Zod schemas
   notifications/ SMS and email senders (mocks for now)
   payments/   payment providers (mock gateway, manual methods)
-  storage/    uploads: policies, signed upload tokens, local provider
+  storage/    images and files: upload policies, Cloudinary signatures and URLs, local provider
 docs/         specification, build plan, architecture, database, API, UX, ADRs, open questions
 .claude/      Claude Code skills shared by the team (Neon)
 ```

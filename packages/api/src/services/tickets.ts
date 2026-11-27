@@ -8,11 +8,12 @@ import type { Actor } from '../permissions';
 import { allowedPayments } from './booking';
 import { attendeePayment } from './organizer-tools';
 import { getOwnOrder } from './payments';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** The buyer's orders, newest event first ("My tickets"). */
 export async function listMyOrders(db: Executor, actor: Actor | null) {
   if (!actor) throw new AppError('UNAUTHORIZED', 'errors.signInRequired');
-  return db
+  const rows = await db
     .select({
       reference: schema.orders.reference,
       status: schema.orders.status,
@@ -25,12 +26,21 @@ export async function listMyOrders(db: Executor, actor: Actor | null) {
         startsAt: schema.events.startsAt,
         city: schema.events.city,
         coverUrl: schema.events.coverUrl,
+        coverMediaId: schema.events.coverMediaId,
       },
     })
     .from(schema.orders)
     .innerJoin(schema.events, eq(schema.events.id, schema.orders.eventId))
     .where(eq(schema.orders.buyerId, actor.userId))
     .orderBy(desc(schema.events.startsAt));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.event.coverMediaId),
+  );
+  return rows.map(({ event: { coverMediaId, ...event }, ...row }) => ({
+    ...row,
+    event: { ...event, coverMedia: pickMedia(media, coverMediaId) },
+  }));
 }
 
 /**
@@ -47,6 +57,7 @@ export async function getMyOrder(
   const order = await getOwnOrder(db, actor, reference);
   const [event] = await db.select().from(schema.events).where(eq(schema.events.id, order.eventId!));
   if (!event) throw new AppError('NOT_FOUND', 'errors.notFound');
+  const media = await loadMediaRefs(db, [event.coverMediaId]);
   const bookings = await db
     .select({
       booking: schema.bookings,
@@ -176,6 +187,7 @@ export async function getMyOrder(
       address: event.address,
       city: event.city,
       coverUrl: event.coverUrl,
+      coverMedia: pickMedia(media, event.coverMediaId),
       cancellationPolicy: event.cancellationPolicy,
       status: event.status,
     },

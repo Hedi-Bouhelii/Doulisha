@@ -1,6 +1,7 @@
 'use client';
 
 import { formatEventDateTime, formatPrice, formatTime, type Locale } from '@doulisha/i18n';
+import type { MediaRef } from '@doulisha/storage/delivery';
 import { useMutation } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -17,13 +18,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 import { NativeSelect } from '@/components/doulisha/form-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { ensureSession } from '@/lib/guest';
@@ -68,6 +69,7 @@ export function CheckoutFlow({
     startsAt: Date;
     city: string | null;
     coverUrl: string | null;
+    coverMedia: MediaRef | null;
     cancellationPolicy: 'flexible' | 'moderate' | 'strict';
   };
   options: Options;
@@ -271,8 +273,14 @@ export function CheckoutFlow({
       <div className="mt-2 rounded-2xl border border-border/70 bg-card p-3 shadow-card lg:hidden">
         <div className="flex items-center gap-3">
           <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-muted">
-            {event.coverUrl ? (
-              <Image src={event.coverUrl} alt="" fill sizes="56px" className="object-cover" />
+            {event.coverMedia || event.coverUrl ? (
+              <MediaImage
+                media={event.coverMedia}
+                url={event.coverUrl}
+                slot="thumb"
+                sizes="56px"
+                className="object-cover"
+              />
             ) : null}
           </div>
           <div className="min-w-0">
@@ -732,9 +740,15 @@ export function CheckoutFlow({
 
         <aside className="hidden lg:block">
           <div className="sticky top-24 overflow-hidden rounded-3xl border border-border/70 bg-card shadow-raised">
-            {event.coverUrl ? (
+            {event.coverMedia || event.coverUrl ? (
               <div className="relative aspect-[16/9] bg-muted">
-                <Image src={event.coverUrl} alt="" fill sizes="320px" className="object-cover" />
+                <MediaImage
+                  media={event.coverMedia}
+                  url={event.coverUrl}
+                  slot="cover"
+                  sizes="320px"
+                  className="object-cover"
+                />
               </div>
             ) : null}
             <div className="space-y-4 p-5">

@@ -1,6 +1,7 @@
 import type { EventBrief, TemplateDefinitionData } from '@doulisha/templates';
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -28,6 +29,7 @@ import {
   ticketKind,
 } from './enums';
 import { organizerProfiles, users } from './identity';
+import { media } from './social';
 
 /** Spec 1.3 categories. Names in ar/fr/en; each has an icon and accent colour. */
 export const categories = pgTable('categories', {
@@ -91,7 +93,9 @@ export const events = pgTable(
     description: text(),
     /** Language the organizer wrote the event in. */
     language: locale().notNull().default('fr'),
+    /** Covers uploaded before MED and demo covers in public/images; replaced by `coverMediaId`. */
     coverUrl: text(),
+    coverMediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'set null' }),
 
     startsAt: timestamp({ withTimezone: true }).notNull(),
     endsAt: timestamp({ withTimezone: true }),
@@ -138,6 +142,7 @@ export const events = pgTable(
     index().on(t.status, t.startsAt),
     index().on(t.organizerProfileId),
     index().on(t.creatorId),
+    index().on(t.coverMediaId),
     index().on(t.templateId),
     index().on(t.categoryId),
     index().on(t.city),

@@ -1158,6 +1158,23 @@ declare const paymentProofs: drizzle_orm_pg_core.PgTableWithColumns<{
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        mediaId: drizzle_orm_pg_core.PgColumn<{
+            name: "mediaId";
+            tableName: "payment_proofs";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
         status: drizzle_orm_pg_core.PgColumn<{
             name: "status";
             tableName: "payment_proofs";
@@ -2425,6 +2442,10 @@ declare const reactionTarget: drizzle_orm_pg_core.PgEnum<["post", "comment", "me
 declare const reactionKind: drizzle_orm_pg_core.PgEnum<["like", "love", "fire", "clap", "haha"]>;
 declare const mediaKind: drizzle_orm_pg_core.PgEnum<["image", "video", "document", "gpx"]>;
 declare const storageBucket: drizzle_orm_pg_core.PgEnum<["public", "private"]>;
+/** Where a media file's bytes are (ADR 0026): Cloudinary, or local disk for runs without keys. */
+declare const mediaProvider: drizzle_orm_pg_core.PgEnum<["local", "cloudinary"]>;
+/** MED spec 2.3: what an image is used for. */
+declare const mediaPurpose: drizzle_orm_pg_core.PgEnum<["cover", "gallery", "avatar", "logo", "proof"]>;
 declare const reportTarget: drizzle_orm_pg_core.PgEnum<["event", "post", "comment", "user", "organizer", "provider", "message"]>;
 declare const reportStatus: drizzle_orm_pg_core.PgEnum<["open", "reviewing", "actioned", "dismissed"]>;
 /** The four event models (6.1). */
@@ -3165,6 +3186,23 @@ declare const events: drizzle_orm_pg_core.PgTableWithColumns<{
             isAutoincrement: false;
             hasRuntimeDefault: false;
             enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        coverMediaId: drizzle_orm_pg_core.PgColumn<{
+            name: "coverMediaId";
+            tableName: "events";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
             baseColumn: never;
             identity: undefined;
             generated: undefined;
@@ -6349,6 +6387,40 @@ declare const organizerProfiles: drizzle_orm_pg_core.PgTableWithColumns<{
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        logoMediaId: drizzle_orm_pg_core.PgColumn<{
+            name: "logoMediaId";
+            tableName: "organizer_profiles";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        coverMediaId: drizzle_orm_pg_core.PgColumn<{
+            name: "coverMediaId";
+            tableName: "organizer_profiles";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
         bio: drizzle_orm_pg_core.PgColumn<{
             name: "bio";
             tableName: "organizer_profiles";
@@ -6617,12 +6689,29 @@ declare const organizerPhotos: drizzle_orm_pg_core.PgTableWithColumns<{
             columnType: "PgText";
             data: string;
             driverParam: string;
-            notNull: true;
+            notNull: false;
             hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
             enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        mediaId: drizzle_orm_pg_core.PgColumn<{
+            name: "mediaId";
+            tableName: "organizer_photos";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
             baseColumn: never;
             identity: undefined;
             generated: undefined;
@@ -7853,7 +7942,17 @@ declare const reactions: drizzle_orm_pg_core.PgTableWithColumns<{
     };
     dialect: "pg";
 }>;
-/** Photos, videos, GPX tracks and documents stored in R2 (`key` is the object key). */
+/** Crop rectangle in pixels of the original, applied at delivery (MED rule Q2). */
+interface MediaCropData {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+/**
+ * Uploaded files (module MED, ADR 0026): the original is stored as uploaded and
+ * every display URL is built from this row, never stored.
+ */
 declare const media: drizzle_orm_pg_core.PgTableWithColumns<{
     name: "media";
     schema: undefined;
@@ -7926,6 +8025,23 @@ declare const media: drizzle_orm_pg_core.PgTableWithColumns<{
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        provider: drizzle_orm_pg_core.PgColumn<{
+            name: "provider";
+            tableName: "media";
+            dataType: "string";
+            columnType: "PgEnumColumn";
+            data: "local" | "cloudinary";
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: ["local", "cloudinary"];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
         key: drizzle_orm_pg_core.PgColumn<{
             name: "key";
             tableName: "media";
@@ -7934,6 +8050,91 @@ declare const media: drizzle_orm_pg_core.PgTableWithColumns<{
             data: string;
             driverParam: string;
             notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        purpose: drizzle_orm_pg_core.PgColumn<{
+            name: "purpose";
+            tableName: "media";
+            dataType: "string";
+            columnType: "PgEnumColumn";
+            data: "cover" | "gallery" | "avatar" | "logo" | "proof";
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: ["cover", "gallery", "avatar", "logo", "proof"];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        version: drizzle_orm_pg_core.PgColumn<{
+            name: "version";
+            tableName: "media";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        format: drizzle_orm_pg_core.PgColumn<{
+            name: "format";
+            tableName: "media";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        bytes: drizzle_orm_pg_core.PgColumn<{
+            name: "bytes";
+            tableName: "media";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        checksumSha256: drizzle_orm_pg_core.PgColumn<{
+            name: "checksumSha256";
+            tableName: "media";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
             hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
@@ -7977,6 +8178,25 @@ declare const media: drizzle_orm_pg_core.PgTableWithColumns<{
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        crop: drizzle_orm_pg_core.PgColumn<{
+            name: "crop";
+            tableName: "media";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: MediaCropData;
+            driverParam: unknown;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            $type: MediaCropData;
+        }>;
         alt: drizzle_orm_pg_core.PgColumn<{
             name: "alt";
             tableName: "media";
@@ -8586,6 +8806,7 @@ declare const conversationReads: drizzle_orm_pg_core.PgTableWithColumns<{
 }>;
 
 type schema_GeoPoint = GeoPoint;
+type schema_MediaCropData = MediaCropData;
 type schema_Utm = Utm;
 declare const schema_accounts: typeof accounts;
 declare const schema_attendees: typeof attendees;
@@ -8630,6 +8851,8 @@ declare const schema_legalStatus: typeof legalStatus;
 declare const schema_locale: typeof locale;
 declare const schema_media: typeof media;
 declare const schema_mediaKind: typeof mediaKind;
+declare const schema_mediaProvider: typeof mediaProvider;
+declare const schema_mediaPurpose: typeof mediaPurpose;
 declare const schema_meetingPoints: typeof meetingPoints;
 declare const schema_meetingPointsRelations: typeof meetingPointsRelations;
 declare const schema_messages: typeof messages;
@@ -8696,8 +8919,8 @@ declare const schema_usersRelations: typeof usersRelations;
 declare const schema_verificationDocument: typeof verificationDocument;
 declare const schema_verifications: typeof verifications;
 declare namespace schema {
-  export { schema_accounts as accounts, schema_attendees as attendees, schema_attendeesRelations as attendeesRelations, schema_authTokens as authTokens, schema_blocks as blocks, schema_bookingQuestions as bookingQuestions, schema_bookingStatus as bookingStatus, schema_bookings as bookings, schema_bookingsRelations as bookingsRelations, schema_cancellationPolicy as cancellationPolicy, schema_categories as categories, schema_categoriesRelations as categoriesRelations, schema_checklists as checklists, schema_comments as comments, schema_conversationKind as conversationKind, schema_conversationReads as conversationReads, schema_conversations as conversations, schema_createdAt as createdAt, schema_deletedAt as deletedAt, schema_discountKind as discountKind, schema_eventModel as eventModel, schema_eventStatus as eventStatus, schema_eventVisibility as eventVisibility, schema_events as events, schema_eventsRelations as eventsRelations, schema_followTarget as followTarget, schema_follows as follows, schema_friendshipStatus as friendshipStatus, schema_friendships as friendships, schema_geographyPoint as geographyPoint, schema_id as id, schema_invitationChannel as invitationChannel, schema_invitations as invitations, schema_invitationsRelations as invitationsRelations, schema_inviteAudience as inviteAudience, schema_invoices as invoices, schema_itinerarySteps as itinerarySteps, schema_ledgerDirection as ledgerDirection, schema_ledgerEntries as ledgerEntries, schema_legalStatus as legalStatus, schema_locale as locale, schema_media as media, schema_mediaKind as mediaKind, schema_meetingPoints as meetingPoints, schema_meetingPointsRelations as meetingPointsRelations, schema_messages as messages, schema_notificationChannel as notificationChannel, schema_notificationPreferences as notificationPreferences, schema_occurrences as occurrences, schema_orderKind as orderKind, schema_orderSource as orderSource, schema_orderStatus as orderStatus, schema_orders as orders, schema_ordersRelations as ordersRelations, schema_organizerPhotos as organizerPhotos, schema_organizerPhotosRelations as organizerPhotosRelations, schema_organizerProfiles as organizerProfiles, schema_organizerProfilesRelations as organizerProfilesRelations, schema_parseEwkbPoint as parseEwkbPoint, schema_paymentMethod as paymentMethod, schema_paymentProofs as paymentProofs, schema_paymentProvider as paymentProvider, schema_paymentStatus as paymentStatus, schema_payments as payments, schema_paymentsRelations as paymentsRelations, schema_payoutStatus as payoutStatus, schema_payouts as payouts, schema_posts as posts, schema_profileSensitive as profileSensitive, schema_profileVisibility as profileVisibility, schema_profiles as profiles, schema_profilesRelations as profilesRelations, schema_promoCodes as promoCodes, schema_providerProfiles as providerProfiles, schema_providerType as providerType, schema_questionType as questionType, schema_reactionKind as reactionKind, schema_reactionTarget as reactionTarget, schema_reactions as reactions, schema_refundStatus as refundStatus, schema_refunds as refunds, schema_registrationType as registrationType, schema_reportStatus as reportStatus, schema_reportTarget as reportTarget, schema_reports as reports, schema_reviewStatus as reviewStatus, schema_rsvpStatus as rsvpStatus, schema_rsvps as rsvps, schema_rsvpsRelations as rsvpsRelations, schema_sessions as sessions, schema_storageBucket as storageBucket, schema_subscriptionPlan as subscriptionPlan, schema_subscriptionStatus as subscriptionStatus, schema_subscriptions as subscriptions, schema_templates as templates, schema_templatesRelations as templatesRelations, schema_ticketKind as ticketKind, schema_ticketTypes as ticketTypes, schema_ticketTypesRelations as ticketTypesRelations, schema_timestamps as timestamps, schema_updatedAt as updatedAt, schema_userRole as userRole, schema_userRoles as userRoles, schema_userRolesRelations as userRolesRelations, schema_users as users, schema_usersRelations as usersRelations, schema_verificationDocument as verificationDocument, schema_verifications as verifications };
-  export type { schema_GeoPoint as GeoPoint, LocalizedText$1 as LocalizedText, schema_Utm as Utm };
+  export { schema_accounts as accounts, schema_attendees as attendees, schema_attendeesRelations as attendeesRelations, schema_authTokens as authTokens, schema_blocks as blocks, schema_bookingQuestions as bookingQuestions, schema_bookingStatus as bookingStatus, schema_bookings as bookings, schema_bookingsRelations as bookingsRelations, schema_cancellationPolicy as cancellationPolicy, schema_categories as categories, schema_categoriesRelations as categoriesRelations, schema_checklists as checklists, schema_comments as comments, schema_conversationKind as conversationKind, schema_conversationReads as conversationReads, schema_conversations as conversations, schema_createdAt as createdAt, schema_deletedAt as deletedAt, schema_discountKind as discountKind, schema_eventModel as eventModel, schema_eventStatus as eventStatus, schema_eventVisibility as eventVisibility, schema_events as events, schema_eventsRelations as eventsRelations, schema_followTarget as followTarget, schema_follows as follows, schema_friendshipStatus as friendshipStatus, schema_friendships as friendships, schema_geographyPoint as geographyPoint, schema_id as id, schema_invitationChannel as invitationChannel, schema_invitations as invitations, schema_invitationsRelations as invitationsRelations, schema_inviteAudience as inviteAudience, schema_invoices as invoices, schema_itinerarySteps as itinerarySteps, schema_ledgerDirection as ledgerDirection, schema_ledgerEntries as ledgerEntries, schema_legalStatus as legalStatus, schema_locale as locale, schema_media as media, schema_mediaKind as mediaKind, schema_mediaProvider as mediaProvider, schema_mediaPurpose as mediaPurpose, schema_meetingPoints as meetingPoints, schema_meetingPointsRelations as meetingPointsRelations, schema_messages as messages, schema_notificationChannel as notificationChannel, schema_notificationPreferences as notificationPreferences, schema_occurrences as occurrences, schema_orderKind as orderKind, schema_orderSource as orderSource, schema_orderStatus as orderStatus, schema_orders as orders, schema_ordersRelations as ordersRelations, schema_organizerPhotos as organizerPhotos, schema_organizerPhotosRelations as organizerPhotosRelations, schema_organizerProfiles as organizerProfiles, schema_organizerProfilesRelations as organizerProfilesRelations, schema_parseEwkbPoint as parseEwkbPoint, schema_paymentMethod as paymentMethod, schema_paymentProofs as paymentProofs, schema_paymentProvider as paymentProvider, schema_paymentStatus as paymentStatus, schema_payments as payments, schema_paymentsRelations as paymentsRelations, schema_payoutStatus as payoutStatus, schema_payouts as payouts, schema_posts as posts, schema_profileSensitive as profileSensitive, schema_profileVisibility as profileVisibility, schema_profiles as profiles, schema_profilesRelations as profilesRelations, schema_promoCodes as promoCodes, schema_providerProfiles as providerProfiles, schema_providerType as providerType, schema_questionType as questionType, schema_reactionKind as reactionKind, schema_reactionTarget as reactionTarget, schema_reactions as reactions, schema_refundStatus as refundStatus, schema_refunds as refunds, schema_registrationType as registrationType, schema_reportStatus as reportStatus, schema_reportTarget as reportTarget, schema_reports as reports, schema_reviewStatus as reviewStatus, schema_rsvpStatus as rsvpStatus, schema_rsvps as rsvps, schema_rsvpsRelations as rsvpsRelations, schema_sessions as sessions, schema_storageBucket as storageBucket, schema_subscriptionPlan as subscriptionPlan, schema_subscriptionStatus as subscriptionStatus, schema_subscriptions as subscriptions, schema_templates as templates, schema_templatesRelations as templatesRelations, schema_ticketKind as ticketKind, schema_ticketTypes as ticketTypes, schema_ticketTypesRelations as ticketTypesRelations, schema_timestamps as timestamps, schema_updatedAt as updatedAt, schema_userRole as userRole, schema_userRoles as userRoles, schema_userRolesRelations as userRolesRelations, schema_users as users, schema_usersRelations as usersRelations, schema_verificationDocument as verificationDocument, schema_verifications as verifications };
+  export type { schema_GeoPoint as GeoPoint, LocalizedText$1 as LocalizedText, schema_MediaCropData as MediaCropData, schema_Utm as Utm };
 }
 
 /**
@@ -10051,6 +10274,33 @@ interface PaymentProvider {
     }>;
 }
 
+/**
+ * Delivery URLs for stored images (module MED, spec 2.4 and 2.5, ADR 0026).
+ * The database keeps the public id and metadata, never a URL: every URL is
+ * built here, at render time, for the slot the image is shown in.
+ *
+ * Browser-safe (no Node APIs): server and client components both use it.
+ */
+/** Crop rectangle in pixels of the original (spec 2.3, rule Q2). */
+interface MediaCrop {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+/** What the database knows about a stored image. */
+interface MediaRef {
+    provider: 'cloudinary' | 'local';
+    /** Cloudinary public id, or the local file's key; no extension. */
+    key: string;
+    version: number | null;
+    /** Format of the original, e.g. "jpg", "heic". */
+    format: string;
+    width: number;
+    height: number;
+    crop: MediaCrop | null;
+}
+
 interface UploadTicket {
     method: 'PUT';
     /** Where the browser sends the file. */
@@ -10071,6 +10321,56 @@ interface StorageProvider {
 }
 
 /**
+ * Where module MED stores originals (ADR 0026): Cloudinary, or local disk for
+ * runs without Cloudinary keys. Both answer an upload the same way, so the
+ * services and the upload form do not care which one is in use.
+ */
+/** What the upload endpoint answers: Cloudinary's fields, mimicked by the local route. */
+interface MediaUploadAnswer {
+    public_id: string;
+    version: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    format: string;
+    bytes: number;
+    signature: string;
+}
+/** How the browser sends the original file. */
+interface MediaUploadForm {
+    provider: 'cloudinary' | 'local';
+    /** Cloudinary: multipart POST of `fields` and `file`. Local: PUT of the raw file. */
+    method: 'POST' | 'PUT';
+    url: string;
+    fields: Record<string, string>;
+    publicId: string;
+}
+interface MediaStorage {
+    readonly provider: 'cloudinary' | 'local';
+    /** Folder of this environment; every public id starts with it. */
+    readonly folder: string;
+    signUpload(input: {
+        publicId: string;
+        private: boolean;
+        allowedFormats: readonly string[];
+        contentType: string;
+        maxBytes: number;
+        now?: Date;
+    }): MediaUploadForm;
+    /** True when the answer was signed by the provider for this public id and version. */
+    verifyAnswer(answer: MediaUploadAnswer): boolean;
+    /**
+     * A short-lived signed link to the original (private proofs, test T2).
+     * Null for local files, which the app reads from disk.
+     */
+    originalUrl(input: {
+        publicId: string;
+        format: string;
+        private: boolean;
+        now?: Date;
+    }): string | null;
+}
+
+/**
  * Infrastructure the services need, injected by the app so the API package
  * never reads environment variables (and tests can pass fakes).
  */
@@ -10078,7 +10378,10 @@ interface ServiceDeps {
     /** Runs `fn` in a database transaction (WebSocket Pool). */
     transaction: <T>(fn: (tx: Tx) => Promise<T>) => Promise<T>;
     payments: Partial<Record<PaymentProviderId, PaymentProvider>>;
+    /** Event wall photos (local keys, before MED). */
     storage: StorageProvider;
+    /** Module MED: Cloudinary, or local disk without keys (ADR 0026). */
+    media: MediaStorage;
     /** Absolute base URL of the web app, e.g. https://doulisha.tn. */
     appUrl: string;
     /**
@@ -10836,6 +11139,40 @@ declare const explorableTables: {
                 isAutoincrement: false;
                 hasRuntimeDefault: false;
                 enumValues: [string, ...string[]];
+                baseColumn: never;
+                identity: undefined;
+                generated: undefined;
+            }, {}, {}>;
+            logoMediaId: drizzle_orm_pg_core.PgColumn<{
+                name: "logoMediaId";
+                tableName: "organizer_profiles";
+                dataType: "string";
+                columnType: "PgUUID";
+                data: string;
+                driverParam: string;
+                notNull: false;
+                hasDefault: false;
+                isPrimaryKey: false;
+                isAutoincrement: false;
+                hasRuntimeDefault: false;
+                enumValues: undefined;
+                baseColumn: never;
+                identity: undefined;
+                generated: undefined;
+            }, {}, {}>;
+            coverMediaId: drizzle_orm_pg_core.PgColumn<{
+                name: "coverMediaId";
+                tableName: "organizer_profiles";
+                dataType: "string";
+                columnType: "PgUUID";
+                data: string;
+                driverParam: string;
+                notNull: false;
+                hasDefault: false;
+                isPrimaryKey: false;
+                isAutoincrement: false;
+                hasRuntimeDefault: false;
+                enumValues: undefined;
                 baseColumn: never;
                 identity: undefined;
                 generated: undefined;
@@ -11956,6 +12293,23 @@ declare const explorableTables: {
                 isAutoincrement: false;
                 hasRuntimeDefault: false;
                 enumValues: [string, ...string[]];
+                baseColumn: never;
+                identity: undefined;
+                generated: undefined;
+            }, {}, {}>;
+            coverMediaId: drizzle_orm_pg_core.PgColumn<{
+                name: "coverMediaId";
+                tableName: "events";
+                dataType: "string";
+                columnType: "PgUUID";
+                data: string;
+                driverParam: string;
+                notNull: false;
+                hasDefault: false;
+                isPrimaryKey: false;
+                isAutoincrement: false;
+                hasRuntimeDefault: false;
+                enumValues: undefined;
                 baseColumn: never;
                 identity: undefined;
                 generated: undefined;
@@ -14371,7 +14725,10 @@ interface EventCardDto {
     id: string;
     slug: string;
     title: string;
+    /** Covers uploaded before MED and demo covers in public/images. */
     coverUrl: string | null;
+    /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+    coverMedia: MediaRef | null;
     startsAt: Date;
     city: string | null;
     venueName: string | null;
@@ -14677,6 +15034,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         myEvents: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
+                coverMedia: MediaRef | null;
                 id: string;
                 slug: string;
                 title: string;
@@ -14725,6 +15083,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     description: string | null;
                     language: "ar" | "fr" | "en";
                     coverUrl: string | null;
+                    coverMediaId: string | null;
                     startsAt: Date;
                     endsAt: Date | null;
                     timezone: string;
@@ -14807,6 +15166,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     required: boolean;
                     sort: number;
                 }[];
+                coverMedia: MediaRef | null;
                 problems: PublishProblem[];
             };
             meta: object;
@@ -14818,7 +15178,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     title?: string | undefined;
                     description?: string | null | undefined;
                     language?: "ar" | "fr" | "en" | undefined;
-                    coverKey?: string | null | undefined;
+                    coverMediaId?: string | null | undefined;
                     startsAt?: unknown;
                     endsAt?: unknown;
                     venueName?: string | null | undefined;
@@ -15012,18 +15372,19 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         mine: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
-                reference: string;
-                status: "cancelled" | "paid" | "pending" | "awaiting_payment" | "partially_paid" | "refunded" | "expired";
-                totalMillimes: number;
-                paidMillimes: number;
-                createdAt: Date;
                 event: {
+                    coverMedia: MediaRef | null;
                     slug: string;
                     title: string;
                     startsAt: Date;
                     city: string | null;
                     coverUrl: string | null;
                 };
+                reference: string;
+                status: "cancelled" | "paid" | "pending" | "awaiting_payment" | "partially_paid" | "refunded" | "expired";
+                totalMillimes: number;
+                paidMillimes: number;
+                createdAt: Date;
             }[];
             meta: object;
         }>;
@@ -15084,6 +15445,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     address: string | null;
                     city: string | null;
                     coverUrl: string | null;
+                    coverMedia: MediaRef | null;
                     cancellationPolicy: "flexible" | "moderate" | "strict";
                     status: "draft" | "published" | "full" | "closed" | "ongoing" | "completed" | "cancelled";
                 };
@@ -15165,6 +15527,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 name: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
+                logoMediaId: string | null;
+                coverMediaId: string | null;
                 bio: string | null;
                 categories: string[];
                 regions: string[];
@@ -15203,8 +15567,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     rib?: string | undefined;
                     accountHolder?: string | undefined;
                 } | undefined;
-                logoKey?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                logoMediaId?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
             };
             output: {
                 id: string;
@@ -15216,6 +15580,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 ownerUserId: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
+                logoMediaId: string | null;
+                coverMediaId: string | null;
                 bio: string | null;
                 categories: string[];
                 regions: string[];
@@ -15255,8 +15621,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                     rib?: string | undefined;
                     accountHolder?: string | undefined;
                 } | undefined;
-                logoKey?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                logoMediaId?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
             };
             output: {
                 deletedAt: Date | null;
@@ -15268,6 +15634,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 name: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
+                logoMediaId: string | null;
+                coverMediaId: string | null;
                 bio: string | null;
                 categories: string[];
                 regions: string[];
@@ -15288,9 +15656,12 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         myProfile: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
+                logoMedia: MediaRef | null;
+                coverMedia: MediaRef | null;
                 photos: {
+                    media: MediaRef | null;
                     id: string;
-                    url: string;
+                    url: string | null;
                     caption: string | null;
                 }[];
                 deletedAt: Date | null;
@@ -15302,6 +15673,8 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 name: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
+                logoMediaId: string | null;
+                coverMediaId: string | null;
                 bio: string | null;
                 categories: string[];
                 regions: string[];
@@ -15322,12 +15695,13 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         addPhoto: _trpc_server.TRPCMutationProcedure<{
             input: {
                 profileId: string;
-                key: string;
+                mediaId: string;
                 caption?: string | null | undefined;
             };
             output: {
                 id: string;
-                url: string;
+                url: null;
+                media: MediaRef;
             };
             meta: object;
         }>;
@@ -15342,6 +15716,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
             input: void;
             output: {
                 events: {
+                    coverMedia: MediaRef | null;
                     id: string;
                     slug: string;
                     title: string;
@@ -15611,7 +15986,9 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 name: string;
                 bio: string | null;
                 logoUrl: string | null;
+                logoMedia: MediaRef | null;
                 coverUrl: string | null;
+                coverMedia: MediaRef | null;
                 categories: string[];
                 regions: string[];
                 socialLinks: Record<string, string>;
@@ -15621,8 +15998,9 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 verified: boolean;
                 memberSince: Date;
                 photos: {
+                    media: MediaRef | null;
                     id: string;
-                    url: string;
+                    url: string | null;
                     caption: string | null;
                 }[];
                 events: EventCardDto[];
@@ -15693,7 +16071,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 venueName?: string | null | undefined;
                 city?: string | null | undefined;
                 description?: string | null | undefined;
-                coverKey?: string | null | undefined;
+                coverMediaId?: string | null | undefined;
                 locationHiddenUntilBooking?: boolean | undefined;
             };
             output: {
@@ -15714,6 +16092,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         hosted: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
+                coverMedia: MediaRef | null;
                 id: string;
                 title: string;
                 startsAt: Date;
@@ -15732,6 +16111,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 title: string;
                 description: string | null;
                 coverUrl: string | null;
+                coverMedia: MediaRef | null;
                 startsAt: Date;
                 venueName: string | null;
                 address: string | null;
@@ -16101,7 +16481,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
     }, _trpc_server.TRPCDecorateCreateRouterOptions<{
         create: _trpc_server.TRPCMutationProcedure<{
             input: {
-                purpose: "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo" | "post-photo" | "event-photo" | "payment-proof";
+                purpose: "post-photo" | "payment-proof";
                 contentType: string;
                 size: number;
             };
@@ -16111,6 +16491,58 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
                 url: string;
                 headers: Record<string, string>;
                 key: string;
+            };
+            meta: object;
+        }>;
+    }>>;
+    media: _trpc_server.TRPCBuiltRouter<{
+        ctx: Context;
+        meta: object;
+        errorShape: {
+            message: string;
+            data: {
+                stack: undefined;
+                fieldErrors: {} | undefined;
+                details: Record<string, unknown> | undefined;
+                code: _trpc_server.TRPC_ERROR_CODE_KEY;
+                httpStatus: number;
+                path?: string;
+            };
+            code: _trpc_server.TRPC_ERROR_CODE_NUMBER;
+        };
+        transformer: true;
+    }, _trpc_server.TRPCDecorateCreateRouterOptions<{
+        sign: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                kind: "payment-proof" | "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo";
+                contentType: string;
+                size: number;
+                eventId?: string | undefined;
+                organizerProfileId?: string | undefined;
+                reference?: string | undefined;
+            };
+            output: MediaUploadForm;
+            meta: object;
+        }>;
+        confirm: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                kind: "payment-proof" | "event-cover" | "organizer-logo" | "organizer-cover" | "organizer-photo";
+                answer: {
+                    public_id: string;
+                    version: number;
+                    format: string;
+                    bytes: number;
+                    signature: string;
+                    width?: number | undefined;
+                    height?: number | undefined;
+                };
+                size: number;
+                checksumSha256: string;
+                eventId?: string | undefined;
+            };
+            output: {
+                id: string;
+                media: MediaRef;
             };
             meta: object;
         }>;
@@ -16200,6 +16632,8 @@ interface EventDetailDto {
     description: string | null;
     language: Locale;
     coverUrl: string | null;
+    /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+    coverMedia: MediaRef | null;
     status: (typeof eventStatus.enumValues)[number];
     visibility: (typeof eventVisibility.enumValues)[number];
     audience: string[];
@@ -16230,6 +16664,7 @@ interface EventDetailDto {
         name: string;
         slug: string;
         logoUrl: string | null;
+        logoMedia: MediaRef | null;
         bio: string | null;
         verified: boolean;
     } | null;

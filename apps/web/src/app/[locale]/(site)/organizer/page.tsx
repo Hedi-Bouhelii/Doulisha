@@ -11,12 +11,12 @@ import {
   Wallet,
 } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { PageHeader, StatCard } from '@/components/doulisha/page';
 import { StatusBadge } from '@/components/doulisha/status-badge';
 import { Button } from '@/components/ui/button';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { api } from '@/trpc/server';
@@ -138,11 +138,11 @@ export default async function OrganizerDashboardPage({ params }: PageProps<'/[lo
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       <div className="relative flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary-soft">
-                        {event.coverUrl ? (
-                          <Image
-                            src={event.coverUrl}
-                            alt=""
-                            fill
+                        {event.coverMedia || event.coverUrl ? (
+                          <MediaImage
+                            media={event.coverMedia}
+                            url={event.coverUrl}
+                            slot="thumb"
                             sizes="72px"
                             className="object-cover"
                           />

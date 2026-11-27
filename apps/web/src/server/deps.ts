@@ -8,7 +8,12 @@ import { mockEmailSender, mockSmsSender } from '@doulisha/notifications';
 import { getTranslations } from 'next-intl/server';
 import { withTransaction } from '@doulisha/db';
 import { createMockProvider, manualProvider } from '@doulisha/payments';
-import { createLocalProvider } from '@doulisha/storage';
+import {
+  createCloudinaryStorage,
+  createLocalMediaStorage,
+  createLocalProvider,
+  type MediaStorage,
+} from '@doulisha/storage';
 
 import { getServerEnv } from '@/env';
 
@@ -16,7 +21,7 @@ import { getServerEnv } from '@/env';
  * Secrets for the mock gateway and local uploads, derived from the auth secret
  * so local setup needs no extra variables. Real providers get their own keys.
  */
-export function derivedSecret(purpose: 'mock-payments' | 'uploads') {
+export function derivedSecret(purpose: 'mock-payments' | 'uploads' | 'media') {
   return createHmac('sha256', getServerEnv().BETTER_AUTH_SECRET).update(purpose).digest('hex');
 }
 
@@ -38,10 +43,33 @@ export function getServiceDeps(): ServiceDeps {
       manual: manualProvider,
     },
     storage: createLocalProvider({ secret: derivedSecret('uploads') }),
+    media: mediaStorage(env),
     appUrl,
     notify: (notice) => sendBuyerNotice(notice, appUrl),
   };
   return deps;
+}
+
+/**
+ * Module MED storage (ADR 0026): Cloudinary when its keys are set, local disk
+ * otherwise (env.ts refuses a partial set of keys).
+ */
+function mediaStorage(env: ReturnType<typeof getServerEnv>): MediaStorage {
+  const folder = env.CLOUDINARY_UPLOAD_FOLDER;
+  if (
+    env.STORAGE_PROVIDER === 'cloudinary' &&
+    env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME &&
+    env.NEXT_PUBLIC_CLOUDINARY_API_KEY &&
+    env.CLOUDINARY_API_SECRET
+  ) {
+    return createCloudinaryStorage({
+      cloudName: env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      apiKey: env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      apiSecret: env.CLOUDINARY_API_SECRET,
+      folder,
+    });
+  }
+  return createLocalMediaStorage({ secret: derivedSecret('media'), folder });
 }
 
 /**

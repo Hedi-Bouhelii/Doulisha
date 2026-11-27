@@ -2,13 +2,13 @@ import { formatPrice, formatTime, type Locale } from '@doulisha/i18n';
 import { ChevronRight, Ticket } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { PageHeader } from '@/components/doulisha/page';
 import { toneOf } from '@/components/doulisha/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -157,11 +157,11 @@ export default async function TicketsPage({
                   </span>
                   <div className="flex min-w-0 flex-1 items-center gap-3 p-3 sm:gap-4 sm:p-4">
                     <div className="relative hidden size-16 shrink-0 overflow-hidden rounded-xl bg-muted sm:flex sm:items-center sm:justify-center">
-                      {order.event.coverUrl ? (
-                        <Image
-                          src={order.event.coverUrl}
-                          alt=""
-                          fill
+                      {order.event.coverMedia || order.event.coverUrl ? (
+                        <MediaImage
+                          media={order.event.coverMedia}
+                          url={order.event.coverUrl}
+                          slot="thumb"
                           sizes="64px"
                           className={cn('object-cover', tab === 'past' && 'grayscale-[0.4]')}
                         />

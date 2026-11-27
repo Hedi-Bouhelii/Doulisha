@@ -1,6 +1,7 @@
 import type { Db } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
+import type { MediaRef } from '@doulisha/storage';
 import type { EventBrief, TemplateField } from '@doulisha/templates';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
@@ -8,6 +9,7 @@ import { AppError } from '../errors';
 import { type Actor, canManageEvent } from '../permissions';
 import { isBookable } from './booking';
 import { placesLeft } from './events';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 export interface EventDetailDto {
   id: string;
@@ -16,6 +18,8 @@ export interface EventDetailDto {
   description: string | null;
   language: Locale;
   coverUrl: string | null;
+  /** The MED cover (ADR 0026); shown instead of `coverUrl` when set. */
+  coverMedia: MediaRef | null;
   status: (typeof schema.eventStatus.enumValues)[number];
   visibility: (typeof schema.eventVisibility.enumValues)[number];
   audience: string[];
@@ -41,6 +45,7 @@ export interface EventDetailDto {
     name: string;
     slug: string;
     logoUrl: string | null;
+    logoMedia: MediaRef | null;
     bio: string | null;
     verified: boolean;
   } | null;
@@ -107,7 +112,7 @@ export async function getEventBySlug(
   if (!row) throw new AppError('NOT_FOUND', 'errors.notFound');
   const { event, category, templateName, templateDefinition, organizer } = row;
 
-  const [tickets, points, steps, attendees] = await Promise.all([
+  const [tickets, points, steps, attendees, media] = await Promise.all([
     db
       .select()
       .from(schema.ticketTypes)
@@ -135,6 +140,7 @@ export async function getEventBySlug(
         ),
       )
       .limit(6),
+    loadMediaRefs(db, [event.coverMediaId, organizer?.logoMediaId]),
   ]);
 
   return {
@@ -144,6 +150,7 @@ export async function getEventBySlug(
     description: event.description,
     language: event.language,
     coverUrl: event.coverUrl,
+    coverMedia: pickMedia(media, event.coverMediaId),
     status: event.status,
     visibility: event.visibility,
     audience: event.audience,
@@ -174,6 +181,7 @@ export async function getEventBySlug(
           name: organizer.name,
           slug: organizer.slug,
           logoUrl: organizer.logoUrl,
+          logoMedia: pickMedia(media, organizer.logoMediaId),
           bio: organizer.bio,
           verified: organizer.verifiedAt !== null,
         }

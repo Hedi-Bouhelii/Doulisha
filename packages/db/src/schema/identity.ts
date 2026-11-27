@@ -1,6 +1,8 @@
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
+  check,
   date,
   index,
   integer,
@@ -25,6 +27,7 @@ import {
   userRole,
   verificationDocument,
 } from './enums';
+import { media } from './social';
 
 // --- Better Auth core tables (ADR 0010) --------------------------------------
 // Property names are the ones Better Auth expects; columns are snake_case.
@@ -162,8 +165,11 @@ export const organizerProfiles = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     slug: text().notNull().unique(),
     name: text().notNull(),
+    /** Images uploaded before MED; replaced by the media columns below. */
     logoUrl: text(),
     coverUrl: text(),
+    logoMediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'set null' }),
+    coverMediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'set null' }),
     bio: text(),
     categories: text()
       .array()
@@ -191,7 +197,7 @@ export const organizerProfiles = pgTable(
     ...timestamps(),
     deletedAt: deletedAt(),
   },
-  (t) => [index().on(t.ownerUserId)],
+  (t) => [index().on(t.ownerUserId), index().on(t.logoMediaId), index().on(t.coverMediaId)],
 );
 
 /** Photos of past events on an organizer's profile (founder decision, OPEN_QUESTIONS Q21). */
@@ -202,12 +208,18 @@ export const organizerPhotos = pgTable(
     organizerProfileId: uuid()
       .notNull()
       .references(() => organizerProfiles.id, { onDelete: 'cascade' }),
-    url: text().notNull(),
+    /** Photos uploaded before MED; new photos use `mediaId`. */
+    url: text(),
+    mediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'cascade' }),
     caption: text(),
     sort: integer().notNull().default(0),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.organizerProfileId, t.sort)],
+  (t) => [
+    index().on(t.organizerProfileId, t.sort),
+    index().on(t.mediaId),
+    check('organizer_photos_source', sql`${t.url} is not null or ${t.mediaId} is not null`),
+  ],
 );
 
 /** PRV-01 / PRV-02 provider directory. */

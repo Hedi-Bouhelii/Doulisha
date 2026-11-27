@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   check,
   index,
   integer,
@@ -31,6 +32,7 @@ import {
 } from './enums';
 import { events, meetingPoints, occurrences, ticketTypes } from './events';
 import { users } from './identity';
+import { media } from './social';
 
 /** SHR-04 attribution captured from the shared link. */
 export interface Utm {
@@ -184,7 +186,9 @@ export const paymentProofs = pgTable(
     uploadedById: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    /** Object key of the file; for Cloudinary proofs, the public id of `mediaId`. */
     fileKey: text().notNull(),
+    mediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'set null' }),
     status: reviewStatus().notNull().default('pending'),
     reviewedById: uuid().references(() => users.id, { onDelete: 'set null' }),
     reviewedAt: timestamp({ withTimezone: true }),
@@ -194,7 +198,12 @@ export const paymentProofs = pgTable(
     rejectionReason: text(),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.paymentId), index().on(t.uploadedById), index().on(t.reviewedById)],
+  (t) => [
+    index().on(t.paymentId),
+    index().on(t.uploadedById),
+    index().on(t.reviewedById),
+    index().on(t.mediaId),
+  ],
 );
 
 /** PAY-04 refunds from the cancellation policy, approved by the organizer. */

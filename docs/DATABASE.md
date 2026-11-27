@@ -52,6 +52,7 @@ pnpm --filter @doulisha/db exec drizzle-kit check   # CI: migrations consistent 
 - `0006_report_messages.sql`: `report_target` gains `message` (TRS-03 reports on chat messages, ADR 0022).
 - `0005_event_chat.sql`: `conversations` (kind `organizer` with its `member_id`, or `group`; one per participant and event, one group per event), `messages` (1–2000 characters) and `conversation_reads` (unread counts), ADR 0021.
 - `0004_payment_review.sql`: `orders.locale` (language of the buyer's messages) and `payment_proofs.rejection_reason` (ADR 0018). D17 and transfer reservations use the existing `bookings.hold_expires_at` as their deadline.
+- `0007_media_cloudinary.sql` (MED, ADR 0026), additive only: `media` gains `provider`, `purpose`, `version`, `format`, `bytes`, `checksum_sha256` and `crop`; `events.cover_media_id`, `organizer_profiles.logo_media_id` and `cover_media_id`, `organizer_photos.media_id` (its `url` becomes optional, one of the two is required) and `payment_proofs.media_id`, each indexed.
 - Never run `drizzle-kit push` against production.
 - **Production migrates itself** (ADR 0020): the web build starts with `pnpm --filter @doulisha/db db:deploy`, which, on a Vercel production deployment only, applies the migrations and adds missing categories and templates (`ensureReferenceData`, also used by the seed). Keep migrations backward compatible: the new schema is live a few minutes before the new code.
 
@@ -114,6 +115,8 @@ erDiagram
   posts ||--o{ comments : ""
   users ||--o{ reactions : ""
   users ||--o{ media : uploads
+  media ||--o{ events : "cover"
+  media ||--o{ payment_proofs : "private file"
   users ||--o{ reports : files
   users ||--o{ blocks : ""
 ```
@@ -122,21 +125,21 @@ erDiagram
 
 ### Identity and social
 
-| Table                                     | Purpose                                                                                                                                            |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`                                   | Better Auth users. Phone-only accounts get a `…@phone.doulisha.invalid` placeholder email; guests (`is_anonymous`) get `…@guest.doulisha.invalid`. |
-| `sessions`, `accounts`, `auth_tokens`     | Better Auth sessions, linked OAuth accounts, OTP codes and magic-link tokens (`auth_tokens` is Better Auth's "verification" model).                |
-| `user_roles`                              | ACC-05 multi-role: `organizer`, `provider`, `brand`, `admin`. Everyone is a participant; hosting needs no role.                                    |
-| `profiles`                                | ACC-02 profile and ACC-06 privacy: visibility, who can invite me, who sees my attendance (default: friends).                                       |
-| `profile_sensitive`                       | Emergency contact and encrypted medical notes, apart from the profile with strict access (spec section 8).                                         |
-| `organizer_profiles`                      | ACC-03 clubs, associations, promoters; `verified_at` after ACC-04 approval.                                                                        |
-| `provider_profiles`                       | PRV-01/02 directory: venues, catering, DJs… with a price range.                                                                                    |
-| `verifications`                           | ACC-04 documents (ID, JORT, RNE, tourism licence) in the private bucket, reviewed by admins.                                                       |
-| `notification_preferences`                | COM-04 per type and channel (UI in V1).                                                                                                            |
-| `friendships`                             | SOC-02, one row per pair in either direction (unique on least/greatest).                                                                           |
-| `follows`                                 | SOC-01 follow users, organizers or providers.                                                                                                      |
-| `posts`, `comments`, `reactions`, `media` | SOC-04/05 event wall and feed; media are R2 object keys.                                                                                           |
-| `reports`, `blocks`                       | TRS-03 reports (ADM-02 queue) and blocks.                                                                                                          |
+| Table                                     | Purpose                                                                                                                                                                                                                 |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`                                   | Better Auth users. Phone-only accounts get a `…@phone.doulisha.invalid` placeholder email; guests (`is_anonymous`) get `…@guest.doulisha.invalid`.                                                                      |
+| `sessions`, `accounts`, `auth_tokens`     | Better Auth sessions, linked OAuth accounts, OTP codes and magic-link tokens (`auth_tokens` is Better Auth's "verification" model).                                                                                     |
+| `user_roles`                              | ACC-05 multi-role: `organizer`, `provider`, `brand`, `admin`. Everyone is a participant; hosting needs no role.                                                                                                         |
+| `profiles`                                | ACC-02 profile and ACC-06 privacy: visibility, who can invite me, who sees my attendance (default: friends).                                                                                                            |
+| `profile_sensitive`                       | Emergency contact and encrypted medical notes, apart from the profile with strict access (spec section 8).                                                                                                              |
+| `organizer_profiles`                      | ACC-03 clubs, associations, promoters; `verified_at` after ACC-04 approval.                                                                                                                                             |
+| `provider_profiles`                       | PRV-01/02 directory: venues, catering, DJs… with a price range.                                                                                                                                                         |
+| `verifications`                           | ACC-04 documents (ID, JORT, RNE, tourism licence) in the private bucket, reviewed by admins.                                                                                                                            |
+| `notification_preferences`                | COM-04 per type and channel (UI in V1).                                                                                                                                                                                 |
+| `friendships`                             | SOC-02, one row per pair in either direction (unique on least/greatest).                                                                                                                                                |
+| `follows`                                 | SOC-01 follow users, organizers or providers.                                                                                                                                                                           |
+| `posts`, `comments`, `reactions`, `media` | SOC-04/05 event wall and feed. `media` also holds every MED upload (ADR 0026): the Cloudinary public id in `key`, the original's size, format, bytes and SHA-256, and an optional crop in original pixels; never a URL. |
+| `reports`, `blocks`                       | TRS-03 reports (ADM-02 queue) and blocks.                                                                                                                                                                               |
 
 ### Events
 

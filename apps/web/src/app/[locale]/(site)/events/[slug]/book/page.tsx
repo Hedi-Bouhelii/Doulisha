@@ -54,6 +54,7 @@ export default async function BookPage({ params }: PageProps<'/[locale]/events/[
         startsAt: event.startsAt,
         city: event.city,
         coverUrl: event.coverUrl,
+        coverMedia: event.coverMedia,
         cancellationPolicy: event.cancellationPolicy,
       }}
       options={options}

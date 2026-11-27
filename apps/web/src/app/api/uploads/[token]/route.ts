@@ -4,17 +4,8 @@ import { dirname } from 'node:path';
 import { verifyUploadToken } from '@doulisha/storage';
 
 import { derivedSecret } from '@/server/deps';
+import { fileMatchesType } from '@/server/file-signature';
 import { localPath } from '@/server/local-files';
-
-/** First bytes of each accepted file type: the declared type must match the content. */
-const signatures: Record<string, (b: Uint8Array) => boolean> = {
-  'image/jpeg': (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
-  'image/png': (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
-  'image/webp': (b) =>
-    String.fromCharCode(...b.slice(0, 4)) === 'RIFF' &&
-    String.fromCharCode(...b.slice(8, 12)) === 'WEBP',
-  'application/pdf': (b) => String.fromCharCode(...b.slice(0, 5)) === '%PDF-',
-};
 
 /**
  * Development upload endpoint behind the local storage provider. Accepts one
@@ -35,7 +26,7 @@ export async function PUT(request: Request, { params }: RouteContext<'/api/uploa
   if (bytes.byteLength === 0 || bytes.byteLength > claims.maxBytes) {
     return new Response('File too large', { status: 413 });
   }
-  if (!signatures[claims.contentType]?.(bytes)) {
+  if (!fileMatchesType(claims.contentType, bytes)) {
     return new Response('File content does not match its type', { status: 415 });
   }
   const path = localPath(claims.bucket, claims.key);

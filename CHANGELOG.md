@@ -4,6 +4,43 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: covers, logos and organizer photos are uploaded as originals (MED-02, 2026-10-08)
+
+- The create-event wizard, the quick private invitation and the organizer profile (logo, cover, past-event photos) send the original file straight to Cloudinary (or local disk without keys) through `media.sign` and `media.confirm`: no resizing or compression on the way (Q1). HEIC from iPhones is accepted.
+- Files over 10 MB are refused with a message that names the limit; covers narrower than 1,200 px get a "may look blurry" warning (Q8).
+- The API takes media ids (`coverMediaId`, `logoMediaId`, `mediaId`) instead of upload keys; a new image replaces any image uploaded before MED. `uploads.create` now serves only event wall photos and payment proofs.
+- E2E `media.spec.ts`: an uploaded cover is shown at least twice its drawn width and never through `/_next/image` (T3, T4, T6); the warning and the 10 MB refusal.
+
+### Changed: uploaded images shown at the right size, Cloudinary only (MED-03, 2026-10-08)
+
+- Pages that show an event cover, an organizer logo, cover or photo use `MediaImage`: a plain `<img>` with Cloudinary sizes for its slot (spec 2.5), so these images never go through `/_next/image` again (Q5). Older uploads and demo covers keep `next/image`.
+- **Event page:** the cover is a 16:9 block (at most 1,104 px wide) with the category, title, date and place under it, instead of text over a full-width photo that stretched on phones and hid the bottom of posters (Q31).
+- The API returns `coverMedia` (events, tickets, invitations, the organizer's lists) and `logoMedia` / `coverMedia` (organizer pages) next to the old URLs; JSON-LD and the organizer page's Open Graph image use the media when there is one.
+
+### Added: signed direct uploads (MED-02, 2026-10-08)
+
+- `media.sign` returns signed parameters to send the original file straight to Cloudinary (spec 2.3): no upload preset, no transformation, 10 MB, JPEG, PNG, WebP and HEIC (PDF for payment proofs, stored as authenticated files). It checks that the member may edit the event or profile, or owns the booking.
+- `media.confirm` checks Cloudinary's signed answer and that the stored size equals the file's (Q1), then saves a media row with the SHA-256.
+- Without Cloudinary keys, `PUT /api/media/upload/{token}` stores the file on local disk and answers the same way. Not used by the screens yet.
+
+### Added: media table for uploads (MED-02, 2026-10-08)
+
+- Migration `0007_media_cloudinary` (additive): `media` records the original's provider, purpose, version, format, size, SHA-256 and crop; event covers, organizer logos, covers and photos, and payment proofs can point at a media row. Applied to the `dev` branch; production applies it on its next deployment.
+- Organizer photos without a URL (stored as media) are not listed until the pages render media.
+
+### Added: image delivery URLs and Cloudinary signatures (MED-03, 2026-10-08)
+
+- `@doulisha/storage` builds every image URL at render time from the stored public id, per display slot (spec 2.5): event cover 16:9 at fixed quality 90 without chroma subsampling, cards 4:3, gallery, avatars, logos, thumbnails, share images and Open Graph. Widths 320 to 2560 capped at the original, resizing that never enlarges, automatic format, crops in original pixels (ADR 0026).
+- Signing of uploads and private downloads, and checking of Cloudinary's upload answers, without the Cloudinary package.
+- `@doulisha/storage/delivery` has no Node APIs, for client components.
+
+### Added: Cloudinary configuration for images (MED-01, 2026-10-08)
+
+- Spec v2.1 is the reference; only items marked P are built (Q29).
+- New variables `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `NEXT_PUBLIC_CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (server only) and `CLOUDINARY_UPLOAD_FOLDER`. With the three keys set, the app uses Cloudinary; without them, local disk (ADR 0026). Setting only some keys stops the app with a clear error.
+- `STORAGE_PROVIDER` accepts `local` or `cloudinary` and is optional.
+- The unused R2 placeholders are removed from `.env.example`: Cloudinary replaces R2 (ADR 0026).
+
 ### Changed: design system v2 and full UI redesign (2026-09-30)
 
 - **One design system on every screen** (ADR 0025), on the same palette: warm white cards, a radius scale (inputs 14 px, cards 20 px, hero and dialogs 28 px, pill buttons), soft warm shadows, and one status palette (`Badge` tones and `statusTone`) for events, bookings and payments in both themes. New contrast tests for every status on its tint.

@@ -1,6 +1,7 @@
 'use client';
 
 import type { Locale } from '@doulisha/i18n';
+import type { MediaRef } from '@doulisha/storage/delivery';
 import type { TemplateField } from '@doulisha/templates';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -20,11 +21,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useRef, useState, type ReactNode } from 'react';
 
 import { HillsBackdrop } from '@/components/doulisha/decor';
 import { Field, NativeSelect } from '@/components/doulisha/form-field';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -34,7 +35,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Link } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
-import { putFile } from '@/lib/upload';
+import { IMAGE_ACCEPT, isLowResolutionCover, useMediaUpload } from '@/lib/media-upload';
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 
@@ -203,44 +204,48 @@ export function BasicsStep({
       </div>
       <CoverUpload
         eventId={eventId}
-        coverUrl={form.coverUrl}
-        onUploaded={(coverUrl) => patchForm({ coverUrl })}
+        cover={{ media: form.coverMedia, url: form.coverUrl }}
+        onUploaded={(coverMedia) => patchForm({ coverMedia, coverUrl: null })}
       />
     </div>
   );
 }
 
+/**
+ * EVT-02 cover through MED: the original file goes straight to storage
+ * (spec 2.3); covers under 1,200 px get a warning, never a refusal (Q8).
+ */
 function CoverUpload({
   eventId,
-  coverUrl,
+  cover,
   onUploaded,
 }: {
   eventId: string;
-  coverUrl: string | null;
-  onUploaded: (url: string) => void;
+  cover: { media: MediaRef | null; url: string | null };
+  onUploaded: (media: MediaRef) => void;
 }) {
   const t = useTranslations('Wizard');
   const tHost = useTranslations('Host');
+  const tMedia = useTranslations('Media');
   const trpc = useTRPC();
   const errorMessage = useErrorMessage();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const createUpload = useMutation(trpc.uploads.create.mutationOptions());
+  const [lowWidth, setLowWidth] = useState<number | null>(null);
+  const uploadMedia = useMediaUpload('event-cover');
   const update = useMutation(trpc.editor.update.mutationOptions());
+  const hasCover = Boolean(cover.media || cover.url);
 
   async function upload(file: File) {
     setBusy(true);
     setError(null);
+    setLowWidth(null);
     try {
-      const ticket = await createUpload.mutateAsync({
-        purpose: 'event-cover',
-        contentType: file.type,
-        size: file.size,
-      });
-      const key = await putFile(ticket, file);
-      await update.mutateAsync({ eventId, patch: { coverKey: key } });
-      if (ticket.publicUrl) onUploaded(ticket.publicUrl);
+      const uploaded = await uploadMedia(file, { eventId });
+      await update.mutateAsync({ eventId, patch: { coverMediaId: uploaded.id } });
+      onUploaded(uploaded.media);
+      if (isLowResolutionCover(uploaded.media)) setLowWidth(uploaded.media.width);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -252,9 +257,18 @@ function CoverUpload({
     <div className="space-y-2">
       <p className="text-sm font-medium">{t('cover')}</p>
       <div className="grid gap-4 rounded-2xl border-2 border-dashed border-border p-3 sm:grid-cols-[14rem_1fr] sm:items-center">
-        <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl bg-muted">
-          {coverUrl ? (
-            <Image src={coverUrl} alt="" fill sizes="224px" className="object-cover" />
+        <div
+          className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl bg-muted"
+          data-testid="cover-preview"
+        >
+          {hasCover ? (
+            <MediaImage
+              media={cover.media}
+              url={cover.url}
+              slot="cover"
+              sizes="(min-width: 640px) 224px, calc(100vw - 4rem)"
+              className="object-cover"
+            />
           ) : (
             <>
               <HillsBackdrop className="absolute inset-x-0 bottom-0 h-2/3" />
@@ -267,7 +281,7 @@ function CoverUpload({
           <input
             ref={input}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept={IMAGE_ACCEPT}
             className="sr-only"
             aria-label={t('uploadCover')}
             onChange={(e) => {
@@ -282,7 +296,7 @@ function CoverUpload({
             disabled={busy}
           >
             <Upload aria-hidden="true" />
-            {coverUrl ? t('changeCover') : t('uploadCover')}
+            {hasCover ? t('changeCover') : t('uploadCover')}
           </Button>
         </div>
       </div>
@@ -293,6 +307,16 @@ function CoverUpload({
         >
           <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
+        </p>
+      ) : null}
+      {lowWidth ? (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning"
+          data-testid="cover-low-resolution"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {tMedia('lowResolution', { width: lowWidth })}
         </p>
       ) : null}
     </div>

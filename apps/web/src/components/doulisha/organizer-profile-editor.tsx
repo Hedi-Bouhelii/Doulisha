@@ -1,9 +1,9 @@
 'use client';
 
+import type { MediaRef } from '@doulisha/storage/delivery';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, Check, ImagePlus, Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useRef, useState } from 'react';
 
 import { Field, NativeSelect } from '@/components/doulisha/form-field';
@@ -12,16 +12,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
-import { putFile } from '@/lib/upload';
+import {
+  IMAGE_ACCEPT,
+  isLowResolutionCover,
+  useMediaUpload,
+  type UploadedMedia,
+} from '@/lib/media-upload';
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
 import type { RouterOutputs } from '@/trpc/types';
 
+import { MediaImage } from './media-image';
 import { socialNetworks } from './social-icons';
 
 type Profile = NonNullable<RouterOutputs['organizer']['myProfile']>;
 type LegalStatus = 'association' | 'company' | 'independent';
-type ImagePurpose = 'organizer-logo' | 'organizer-cover' | 'organizer-photo';
 
 export const PROFILE_SECTIONS = ['identity', 'activity', 'payment'] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
@@ -39,8 +44,15 @@ interface FormState {
   bankName: string;
   rib: string;
   accountHolder: string;
-  logo: { key?: string | null; url: string | null };
-  cover: { key?: string | null; url: string | null };
+  /** `mediaId` is set once a new image is uploaded (null: removed); the rest is the preview. */
+  logo: ImageState;
+  cover: ImageState;
+}
+
+interface ImageState {
+  mediaId?: string | null;
+  media: MediaRef | null;
+  url: string | null;
 }
 
 function toState(profile: Profile): FormState {
@@ -58,8 +70,8 @@ function toState(profile: Profile): FormState {
     bankName: pay.bankName ?? '',
     rib: pay.rib ?? '',
     accountHolder: pay.accountHolder ?? '',
-    logo: { url: profile.logoUrl },
-    cover: { url: profile.coverUrl },
+    logo: { media: profile.logoMedia, url: profile.logoUrl },
+    cover: { media: profile.coverMedia, url: profile.coverUrl },
   };
 }
 
@@ -122,10 +134,14 @@ export function OrganizerProfileEditor({
           rib: blank(form.rib),
           accountHolder: blank(form.accountHolder),
         },
-        ...(form.logo.key !== undefined ? { logoKey: form.logo.key } : {}),
-        ...(form.cover.key !== undefined ? { coverKey: form.cover.key } : {}),
+        ...(form.logo.mediaId !== undefined ? { logoMediaId: form.logo.mediaId } : {}),
+        ...(form.cover.mediaId !== undefined ? { coverMediaId: form.cover.mediaId } : {}),
       });
-      setForm((f) => ({ ...f, logo: { url: f.logo.url }, cover: { url: f.cover.url } }));
+      setForm((f) => ({
+        ...f,
+        logo: { media: f.logo.media, url: f.logo.url },
+        cover: { media: f.cover.media, url: f.cover.url },
+      }));
       setSaved(true);
       router.refresh();
       return true;
@@ -192,18 +208,20 @@ export function OrganizerProfileEditor({
             <div className="space-y-5">
               <ImagePicker
                 label={t('cover')}
-                purpose="organizer-cover"
-                url={form.cover.url}
+                kind="organizer-cover"
+                profileId={profile.id}
+                image={form.cover}
                 wide
-                onUploaded={(key, url) => set({ cover: { key, url } })}
-                onRemove={() => set({ cover: { key: null, url: null } })}
+                onUploaded={(u) => set({ cover: { mediaId: u.id, media: u.media, url: null } })}
+                onRemove={() => set({ cover: { mediaId: null, media: null, url: null } })}
               />
               <ImagePicker
                 label={t('logo')}
-                purpose="organizer-logo"
-                url={form.logo.url}
-                onUploaded={(key, url) => set({ logo: { key, url } })}
-                onRemove={() => set({ logo: { key: null, url: null } })}
+                kind="organizer-logo"
+                profileId={profile.id}
+                image={form.logo}
+                onUploaded={(u) => set({ logo: { mediaId: u.id, media: u.media, url: null } })}
+                onRemove={() => set({ logo: { mediaId: null, media: null, url: null } })}
               />
               <Field id="org-name" label={tOrg('name')}>
                 <Input
@@ -421,48 +439,43 @@ export function OrganizerProfileEditor({
   );
 }
 
-function useUpload() {
-  const trpc = useTRPC();
-  const createUpload = useMutation(trpc.uploads.create.mutationOptions());
-  return async (purpose: ImagePurpose, file: File) => {
-    const ticket = await createUpload.mutateAsync({
-      purpose,
-      contentType: file.type,
-      size: file.size,
-    });
-    const key = await putFile(ticket, file);
-    return { key, url: ticket.publicUrl ?? '' };
-  };
-}
-
+/** Logo or cover of the profile, uploaded through MED (spec 2.3); saved with the form. */
 function ImagePicker({
   label,
-  purpose,
-  url,
+  kind,
+  profileId,
+  image,
   wide = false,
   onUploaded,
   onRemove,
 }: {
   label: string;
-  purpose: 'organizer-logo' | 'organizer-cover';
-  url: string | null;
+  kind: 'organizer-logo' | 'organizer-cover';
+  profileId: string;
+  image: ImageState;
   wide?: boolean;
-  onUploaded: (key: string, url: string) => void;
+  onUploaded: (uploaded: UploadedMedia) => void;
   onRemove: () => void;
 }) {
   const t = useTranslations('OrganizerProfile');
+  const tMedia = useTranslations('Media');
   const errorMessage = useErrorMessage();
-  const upload = useUpload();
+  const upload = useMediaUpload(kind);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lowWidth, setLowWidth] = useState<number | null>(null);
+  const hasImage = Boolean(image.media || image.url);
 
   async function pick(file: File) {
     setBusy(true);
     setError(null);
+    setLowWidth(null);
     try {
-      const done = await upload(purpose, file);
-      onUploaded(done.key, done.url);
+      const uploaded = await upload(file, { organizerProfileId: profileId });
+      onUploaded(uploaded);
+      // Q8: a blurry-looking cover gets a warning, never a refusal.
+      if (wide && isLowResolutionCover(uploaded.media)) setLowWidth(uploaded.media.width);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -480,14 +493,20 @@ function ImagePicker({
             wide ? 'aspect-[3/1] w-full max-w-md rounded-2xl' : 'size-20 rounded-2xl',
           )}
         >
-          {url ? (
-            <Image src={url} alt="" fill sizes={wide ? '448px' : '80px'} className="object-cover" />
+          {hasImage ? (
+            <MediaImage
+              media={image.media}
+              url={image.url}
+              slot={wide ? 'banner' : 'logo'}
+              sizes={wide ? '448px' : '80px'}
+              className="object-cover"
+            />
           ) : null}
         </div>
         <input
           ref={input}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept={IMAGE_ACCEPT}
           className="sr-only"
           aria-label={label}
           onChange={(e) => {
@@ -507,9 +526,9 @@ function ImagePicker({
             ) : (
               <ImagePlus aria-hidden="true" />
             )}
-            {url ? t('change') : t('upload')}
+            {hasImage ? t('change') : t('upload')}
           </Button>
-          {url ? (
+          {hasImage ? (
             <Button
               type="button"
               variant="ghost"
@@ -530,6 +549,15 @@ function ImagePicker({
           {error}
         </p>
       ) : null}
+      {lowWidth ? (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning"
+        >
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {tMedia('lowResolution', { width: lowWidth })}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -540,7 +568,7 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
   const trpc = useTRPC();
   const router = useRouter();
   const errorMessage = useErrorMessage();
-  const upload = useUpload();
+  const upload = useMediaUpload('organizer-photo');
   const input = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState(photos);
   const [busy, setBusy] = useState(false);
@@ -554,9 +582,12 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
     setError(null);
     try {
       for (const file of Array.from(files).slice(0, max - items.length)) {
-        const done = await upload('organizer-photo', file);
-        const photo = await add.mutateAsync({ profileId, key: done.key });
-        setItems((list) => [...list, { id: photo.id, url: photo.url, caption: null }]);
+        const done = await upload(file, { organizerProfileId: profileId });
+        const photo = await add.mutateAsync({ profileId, mediaId: done.id });
+        setItems((list) => [
+          ...list,
+          { id: photo.id, url: null, media: photo.media, caption: null },
+        ]);
       }
       router.refresh();
     } catch (e) {
@@ -592,7 +623,13 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
             key={photo.id}
             className="group relative aspect-square overflow-hidden rounded-xl bg-muted"
           >
-            <Image src={photo.url} alt="" fill sizes="160px" className="object-cover" />
+            <MediaImage
+              media={photo.media}
+              url={photo.url}
+              slot="thumb"
+              sizes="160px"
+              className="object-cover"
+            />
             <button
               type="button"
               onClick={() => void drop(photo.id)}
@@ -625,7 +662,7 @@ function PhotoGallery({ profileId, photos }: { profileId: string; photos: Profil
         ref={input}
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp"
+        accept={IMAGE_ACCEPT}
         className="sr-only"
         aria-label={t('addPhotos')}
         onChange={(e) => {

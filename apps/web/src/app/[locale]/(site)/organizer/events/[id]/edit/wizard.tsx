@@ -65,7 +65,7 @@ export function Wizard({
   const isDraft = initial.event.status === 'draft';
 
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<EventForm>(() => toForm(initial.event));
+  const [form, setForm] = useState<EventForm>(() => toForm(initial.event, initial.coverMedia));
   const [tickets, setTickets] = useState<TicketForm[]>(() =>
     initial.tickets.filter((ticket) => ticket.isActive).map(toTicketForm),
   );

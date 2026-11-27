@@ -23,6 +23,7 @@ import {
   reviewProof,
 } from '../services/payments';
 import { getMyOrder } from '../services/tickets';
+import { createLocalMediaStorage } from '@doulisha/storage';
 
 loadRootEnv();
 if (process.env.NEON_BRANCH === 'production') {
@@ -35,6 +36,7 @@ const notices: BuyerNotice[] = [];
 const deps: ServiceDeps = {
   transaction: (fn) => withTransaction(url, fn),
   payments: {},
+  media: createLocalMediaStorage({ secret: 'test', folder: 'doulisha/test' }),
   storage: {
     id: 'local',
     createUpload: () => Promise.reject(new Error('unused')),

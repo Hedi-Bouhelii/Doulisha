@@ -21,7 +21,8 @@ import { makeSlug } from '../domain/slug';
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import { assertCanManageEvent, type Actor } from '../permissions';
-import { coverUrlFromKey } from './uploads';
+import { attachableMedia } from './media';
+import { loadMediaRefs, pickMedia } from './media-refs';
 
 /** Loads an event with what permission checks need, or throws NOT_FOUND. */
 export async function loadManagedEvent(db: Executor, actor: Actor | null, eventId: string) {
@@ -162,6 +163,8 @@ export async function getEditableEvent(db: Executor, actor: Actor | null, eventI
     meetingPoints: points,
     programme: steps,
     questions,
+    /** The MED cover (ADR 0026); `event.coverUrl` is for older covers. */
+    coverMedia: pickMedia(await loadMediaRefs(db, [event.coverMediaId]), event.coverMediaId),
     problems: publishProblems({ ...event, tickets }, template.definition),
   };
 }
@@ -198,15 +201,17 @@ export async function updateEvent(
     const template = await loadTemplate(db, event.templateId);
     details = validateDetails(template.definition, { ...event.details, ...patch.details });
   }
-  const { details: _ignored, coverKey, ...rest } = patch;
-  const cover =
-    coverKey === undefined
-      ? {}
-      : { coverUrl: coverKey === null ? null : coverUrlFromKey(deps, actor, coverKey) };
+  const { details: _ignored, coverMediaId: newCover, ...rest } = patch;
+  const coverMediaId = await attachableMedia(db, actor, newCover, 'cover');
+  // A new cover (or none) replaces any cover uploaded before MED.
+  const cover = coverMediaId === undefined ? {} : { coverMediaId, coverUrl: null };
   await db
     .update(schema.events)
     .set({ ...rest, ...cover, details })
     .where(eq(schema.events.id, eventId));
+  if (coverMediaId) {
+    await db.update(schema.media).set({ eventId }).where(eq(schema.media.id, coverMediaId));
+  }
 }
 
 /**
@@ -463,7 +468,7 @@ export async function listManagedEvents(db: Executor, actor: Actor) {
     .from(schema.organizerProfiles)
     .where(eq(schema.organizerProfiles.ownerUserId, actor.userId));
   const profileIds = profiles.map((p) => p.id);
-  return db
+  const rows = await db
     .select({
       id: schema.events.id,
       slug: schema.events.slug,
@@ -476,6 +481,7 @@ export async function listManagedEvents(db: Executor, actor: Actor) {
       capacity: schema.events.capacity,
       placesTaken: schema.events.placesTaken,
       coverUrl: schema.events.coverUrl,
+      coverMediaId: schema.events.coverMediaId,
       priceFromMillimes: schema.events.priceFromMillimes,
     })
     .from(schema.events)
@@ -489,4 +495,12 @@ export async function listManagedEvents(db: Executor, actor: Actor) {
       ),
     )
     .orderBy(desc(schema.events.startsAt));
+  const media = await loadMediaRefs(
+    db,
+    rows.map((row) => row.coverMediaId),
+  );
+  return rows.map(({ coverMediaId, ...row }) => ({
+    ...row,
+    coverMedia: pickMedia(media, coverMediaId),
+  }));
 }

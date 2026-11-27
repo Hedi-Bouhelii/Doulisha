@@ -50,6 +50,13 @@
       "when": 1790709119981,
       "tag": "0006_report_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791471138415,
+      "tag": "0007_media_cloudinary",
+      "breakpoints": true
     }
   ]
 }

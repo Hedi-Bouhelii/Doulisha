@@ -32,7 +32,7 @@ flowchart LR
   MOB -. API over HTTPS .-> WEB
 
   WEB --> NEON[(Neon PostgreSQL<br/>PostGIS, pg_trgm)]
-  WEB --> R2[(Cloudflare R2<br/>public + private buckets)]
+  WEB --> MEDIA[(Cloudinary<br/>images + private payment proofs)]
   WEB --> JOBS[Inngest<br/>reminders, holds, waitlist]
   JOBS --> WEB
   WEB --> PAY[Konnect / Flouci<br/>D17, manual proofs]

@@ -29,12 +29,56 @@ With these set, `.github/workflows/ci.yml` creates a Neon branch per pull reques
 - Google and Facebook sign-in (ADR 0019): the redirect addresses are `https://doulisha.vercel.app/api/auth/callback/google` and `…/callback/facebook`, never with a language prefix. How the founder set up both apps: [SOCIAL_SIGN_IN_SETUP.md](SOCIAL_SIGN_IN_SETUP.md).
 - Not working on the live site yet, by design until Phase 6: SMS and email codes (mock senders; the dev outbox returns 404 in production), uploads (local disk), and online card payment (mock page returns 404).
 
+## Cloudinary set-up (images, ADR 0026)
+
+The founder does this once. Never commit the values.
+
+1. Create a free account on cloudinary.com. In the console, open the API keys page and copy the **cloud name**, the **API key** and the **API secret**.
+2. Vercel → the project → Settings → Environment Variables:
+
+   | Name                                | Production      | Preview        | Note                       |
+   | ----------------------------------- | --------------- | -------------- | -------------------------- |
+   | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | cloud name      | cloud name     | public                     |
+   | `NEXT_PUBLIC_CLOUDINARY_API_KEY`    | API key         | API key        | public                     |
+   | `CLOUDINARY_API_SECRET`             | API secret      | API secret     | mark it **Sensitive**      |
+   | `CLOUDINARY_UPLOAD_FOLDER`          | `doulisha/prod` | `doulisha/dev` | one folder per environment |
+
+3. Redeploy: the `NEXT_PUBLIC_` values are baked in at build time.
+4. Local work: add the same four lines to the root `.env.local`, with `CLOUDINARY_UPLOAD_FOLDER=doulisha/dev`, then restart `pnpm dev`.
+5. In the Cloudinary console, set a usage notification at 70 % of the monthly credits (MED-07).
+6. Do not create an unsigned upload preset: the app signs every upload (spec 2.2).
+
+Without the three keys the app stores files on local disk, which works on a laptop but not on Vercel. Setting only some of the keys stops the app with an error naming the missing ones.
+
+## Move the live site to the production database (Q26, ADR 0020)
+
+The founder decided on 2026-09-29 that the live site uses the Neon `production` branch, but the Production variables on Vercel still point at `dev`: the live site shows the demo events and everything created on it lives in `dev`. To switch:
+
+1. Get the two connection strings of the `production` branch (database `Doulisha`, role `neondb_owner`):
+
+   ```sh
+   neon connection-string production --database-name Doulisha --role-name neondb_owner --pooled   # DATABASE_URL
+   neon connection-string production --database-name Doulisha --role-name neondb_owner            # DATABASE_URL_UNPOOLED
+   ```
+
+   Or in the Neon console: branch `production` → Connect → database `Doulisha`, once with connection pooling on and once with it off.
+
+2. Vercel → Settings → Environment Variables, for **Production only** (Preview stays on `dev`):
+   - `DATABASE_URL` = the pooled string
+   - `DATABASE_URL_UNPOOLED` = the direct string
+   - `NEON_BRANCH` = `production`
+3. Redeploy the latest Production deployment. The build runs `db:deploy` first; its log ends with `db:deploy: migrations applied, reference data added (… categories, … templates) on branch production.`
+4. Check the live site: Explore shows no events, and signing in with Google using an `ADMIN_EMAILS` address opens `/admin`.
+5. Create the founder's organizer profile and the real events again: accounts, events and bookings made on the live site so far stay in `dev`.
+
+To undo, put the `dev` values back and redeploy. Do this before inviting any real organizer, so nobody's data is left behind in `dev`.
+
 ## Vercel (Phase 6)
 
 - Function region `cle1` (Cleveland), next to the Neon database (OPEN_QUESTIONS Q9).
 - Environment variables: see `.env.example`. `SMS_PROVIDER`, `EMAIL_PROVIDER` and `PAYMENT_PROVIDER` stay `mock` until real providers are added.
 - Turborepo runs in strict mode: a variable reaches `next build` only if it is listed in the `env` of the `build` task in `turbo.json`. When you add a variable to `env.ts` and `.env.example`, add it there too, or the Vercel build fails with "Invalid environment variables".
-- **Before the first deployment:** add the R2 storage provider. The local disk provider (`STORAGE_PROVIDER=local`) does not survive serverless deployments (OPEN_QUESTIONS Q19).
+- **Files:** set the Cloudinary variables (above). The local disk provider does not survive serverless deployments (OPEN_QUESTIONS Q19, ADR 0026).
 - `NEXT_PUBLIC_APP_URL` must be the public origin: it builds share links, `sitemap.xml`, canonical URLs and share-image URLs.
 - The mock payment page (`/checkout/mock-pay`) returns 404 in production.
 - Auth rate limiting turns on automatically in production (in-memory; a shared store is needed with several instances).

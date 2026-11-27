@@ -154,7 +154,7 @@
     "phoneTab": "Téléphone",
     "emailTab": "E-mail",
     "phoneLabel": "Numéro de téléphone",
-    "phoneHint": "Numéros tunisiens : 8 chiffres. Autres pays : ajoutez l’indicatif, par exemple \u2066+33\u2069.",
+    "phoneHint": "Numéros tunisiens : 8 chiffres. Autres pays : ajoutez l’indicatif, par exemple ⁦+33⁩.",
     "sendCode": "Recevoir un code",
     "codeLabel": "Code à 6 chiffres",
     "codeSentTo": "Nous avons envoyé un code au {phone}.",
@@ -252,6 +252,8 @@
     "capacityBelowBooked": "La capacité ne peut pas être inférieure aux places déjà réservées.",
     "fileType": "Ce type de fichier n’est pas accepté.",
     "fileSize": "Ce fichier est trop volumineux.",
+    "fileTooLarge": "Ce fichier dépasse 10 Mo. Choisissez-en un plus léger.",
+    "uploadFailed": "L’envoi n’a pas abouti. Vérifiez votre connexion et réessayez.",
     "dateInPast": "Choisissez une date dans le futur.",
     "nameRequired": "Indiquez votre nom.",
     "invalidTemplate": "Le modèle n’est pas valide.",
@@ -766,7 +768,7 @@
     "locationHint": "Les invités voient la ville, mais pas l’adresse exacte.",
     "coverPhoto": "Photo de couverture (facultatif)",
     "coverPhotoHint": "Donnez une image à votre invitation.",
-    "coverFormats": "JPG, PNG ou WebP · 5 Mo maximum",
+    "coverFormats": "JPG, PNG, WebP ou HEIC · 10 Mo maximum",
     "createHint": "Vous recevez ensuite un lien à partager sur WhatsApp."
   },
   "Invite": {
@@ -1108,5 +1110,8 @@
     "save": "Enregistrer",
     "saved": "Enregistré",
     "seeMyPage": "Voir ma page"
+  },
+  "Media": {
+    "lowResolution": "Cette image ne fait que {width} px de large et risque d’être floue. Une photo d’au moins 1 200 px de large sera plus nette."
   }
 }

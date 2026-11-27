@@ -1,12 +1,12 @@
 import { formatEventDateTime } from '@doulisha/i18n';
 import { CalendarDays, PartyPopper } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 
 import { GroupChatButton } from '@/components/doulisha/chat';
 import { EmptyState } from '@/components/doulisha/empty-state';
 import { PageHeader } from '@/components/doulisha/page';
 import { Button } from '@/components/ui/button';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { absoluteUrl } from '@/lib/site';
@@ -45,8 +45,14 @@ export default async function HostPage({ params }: PageProps<'/[locale]/host'>) 
             >
               <div className="flex min-w-0 flex-1 items-center gap-4">
                 <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-highlight-soft">
-                  {event.coverUrl ? (
-                    <Image src={event.coverUrl} alt="" fill sizes="64px" className="object-cover" />
+                  {event.coverMedia || event.coverUrl ? (
+                    <MediaImage
+                      media={event.coverMedia}
+                      url={event.coverUrl}
+                      slot="thumb"
+                      sizes="64px"
+                      className="object-cover"
+                    />
                   ) : (
                     <PartyPopper className="size-6 text-highlight" aria-hidden="true" />
                   )}

@@ -3,7 +3,6 @@ import { TRPCError } from '@trpc/server';
 import { CalendarDays, MapPin, PartyPopper, Sparkles, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -11,6 +10,7 @@ import { GroupChatButton } from '@/components/doulisha/chat';
 import { HillsBackdrop } from '@/components/doulisha/decor';
 import { FriendsGoing, initials } from '@/components/doulisha/friends-going';
 import { Badge } from '@/components/ui/badge';
+import { MediaImage } from '@/components/doulisha/media-image';
 import { resolveLocale } from '@/i18n/locale';
 import { Link } from '@/i18n/navigation';
 import { getSession } from '@/server/auth';
@@ -66,11 +66,11 @@ export default async function InvitationPage({ params }: PageProps<'/[locale]/in
     <article className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-raised">
         <div className="relative aspect-[16/9] bg-highlight-soft">
-          {invitation.coverUrl ? (
-            <Image
-              src={invitation.coverUrl}
-              alt=""
-              fill
+          {invitation.coverMedia || invitation.coverUrl ? (
+            <MediaImage
+              media={invitation.coverMedia}
+              url={invitation.coverUrl}
+              slot="cover"
               priority
               sizes="(min-width: 672px) 672px, 100vw"
               className="object-cover"
