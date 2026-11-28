@@ -104,9 +104,13 @@ Record each technical choice as an ADR in the mobile repo, the same way as the w
     - guest sessions (`/sign-in/anonymous`) for RSVP and booking without an account.
   - Rate limits apply in production (for example 3 code requests a minute).
   - New accounts finish setup (`account.status` → `needsSetup`, `account.completeSignUp`).
-- **Uploads:** `uploads.create` returns a presigned `PUT` ticket and a key; upload the file, then pass the key to the procedure that attaches it:
-  - purposes: `event-cover`, `event-photo`, `organizer-*`, `payment-proof`, `post-photo`;
-  - limits: images up to 5 MB; receipts up to 8 MB, PDF allowed.
+- **Uploads (module MED, ADR 0026):** send the original file, never a resized or compressed copy:
+  1. `media.sign({ kind, contentType, size, eventId?, organizerProfileId?, reference? })` returns a form: a multipart `POST` to Cloudinary of `fields` plus `file` (or a `PUT` to the web app without Cloudinary keys);
+  2. send the file, then `media.confirm({ kind, answer, size, checksumSha256 })` with the storage's JSON answer and the file's SHA-256; it returns the media `id`;
+  3. pass that `id` to the procedure that attaches it (`coverMediaId`, `logoMediaId`, `mediaId`, or `booking.attachProof({ reference, mediaId })`).
+  - kinds: `event-cover`, `organizer-logo`, `organizer-cover`, `organizer-photo`, `payment-proof` (private; guests may send it; PDF allowed);
+  - limits: 10 MB; JPEG, PNG, WebP and HEIC;
+  - event wall photos still use the older `uploads.create` (`post-photo`) and are off on deployments (OPEN_QUESTIONS Q33).
 - **Payments:**
   - Online payment returns a `redirectUrl` (the mock gateway page on the web until Konnect/Flouci, Phase 6): open it in an in-app browser and return to the ticket.
   - D17 and transfer show the organizer's number or RIB and a receipt upload.

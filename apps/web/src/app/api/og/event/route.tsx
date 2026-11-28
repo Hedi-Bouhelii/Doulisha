@@ -5,13 +5,14 @@ import {
   isLocale,
   type Locale,
 } from '@doulisha/i18n';
+import type { FixedSlotName } from '@doulisha/storage/delivery';
 import { categoryAccents, palette } from '@doulisha/ui-tokens';
 import { TRPCError } from '@trpc/server';
 import { getTranslations } from 'next-intl/server';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
 
-import { ARABIC, imageDataUrl, Line, loadFonts } from '@/server/og-kit';
+import { ARABIC, coverDataUrl, imageDataUrl, Line, loadFonts } from '@/server/og-kit';
 import { apiForLocale } from '@/trpc/server';
 
 /** SHR-02 formats: link preview, square post, story, invitation card. */
@@ -22,6 +23,14 @@ const sizes = {
   invitation: { width: 1080, height: 1350 },
 } as const;
 type Format = keyof typeof sizes;
+
+/** Which cut of the original each format draws (spec 2.5, Q10). */
+const coverSlots = {
+  og: 'og',
+  post: 'sharePost',
+  story: 'shareStory',
+  invitation: 'sharePost',
+} as const satisfies Record<Format, FixedSlotName>;
 
 /**
  * Share images generated from event data (SHR-02), per category colour and in
@@ -48,7 +57,7 @@ export async function GET(request: Request) {
   const accent =
     categoryAccents[event.category.accent as keyof typeof categoryAccents] ??
     categoryAccents.outdoor;
-  const cover = await imageDataUrl(event.coverUrl);
+  const cover = await coverDataUrl(event.coverMedia, event.coverUrl, coverSlots[format]);
   const symbol = await imageDataUrl('/images/brand/symbol.png');
   const rtl = getDirection(locale) === 'rtl';
   // Satori cannot shape Amiri's Arabic; IBM Plex Sans Arabic renders correctly.

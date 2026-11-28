@@ -186,7 +186,7 @@ export const paymentProofs = pgTable(
     uploadedById: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    /** Object key of the file; for Cloudinary proofs, the public id of `mediaId`. */
+    /** Object key of the file with its extension; for MED proofs, `mediaId`'s public id and format. */
     fileKey: text().notNull(),
     mediaId: uuid().references((): AnyPgColumn => media.id, { onDelete: 'set null' }),
     status: reviewStatus().notNull().default('pending'),

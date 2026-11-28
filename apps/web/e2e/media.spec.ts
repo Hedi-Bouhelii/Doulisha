@@ -47,10 +47,14 @@ test('an uploaded cover is shown sharp and never through the Next.js optimizer (
   await expect
     .poll(() => cover.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
     .toBeGreaterThan(0);
-  const { natural, rendered } = await cover.evaluate((img: HTMLImageElement) => ({
-    natural: img.naturalWidth,
-    rendered: img.getBoundingClientRect().width,
-  }));
+  // With a srcset, naturalWidth is divided by the pixel density: measure the
+  // file the browser chose (currentSrc) instead.
+  const { natural, rendered } = await cover.evaluate(async (img: HTMLImageElement) => {
+    const chosen = new Image();
+    chosen.src = img.currentSrc || img.src;
+    await chosen.decode();
+    return { natural: chosen.naturalWidth, rendered: img.getBoundingClientRect().width };
+  });
   // T3/T4: at least twice the drawn width, or the whole original when smaller.
   expect(natural).toBeGreaterThanOrEqual(Math.min(2 * rendered, 2400) - 1);
   expect(optimized).toEqual([]);

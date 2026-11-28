@@ -13,6 +13,7 @@ export {
 } from './domain/sign-in-methods';
 export { handlePaymentEvent } from './services/payments';
 export { getProofForViewer } from './services/tickets';
+export { loadProofMedia } from './services/media-refs';
 export { loadManagedEvent } from './services/event-editor';
 export { listAttendees, type AttendeePayment } from './services/organizer-tools';
 export { AppError, type AppErrorCode } from './errors';

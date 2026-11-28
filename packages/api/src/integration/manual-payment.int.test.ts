@@ -94,6 +94,22 @@ async function pendingProofId(reference: string) {
   return row!.id;
 }
 
+/** A private payment-proof upload, as media.confirm records it (MED-05). */
+async function proofMedia(owner: Actor, name: string) {
+  const [row] = await db
+    .insert(schema.media)
+    .values({
+      ownerId: owner.userId,
+      kind: 'image',
+      bucket: 'private',
+      key: `doulisha/test/payment-proof/${owner.userId}/${run}-${name}`,
+      purpose: 'proof',
+      format: 'jpg',
+    })
+    .returning();
+  return row!.id;
+}
+
 async function placesTaken() {
   const [event] = await db.select().from(schema.events).where(eq(schema.events.id, eventId));
   return event!.placesTaken;
@@ -183,7 +199,7 @@ describe('D17 and bank transfer reservations', () => {
     expect(await placesTaken()).toBe(1);
 
     // The receipt pauses the clock and blocks "mark as paid".
-    await attachProof(db, buyer, reference, `payment-proof/${buyer.userId}/one.jpg`);
+    await attachProof(db, buyer, reference, await proofMedia(buyer, 'one'));
     order = await getMyOrder(db, buyer, reference);
     expect(order.paymentDeadline).toBeNull();
     expect(order.proofStatus).toBe('pending');
@@ -205,7 +221,7 @@ describe('D17 and bank transfer reservations', () => {
     expect(notices.at(-1)).toMatchObject({ kind: 'receipt_rejected', reason: 'wrong_amount' });
 
     // A new receipt, approved with the D17 transaction number: the QR code appears.
-    await attachProof(db, buyer, reference, `payment-proof/${buyer.userId}/two.jpg`);
+    await attachProof(db, buyer, reference, await proofMedia(buyer, 'two'));
     await reviewProof(deps, db, organizerId, await pendingProofId(reference), {
       approve: true,
       transactionRef: 'D17-889900',
@@ -233,8 +249,24 @@ describe('D17 and bank transfer reservations', () => {
     expect(order.orderStatus).toBe('expired');
     expect(order.canCancel).toBe(false);
     await expect(
-      attachProof(db, buyer, reference, `payment-proof/${buyer.userId}/late.jpg`, later),
+      attachProof(db, buyer, reference, await proofMedia(buyer, 'late'), later),
     ).rejects.toBeInstanceOf(AppError);
+    await cancelReservation(deps, db, await orderId(reference));
+  });
+
+  it("refuses someone else's file or a file uploaded for another purpose", async () => {
+    const { reference } = await book(4);
+    const organizer: Actor = { userId: organizerId, roles: ['organizer'], isAnonymous: false };
+    await expect(
+      attachProof(db, buyer, reference, await proofMedia(organizer, 'not-mine')),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    const [cover] = await db
+      .insert(schema.media)
+      .values({ ownerId: buyer.userId, kind: 'image', key: `${run}-cover`, purpose: 'cover' })
+      .returning();
+    await expect(attachProof(db, buyer, reference, cover!.id)).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+    });
     await cancelReservation(deps, db, await orderId(reference));
   });
 

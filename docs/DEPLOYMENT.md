@@ -52,7 +52,9 @@ Without the three keys the app stores files on local disk, which works on a lapt
 
 ## Move the live site to the production database (Q26, ADR 0020)
 
-The founder decided on 2026-09-29 that the live site uses the Neon `production` branch, but the Production variables on Vercel still point at `dev`: the live site shows the demo events and everything created on it lives in `dev`. To switch:
+**Done on 2026-11-27.** The Production variables on Vercel point at the Neon `production` branch, `ADMIN_EMAILS` is set for Production, and the founder's Google account has the admin role there. Accounts and events created on the live site before that date stay in `dev`. If `/admin` says "admins only" after a Google sign-in, check that `ADMIN_EMAILS` is set for the **Production** environment, redeploy, then sign out and in again: the role is given at sign-in.
+
+The steps below are kept for reference (and to undo).
 
 1. Get the two connection strings of the `production` branch (database `Doulisha`, role `neondb_owner`):
 

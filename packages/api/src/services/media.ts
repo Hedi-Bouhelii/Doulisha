@@ -11,17 +11,17 @@ import {
   type MediaUploadAnswer,
   type MediaUploadKind,
 } from '@doulisha/storage';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { loadManagedEvent } from './event-editor';
 import { loadOwnProfile } from './organizers';
-import { toMediaRef, type MediaRow } from './media-refs';
+import { loadOwnMedia, toMediaRef, type MediaRow } from './media-refs';
 import { getOwnOrder } from './payments';
 
-export { toMediaRef, type MediaRow } from './media-refs';
+export { loadOwnMedia, toMediaRef, type MediaRow } from './media-refs';
 
 type MediaDeps = Pick<ServiceDeps, 'media'>;
 
@@ -170,24 +170,4 @@ export async function attachableMedia(
 ): Promise<string | null | undefined> {
   if (mediaId === undefined || mediaId === null) return mediaId;
   return (await loadOwnMedia(db, actor, mediaId, [purpose])).id;
-}
-
-/**
- * A media row the member uploaded for one of `purposes`, before attaching it
- * to an event, a profile or a payment. Nobody can attach someone else's file.
- */
-export async function loadOwnMedia(
-  db: Executor,
-  actor: Actor,
-  mediaId: string,
-  purposes: readonly NonNullable<MediaRow['purpose']>[],
-) {
-  const [row] = await db
-    .select()
-    .from(schema.media)
-    .where(and(eq(schema.media.id, mediaId), isNull(schema.media.deletedAt)));
-  if (!row || row.ownerId !== actor.userId || !row.purpose || !purposes.includes(row.purpose)) {
-    throw new AppError('FORBIDDEN', 'errors.forbidden');
-  }
-  return row;
 }

@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
+### Changed: payment proofs and share images on Cloudinary (MED-05, Q10, 2026-11-28)
+
+- **Payment proofs** (D17 screenshots, transfer receipts) are uploaded as originals to private storage through `media.sign` and `media.confirm`, like covers. iPhone HEIC screenshots are accepted. `booking.attachProof` takes the upload's `mediaId` and refuses a file the buyer did not upload as a proof.
+- **Viewing a proof** (`/api/proofs/{id}`) keeps its permission check (the buyer, or the event's managers). For a Cloudinary proof it redirects to a signed link that expires after 60 seconds; HEIC is delivered as JPEG so the organizer's browser can show it. A proof whose file is missing answers 404 instead of a server error.
+- **Share images and the PDF ticket** draw an MED cover cut by Cloudinary from the original for each format (link preview, square post, story, invitation), so WhatsApp and Facebook previews show the cover on the live site. Only the app's own Cloudinary account is fetched.
+- **Event wall photos** are hidden when files go to Cloudinary: they still use the older local upload, which Vercel cannot keep (OPEN_QUESTIONS Q33). Text posts, comments and reactions are unchanged.
+- The live site uses the `production` database since 2026-11-27: no demo events (F-02).
+
 ### Changed: covers, logos and organizer photos are uploaded as originals (MED-02, 2026-10-08)
 
 - The create-event wizard, the quick private invitation and the organizer profile (logo, cover, past-event photos) send the original file straight to Cloudinary (or local disk without keys) through `media.sign` and `media.confirm`: no resizing or compression on the way (Q1). HEIC from iPhones is accepted.

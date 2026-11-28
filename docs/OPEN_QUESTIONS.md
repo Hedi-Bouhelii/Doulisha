@@ -244,3 +244,17 @@ Questions 5 to 8 repeat or depend on the founder questions in specification sect
 - **Context:** F-05 asks for e-mails sent from the domain with SPF and DKIM. The only domain is `doulisha.vercel.app`, whose DNS cannot be changed, and the domain purchase (F-08) is planned for Sprint 2.
 - **Assumption:** SMS stays a mock (the founder will bring an SMS provider later). E-mail sending is built behind the existing interface and waits for a domain.
 - **Decision (2026-10-08, founder):** No domain yet; SMS on hold until the founder provides a provider.
+
+### Q33. Event wall photos on deployments
+
+- **Asked:** 2026-11-28 (F-01, release for the first organizer test)
+- **Context:** Wall photos still use the pre-MED upload to local disk, which Vercel does not keep. Moving them to MED needs a migration and wall changes, and the event wall is out of the preview's scope (spec v2.1 section 1.6).
+- **Assumption:** With Cloudinary keys set (every deployment), the wall hides "Add photos"; text posts, comments and reactions keep working. Locally without keys, photos work as before. The wall moves to MED after the decision gate if it is kept.
+- **Decision:** —
+
+### Q34. Sign-in methods for the first testers
+
+- **Asked:** 2026-11-28 (release for the first organizer test)
+- **Context:** The founder wants testers to choose any sign-in method. Google and Facebook work on the live site; phone and e-mail codes still go to mock senders (Q32), so a tester who picks them never receives the code.
+- **Assumption:** Until a sender exists, the release notes tell testers to use Google or Facebook (or to book as guests). Options to decide: e-mail codes through an SMTP account (for example a Gmail address with an app password) or a provider once the domain exists (F-08); SMS through a Tunisian provider the founder brings.
+- **Decision:** —
