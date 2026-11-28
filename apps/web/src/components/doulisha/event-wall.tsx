@@ -13,6 +13,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { fieldControlClass } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
+import { cloudName } from '@/lib/media';
 import { putFile } from '@/lib/upload';
 import { cn } from '@/lib/utils';
 import { useTRPC } from '@/trpc/client';
@@ -24,6 +25,13 @@ type Reactions = Post['reactions'];
 type Author = Post['author'];
 
 const MAX_PHOTOS = 4;
+
+/**
+ * Wall photos still use the pre-MED local upload, which Vercel cannot keep.
+ * With Cloudinary (deployments) they are off until the wall moves to MED; the
+ * wall is out of the preview's scope (spec v2.1 section 1.6, OPEN_QUESTIONS Q33).
+ */
+const wallPhotosEnabled = !cloudName;
 const REACTIONS = [
   ['like', '👍'],
   ['love', '❤️'],
@@ -383,31 +391,33 @@ function Composer({ eventId }: { eventId: string }) {
         </ul>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label
-          className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'cursor-pointer has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring/25',
-            files.length >= MAX_PHOTOS && 'pointer-events-none opacity-50',
-          )}
-        >
-          <ImagePlus className="size-4" aria-hidden="true" />
-          {t('addPhotos', { max: MAX_PHOTOS })}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            className="sr-only"
-            onChange={(e) => {
-              const picked = Array.from(e.target.files ?? []);
-              setFiles([...files, ...picked].slice(0, MAX_PHOTOS));
-              e.target.value = '';
-            }}
-            data-testid="wall-photos"
-          />
-        </label>
+        {wallPhotosEnabled ? (
+          <label
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'cursor-pointer has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring/25',
+              files.length >= MAX_PHOTOS && 'pointer-events-none opacity-50',
+            )}
+          >
+            <ImagePlus className="size-4" aria-hidden="true" />
+            {t('addPhotos', { max: MAX_PHOTOS })}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="sr-only"
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                setFiles([...files, ...picked].slice(0, MAX_PHOTOS));
+                e.target.value = '';
+              }}
+              data-testid="wall-photos"
+            />
+          </label>
+        ) : null}
         <Button
           type="submit"
-          className="min-w-28"
+          className="ms-auto min-w-28"
           disabled={busy || (!body.trim() && files.length === 0)}
           data-testid="wall-send"
         >
