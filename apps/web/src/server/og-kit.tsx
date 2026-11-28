@@ -1,8 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 
+import { fixedMediaUrl, type FixedSlotName, type MediaRef } from '@doulisha/storage/delivery';
 import type { CSSProperties } from 'react';
 import sharp from 'sharp';
+
+import { cloudName } from '@/lib/media';
 
 import { visualArabic } from './og-arabic';
 
@@ -40,7 +43,7 @@ const publicDir = join(process.cwd(), 'public');
 /**
  * Loads a cover or the logo from /public only. Never fetches a URL: covers are
  * checked uploads (coverUrlFromKey), and reading from disk keeps this route
- * from being used to reach other hosts. R2 covers arrive in Phase 6.
+ * from being used to reach other hosts. MED covers go through `coverDataUrl`.
  */
 export async function imageDataUrl(path: string | null): Promise<string | null> {
   if (!path?.startsWith('/') || path.includes('..')) return null;
@@ -55,6 +58,36 @@ export async function imageDataUrl(path: string | null): Promise<string | null> 
       .jpeg({ quality: 80 })
       .toBuffer();
     return `data:image/jpeg;base64,${jpeg.toString('base64')}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Covers above this size are not drawn (a generated JPEG is far smaller). */
+const REMOTE_COVER_MAX_BYTES = 8 * 1024 * 1024;
+
+/**
+ * The event cover for a generated image (share images, PDF ticket): an MED
+ * cover cut by Cloudinary from the original for `slot` (Q10), as JPEG, which
+ * Satori can draw; or an older cover from /public. Only our own Cloudinary
+ * account is ever fetched: the URL is built here from the stored public id.
+ */
+export async function coverDataUrl(
+  media: MediaRef | null | undefined,
+  url: string | null,
+  slot: FixedSlotName,
+): Promise<string | null> {
+  if (!media) return imageDataUrl(url);
+  const source = fixedMediaUrl(cloudName, media, slot);
+  if (media.provider === 'local') return imageDataUrl(source);
+  if (!cloudName || !source.startsWith(`https://res.cloudinary.com/${cloudName}/`)) return null;
+  try {
+    const response = await fetch(source, { signal: AbortSignal.timeout(8000) });
+    const type = response.headers.get('content-type') ?? '';
+    if (!response.ok || !/^image\/(jpeg|png)$/.test(type)) return null;
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.byteLength > REMOTE_COVER_MAX_BYTES) return null;
+    return `data:${type};base64,${bytes.toString('base64')}`;
   } catch {
     return null;
   }

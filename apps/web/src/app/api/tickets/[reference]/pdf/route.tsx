@@ -14,7 +14,7 @@ import { PDFDocument } from 'pdf-lib';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
 
-import { ARABIC, imageDataUrl, Line, loadFonts } from '@/server/og-kit';
+import { ARABIC, coverDataUrl, imageDataUrl, Line, loadFonts } from '@/server/og-kit';
 import { apiForLocale } from '@/trpc/server';
 
 /** A4 at 150 dpi: sharp enough to print and to scan the QR code from a phone. */
@@ -61,7 +61,7 @@ export async function GET(
   const [fonts, logo, cover] = await Promise.all([
     loadFonts(),
     imageDataUrl('/images/brand/logo.png'),
-    imageDataUrl(order.event.coverUrl),
+    coverDataUrl(order.event.coverMedia, order.event.coverUrl, 'og'),
   ]);
   const titleFont = ARABIC.test(order.event.title) ? 'Plex Arabic' : 'Playfair';
   const bodyFont = rtl ? 'Plex Arabic' : 'Inter';
