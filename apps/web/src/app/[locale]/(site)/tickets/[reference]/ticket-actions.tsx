@@ -33,7 +33,7 @@ import {
 import { useRouter } from '@/i18n/navigation';
 import { useErrorMessage } from '@/lib/errors';
 import { buildIcs } from '@/lib/ics';
-import { putFile } from '@/lib/upload';
+import { PROOF_ACCEPT, useMediaUpload } from '@/lib/media-upload';
 import { useTRPC } from '@/trpc/client';
 
 type Method = 'online' | 'd17' | 'bank_transfer' | 'cash';
@@ -142,18 +142,14 @@ export function ManualPaymentSteps({
   const trpc = useTRPC();
   const fileInput = useRef<HTMLInputElement>(null);
   const { run, error, busy } = useAction();
-  const createUpload = useMutation(trpc.uploads.create.mutationOptions());
+  const uploadProof = useMediaUpload('payment-proof');
   const attachProof = useMutation(trpc.booking.attachProof.mutationOptions());
 
   function upload(file: File) {
     void run(async () => {
-      const ticket = await createUpload.mutateAsync({
-        purpose: 'payment-proof',
-        contentType: file.type,
-        size: file.size,
-      });
-      const key = await putFile(ticket, file);
-      await attachProof.mutateAsync({ reference, fileKey: key });
+      // MED-05: the original goes straight to private storage, then is attached.
+      const { id } = await uploadProof(file, { reference });
+      await attachProof.mutateAsync({ reference, mediaId: id });
     });
   }
 
@@ -210,7 +206,7 @@ export function ManualPaymentSteps({
             <input
               ref={fileInput}
               type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
+              accept={PROOF_ACCEPT}
               className="sr-only"
               aria-label={t('uploadProof')}
               onChange={(e) => {

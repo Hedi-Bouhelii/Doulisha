@@ -108,3 +108,6 @@ export function isLowResolutionCover(media: MediaRef): boolean {
 
 /** `accept` attribute of file inputs: HEIC from iPhones is accepted (Q7). */
 export const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';
+
+/** `accept` of the payment proof input: images (HEIC included) or a PDF receipt. */
+export const PROOF_ACCEPT = `${IMAGE_ACCEPT},application/pdf`;
