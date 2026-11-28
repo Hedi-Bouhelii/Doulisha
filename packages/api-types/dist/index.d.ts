@@ -15473,7 +15473,7 @@ declare const appRouter: _trpc_server.TRPCBuiltRouter<{
         attachProof: _trpc_server.TRPCMutationProcedure<{
             input: {
                 reference: string;
-                fileKey: string;
+                mediaId: string;
             };
             output: void;
             meta: object;

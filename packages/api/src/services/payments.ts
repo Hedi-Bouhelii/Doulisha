@@ -2,7 +2,6 @@ import type { Executor, Tx } from '@doulisha/db';
 import { schema } from '@doulisha/db';
 import type { Locale } from '@doulisha/i18n';
 import type { PaymentEvent } from '@doulisha/payments';
-import { keyBelongsTo } from '@doulisha/storage';
 import { randomUUID } from 'node:crypto';
 import { and, eq, inArray } from 'drizzle-orm';
 
@@ -16,6 +15,7 @@ import type { ServiceDeps } from '../deps';
 import { AppError } from '../errors';
 import type { Actor } from '../permissions';
 import { allowedPayments } from './booking';
+import { loadOwnMedia } from './media-refs';
 import { notifyBuyer } from './notices';
 import { lockEventStock, movePlaces, offerFreedPlaces, orderBookings } from './stock';
 
@@ -343,13 +343,12 @@ export async function attachProof(
   db: Executor,
   actor: Actor | null,
   reference: string,
-  fileKey: string,
+  mediaId: string,
   now = new Date(),
 ) {
   const order = await getOwnOrder(db, actor, reference);
-  if (!keyBelongsTo(fileKey, 'payment-proof', actor!.userId)) {
-    throw new AppError('BAD_REQUEST', 'errors.generic');
-  }
+  // MED-05: the buyer's own private upload (media.sign / media.confirm).
+  const media = await loadOwnMedia(db, actor!, mediaId, ['proof']);
   if (!['awaiting_payment', 'partially_paid'].includes(order.status)) {
     throw new AppError('BAD_REQUEST', 'errors.nothingToPay');
   }
@@ -390,7 +389,8 @@ export async function attachProof(
   await db.insert(schema.paymentProofs).values({
     paymentId: payment!.id,
     uploadedById: actor!.userId,
-    fileKey,
+    fileKey: `${media.key}.${media.format ?? 'jpg'}`,
+    mediaId: media.id,
   });
   // The clock stops while the organizer checks the receipt.
   await setReservationDeadline(db, order.id, null);

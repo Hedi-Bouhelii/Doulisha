@@ -40,8 +40,8 @@ export const bookingRouter = router({
 
   /** Attaches an uploaded proof of transfer or D17 payment. */
   attachProof: publicProcedure
-    .input(reference.extend({ fileKey: z.string().min(10).max(300) }))
-    .mutation(({ ctx, input }) => attachProof(ctx.db, ctx.actor, input.reference, input.fileKey)),
+    .input(reference.extend({ mediaId: z.uuid() }))
+    .mutation(({ ctx, input }) => attachProof(ctx.db, ctx.actor, input.reference, input.mediaId)),
 
   /** Cancels the booking; a refund from the policy goes to the organizer for approval (PAY-04). */
   cancel: publicProcedure
